@@ -83,9 +83,6 @@ function ethLogToLog(log: EthLog): Log {
   };
 }
 
-// const substrate = 'wss://node-6870830370282213376.rz.onfinality.io/ws?apikey=0f273197-e4d5-45e2-b23e-03b015cb7000';
-// const provider = EvmRpcProvider.from(substrate);
-
 export default class FrontierEthProvider extends Provider {
   private eth = api.rpc.eth;
 

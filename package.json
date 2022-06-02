@@ -1,7 +1,7 @@
 {
-  "name": "subquery-query-registry-project",
-  "version": "1.0.0",
-  "description": "",
+  "name": "subquery-network-subql-project",
+  "version": "0.1.0",
+  "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
     "build": "yarn check-filters && npx subql build",
@@ -11,14 +11,14 @@
     "prepare": "husky install",
     "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts"
   },
-  "homepage": "https://github.com/subquery/subql-starter",
-  "repository": "github:subquery/subql-starter",
+  "homepage": "https://github.com/subquery/subquery-network-subql-project",
+  "repository": "https://github.com/subquery/subquery-network-subql-project",
   "files": [
     "dist",
     "schema.graphql",
     "project.yaml"
   ],
-  "author": "Subquery",
+  "author": "SubQuery Pty. Limited",
   "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/api": "^8",
@@ -40,7 +40,6 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "^2.4.12",
     "@acala-network/type-definitions": "^4.1.3",
     "@subql/acala-evm-processor": "^0.0.2-0",
     "@subql/contract-sdk": "^0.6.1-2",
