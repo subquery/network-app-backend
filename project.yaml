@@ -21,7 +21,7 @@ network:
 
 x-frontier: &frontier
   kind: substrate/AcalaEvm
-  startBlock: 1216847
+  startBlock: 1186931
   processor: &frontier-processor
     file: './dist/acalaEvm.js'
   assets:
