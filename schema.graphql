@@ -1,0 +1,165 @@
+enum Status {
+  INDEXING
+  READY
+  TERMINATED
+}
+
+type Project @entity {
+  id: ID!
+
+  owner: String!
+  metadata: String! # IPFS hash
+  currentDeployment: String! # IPFS hash
+  currentVersion: String! # IPFS hash
+  updatedTimestamp: Date!
+  createdTimestamp: Date!
+
+  deployments: [Deployment] @derivedFrom(field: "project")
+}
+
+type Deployment @entity {
+  id: ID! # deploymentId, IPFS hash to deployment
+  version: String! # IPFS hash to version info
+  project: Project!
+  indexers: [DeploymentIndexer]! @derivedFrom(field: "deployment")
+  createdTimestamp: Date!
+
+  plans: [Plan]! @derivedFrom(field: "deployment")
+}
+
+type DeploymentIndexer @entity {
+  id: ID! # indexer adderss + deployment id
+  indexer: Indexer!
+  deployment: Deployment!
+
+  blockHeight: BigInt!
+  mmrRoot: String
+  timestamp: Date
+  status: Status!
+}
+
+type Era @entity {
+  id: ID! # Era id
+  startTime: Date! # Block timestamp the Era is started
+  endTime: Date # Block timestamp that the successive Era is started
+}
+
+# Necessary without https://github.com/subquery/subql/issues/442
+type JSONBigInt @jsonField {
+  type: String! # Always "bigint",
+  value: String! # Hex encoded string
+}
+
+type EraValue @jsonField {
+  era: Int!
+  value: JSONBigInt!
+  valueAfter: JSONBigInt!
+}
+
+type Indexer @entity {
+  id: ID! # Indexers address
+  metadata: String # Ipfs hash to metadata
+  controller: String # Controller address for the indexer
+  # rewardPool: String! # Address for the reward pool contract
+
+  commission: EraValue!
+  totalStake: EraValue!
+
+  delegations: [Delegation] @derivedFrom(field: "indexer")
+  rewards: [IndexerReward] @derivedFrom(field: "indexer")
+
+  lastRewardedEra: String # hex encoding
+
+  active: Boolean!
+}
+
+type Delegator @entity {
+  id: ID! # Address
+
+  totalDelegations: EraValue!
+  delegations: [Delegation] @derivedFrom(field: "delegator")
+}
+
+type Delegation @entity {
+  id: ID! # nominator + indexer addresses
+  delegator: Delegator!
+  indexer: Indexer!
+
+  amount: EraValue!
+}
+
+type Withdrawl @entity {
+  id: ID! # nominator + index
+  index: BigInt! # Index of the withdrawl
+  delegator: String! # nominator address
+  indexer: String! # nominator address
+  startTime: Date!
+  amount: BigInt!
+
+  claimed: Boolean!
+}
+
+type PlanTemplate @entity {
+  id: ID! # Index, hex encoded
+  period: BigInt!
+  dailyReqCap: BigInt!
+  rateLimit: BigInt!
+  metadata: String
+  active: Boolean!
+}
+
+type Plan @entity {
+  id: ID! # Index, hex encoded
+  price: BigInt!
+  creator: String! # Address
+  planTemplate: PlanTemplate!
+  active: Boolean!
+
+  deployment: Deployment
+}
+
+type ServiceAgreement @entity {
+  id: ID! # contract address
+  indexerAddress: String!
+  consumerAddress: String!
+
+  deployment: Deployment!
+  period: BigInt!
+  startTime: Date!
+  endTime: Date!
+
+  value: BigInt!
+}
+
+type UnclaimedReward @entity {
+  id: ID! # indexer + delegator
+
+  indexerAddress: String!
+  delegatorAddress: String!
+
+  amount: BigInt!
+}
+
+type Reward @entity {
+  id: ID! # indexer + delegator + tx hash
+
+  indexerAddress: String!
+  delegatorAddress: String!
+
+  amount: BigInt!
+  claimedTime: Date!
+}
+
+# Expected total reward an indexer will get each epoch
+type IndexerReward @entity {
+  id: ID! # indexer + era
+
+  indexer: Indexer!
+
+  # era: Era
+  eraIdx: String!
+
+  amount: BigInt!
+  additions: BigInt!
+  removals: BigInt!
+}

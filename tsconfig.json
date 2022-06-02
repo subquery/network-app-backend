@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "module": "commonjs",
+    "outDir": "dist",
+    "target": "es2017",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true
+  },
+  "include": ["scripts/**/*.ts","src/**/*", "node_modules/@subql/types/dist/global.d.ts"]
+}
