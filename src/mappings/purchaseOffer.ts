@@ -11,6 +11,7 @@ import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import FrontierEthProvider from './ethProvider';
 import { Offer } from '../types';
 import { bytesToIpfsCid } from './utils';
+import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 
 // TODO: to confirm expireDate -  should be Date type
 // TODO: to confirm offerID - should expose from event args
@@ -58,3 +59,19 @@ export async function handlePurchaseOfferCancelled(
 
   await offer.save();
 }
+
+// export async function handlePurchaseOfferAccepted(
+//   event: AcalaEvmEvent<ClosedAgreementCreatedEvent['args']>
+// ): Promise<void> {
+//   logger.info('handlePurchaseOfferCancelled');
+//   assert(event.args, 'No event args');
+
+//   const offer = await Offer.get(event.args.offerId.toString());
+//   assert(offer, `offer not found. planId="${event.args.offerId.toString()}"`);
+
+//   const acceptedAmount = offer.accepted + 1;
+//   offer.accepted = acceptedAmount;
+//   offer.reachLimit = acceptedAmount === offer.limit;
+
+//   await offer.save();
+// }
