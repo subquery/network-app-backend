@@ -69,13 +69,11 @@ type Indexer @entity {
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 
   lastRewardedEra: String # hex encoding
-
   active: Boolean!
 }
 
 type Delegator @entity {
   id: ID! # Address
-
   totalDelegations: EraValue!
   delegations: [Delegation] @derivedFrom(field: "delegator")
 }
@@ -133,7 +131,6 @@ type ServiceAgreement @entity {
 
 type UnclaimedReward @entity {
   id: ID! # indexer + delegator
-
   indexerAddress: String!
   delegatorAddress: String!
 
@@ -142,7 +139,6 @@ type UnclaimedReward @entity {
 
 type Reward @entity {
   id: ID! # indexer + delegator + tx hash
-
   indexerAddress: String!
   delegatorAddress: String!
 
@@ -153,7 +149,6 @@ type Reward @entity {
 # Expected total reward an indexer will get each epoch
 type IndexerReward @entity {
   id: ID! # indexer + era
-
   indexer: Indexer!
 
   # era: Era
@@ -162,4 +157,19 @@ type IndexerReward @entity {
   amount: BigInt!
   additions: BigInt!
   removals: BigInt!
+}
+
+type Offer @entity {
+  id: ID! # consumer + createAt time
+  consumer: String!
+  deployment: Deployment!
+  planTemplate: PlanTemplate!
+  deposit: BigInt!
+  minimumAcceptHeight: BigInt!
+  expireDate: Date!
+  limit: Int! # indexer cap
+  accepted: Int! # accepted indexer amount
+  reachLimit: Boolean! # whether reach limit
+  withdrawn: Boolean! # withdraw by cancel event
+  withdrawPenalty: BigInt
 }
