@@ -8,7 +8,7 @@ import {
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { Offer } from '../types';
+import { Offer, OfferAccepted } from '../types';
 import { bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
@@ -56,8 +56,9 @@ export async function handlePurchaseOfferAccepted(
   logger.info('handlePurchaseOfferCancelled');
   assert(event.args, 'No event args');
 
-  const offer = await Offer.get(event.args.offerId.toString());
-  assert(offer, `offer not found. offerID="${event.args.offerId.toString()}"`);
+  const eventOfferId = event.args.offerId.toString();
+  const offer = await Offer.get(eventOfferId);
+  assert(offer, `offer not found. offerID="${eventOfferId}"`);
 
   if (offer.accepted < offer.limit) {
     const acceptedAmount = offer.accepted + 1;
@@ -65,6 +66,15 @@ export async function handlePurchaseOfferAccepted(
     offer.reachLimit = acceptedAmount === offer.limit;
 
     await offer.save();
+
+    const offerAccepted = OfferAccepted.create({
+      id: `${eventOfferId}:${event.args.agreement}`,
+      indexerId: event.args.indexer,
+      offerId: eventOfferId,
+      serviceAgreementId: event.args.agreement,
+    });
+
+    await offerAccepted.save();
   } else {
     throw new Error(
       'Method handlePurchaseOfferAccepted: max limit of offer acceptance exceed.'

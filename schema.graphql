@@ -173,3 +173,10 @@ type Offer @entity {
   withdrawn: Boolean! # withdraw by cancel event
   withdrawPenalty: BigInt
 }
+
+type OfferAccepted @entity {
+  id: ID! # offerID:serviceAgreementID
+  indexer: Indexer!
+  offer: Offer!
+  serviceAgreement: ServiceAgreement!
+}

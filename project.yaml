@@ -260,3 +260,8 @@ dataSources:
           filter:
             topics:
               - PurchaseOfferCancelled(address indexed creator, uint256 offerId, uint256 penalty)
+        - handler: handlePurchaseOfferAccepted
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - OfferAccepted(address indexed indexer, uint256 offerId, address agreement)
