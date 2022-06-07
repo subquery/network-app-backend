@@ -5,30 +5,20 @@ import assert from 'assert';
 import {
   PurchaseOfferCreatedEvent,
   PurchaseOfferCancelledEvent,
+  OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
-import { PurchaseOfferMarket__factory } from '@subql/contract-sdk';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import FrontierEthProvider from './ethProvider';
 import { Offer } from '../types';
 import { bytesToIpfsCid } from './utils';
-import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 
-// TODO: to confirm expireDate -  should be Date type
-// TODO: to confirm offerID - should expose from event args
 export async function handlePurchaseOfferCreated(
   event: AcalaEvmEvent<PurchaseOfferCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferCreated');
   assert(event.args, 'No event args');
 
-  const offerContract = PurchaseOfferMarket__factory.connect(
-    event.args.consumer,
-    new FrontierEthProvider()
-  );
-  const offerId = await offerContract.numOffers();
-
   const offer = Offer.create({
-    id: offerId.toString(),
+    id: event.args.offerId.toString(),
     consumer: event.args.consumer,
     deploymentId: bytesToIpfsCid(event.args.deploymentId),
     planTemplateId: event.args.planTemplateId.toHexString(),
@@ -60,18 +50,24 @@ export async function handlePurchaseOfferCancelled(
   await offer.save();
 }
 
-// export async function handlePurchaseOfferAccepted(
-//   event: AcalaEvmEvent<ClosedAgreementCreatedEvent['args']>
-// ): Promise<void> {
-//   logger.info('handlePurchaseOfferCancelled');
-//   assert(event.args, 'No event args');
+export async function handlePurchaseOfferAccepted(
+  event: AcalaEvmEvent<OfferAcceptedEvent['args']>
+): Promise<void> {
+  logger.info('handlePurchaseOfferCancelled');
+  assert(event.args, 'No event args');
 
-//   const offer = await Offer.get(event.args.offerId.toString());
-//   assert(offer, `offer not found. planId="${event.args.offerId.toString()}"`);
+  const offer = await Offer.get(event.args.offerId.toString());
+  assert(offer, `offer not found. offerID="${event.args.offerId.toString()}"`);
 
-//   const acceptedAmount = offer.accepted + 1;
-//   offer.accepted = acceptedAmount;
-//   offer.reachLimit = acceptedAmount === offer.limit;
+  if (offer.accepted < offer.limit) {
+    const acceptedAmount = offer.accepted + 1;
+    offer.accepted = acceptedAmount;
+    offer.reachLimit = acceptedAmount === offer.limit;
 
-//   await offer.save();
-// }
+    await offer.save();
+  } else {
+    throw new Error(
+      'Method handlePurchaseOfferAccepted: max limit of offer acceptance exceed.'
+    );
+  }
+}

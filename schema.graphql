@@ -160,7 +160,7 @@ type IndexerReward @entity {
 }
 
 type Offer @entity {
-  id: ID! # consumer + createAt time
+  id: ID! # offerID
   consumer: String!
   deployment: Deployment!
   planTemplate: PlanTemplate!
