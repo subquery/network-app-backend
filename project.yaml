@@ -35,6 +35,8 @@ x-frontier: &frontier
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/QueryRegistry.sol/QueryRegistry.json
     planManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PlanManager.sol/PlanManager.json
+    purchaseOfferMarket:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PurchaseOfferMarket.sol/PurchaseOfferMarket.json
     serviceAgreementRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
     rewardsDistributor:
@@ -239,3 +241,27 @@ dataSources:
           filter:
             topics:
               - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: purchaseOfferMarket
+        address: '0x3DD2A1263fecf0a24941584eB52a7F8623D96172'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handlePurchaseOfferCreated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PurchaseOfferCreated(address consumer, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
+        - handler: handlePurchaseOfferCancelled
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PurchaseOfferCancelled(address indexed creator, uint256 offerId, uint256 penalty)
+        - handler: handlePurchaseOfferAccepted
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - OfferAccepted(address indexed indexer, uint256 offerId, address agreement)
