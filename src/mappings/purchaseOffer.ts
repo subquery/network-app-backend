@@ -8,7 +8,7 @@ import {
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { Offer, OfferAccepted } from '../types';
+import { Offer, AcceptedOffer } from '../types';
 import { bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
@@ -24,7 +24,7 @@ export async function handlePurchaseOfferCreated(
     planTemplateId: event.args.planTemplateId.toHexString(),
     deposit: event.args.deposit.toBigInt(),
     minimumAcceptHeight: event.args.minimumAcceptHeight.toBigInt(),
-    expireDate: new Date(event.args.expireDate.toString()),
+    expireDate: new Date(event.args.expireDate.toNumber() * 1000), // seconds return from contract and manipulate into milliseconds / Date object.
     limit: event.args.limit,
     accepted: 0,
     reachLimit: false,
@@ -41,7 +41,7 @@ export async function handlePurchaseOfferCancelled(
   assert(event.args, 'No event args');
 
   const offer = await Offer.get(event.args.offerId.toString());
-  assert(offer, `offer not found. planId="${event.args.offerId.toString()}"`);
+  assert(offer, `offer not found. offerID="${event.args.offerId.toString()}"`);
 
   offer.expireDate = new Date(event.blockTimestamp);
   offer.withdrawn = true;
@@ -67,14 +67,14 @@ export async function handlePurchaseOfferAccepted(
 
     await offer.save();
 
-    const offerAccepted = OfferAccepted.create({
+    const acceptedOffer = AcceptedOffer.create({
       id: `${eventOfferId}:${event.args.agreement}`,
       indexerId: event.args.indexer,
       offerId: eventOfferId,
       serviceAgreementId: event.args.agreement,
     });
 
-    await offerAccepted.save();
+    await acceptedOffer.save();
   } else {
     throw new Error(
       'Method handlePurchaseOfferAccepted: max limit of offer acceptance exceed.'

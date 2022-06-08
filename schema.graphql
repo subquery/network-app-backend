@@ -174,7 +174,7 @@ type Offer @entity {
   withdrawPenalty: BigInt
 }
 
-type OfferAccepted @entity {
+type AcceptedOffer @entity {
   id: ID! # offerID:serviceAgreementID
   indexer: Indexer!
   offer: Offer!
