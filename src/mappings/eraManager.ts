@@ -3,9 +3,11 @@
 
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
+import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
-
 import { Era } from '../types';
+import { ERA_MANAGER_ADDRESS } from './utils';
+import FrontierEthProvider from './ethProvider';
 
 /* Era Handlers */
 export async function handleNewEra(
@@ -19,16 +21,35 @@ export async function handleNewEra(
   if (id.gt(1)) {
     const previousId = id.sub(1);
     const previousEra = await Era.get(previousId.toHexString());
-    assert(previousEra, `Era ${previousId.toNumber()} doesn't exist`);
+    if (previousEra) {
+      previousEra.endTime = event.blockTimestamp;
+      await previousEra.save();
+    } else {
+      const eraManager = EraManager__factory.connect(
+        ERA_MANAGER_ADDRESS,
+        new FrontierEthProvider()
+      );
 
-    previousEra.endTime = event.blockTimestamp;
+      const eraPeriod = await eraManager.eraPeriod();
+      const startTime = new Date(
+        event.blockTimestamp.getTime() - eraPeriod.toNumber() * 1000 // eraPeriod: seconds unit
+      );
+      const endTime = event.blockTimestamp;
 
-    await previousEra.save();
+      const previousEra = Era.create({
+        id: previousId.toHexString(),
+        startTime,
+        endTime,
+        forceNext: true,
+      });
+      await previousEra.save();
+    }
   }
 
   const era = Era.create({
     id: id.toHexString(),
     startTime: event.blockTimestamp,
+    forceNext: false,
   });
 
   await era.save();

@@ -42,6 +42,7 @@ type Era @entity {
   id: ID! # Era id
   startTime: Date! # Block timestamp the Era is started
   endTime: Date # Block timestamp that the successive Era is started
+  forceNext: Boolean # True when force save previous Era
 }
 
 # Necessary without https://github.com/subquery/subql/issues/442
