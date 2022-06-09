@@ -3,9 +3,11 @@
 
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
+import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
-
 import { Era } from '../types';
+import { ERA_MANAGER_ADDRESS } from './utils';
+import FrontierEthProvider from './ethProvider';
 
 /* Era Handlers */
 export async function handleNewEra(
@@ -23,9 +25,21 @@ export async function handleNewEra(
       previousEra.endTime = event.blockTimestamp;
       await previousEra.save();
     } else {
+      const eraManager = EraManager__factory.connect(
+        ERA_MANAGER_ADDRESS,
+        new FrontierEthProvider()
+      );
+
+      const eraPeriod = await eraManager.eraPeriod();
+      const startTime = new Date(
+        event.blockTimestamp.getTime() - eraPeriod.toNumber() * 1000 // eraPeriod: seconds unit
+      );
+      const endTime = event.blockTimestamp;
+
       const previousEra = Era.create({
         id: previousId.toHexString(),
-        startTime: event.blockTimestamp,
+        startTime,
+        endTime,
         forceNext: true,
       });
       await previousEra.save();
