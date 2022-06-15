@@ -8,3 +8,4 @@ export * from './staking';
 export * from './planManager';
 export * from './rewardsDistributor';
 export * from './serviceAgreement';
+export * from './purchaseOffer';
