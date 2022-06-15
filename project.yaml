@@ -254,7 +254,7 @@ dataSources:
           kind: substrate/AcalaEvmEvent
           filter:
             topics:
-              - PurchaseOfferCreated(address consumer, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
+              - PurchaseOfferCreated(address consumer, uint256 offerId, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
         - handler: handlePurchaseOfferCancelled
           kind: substrate/AcalaEvmEvent
           filter:
