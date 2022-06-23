@@ -69,7 +69,7 @@ export async function handlePurchaseOfferAccepted(
       await offer.save();
 
       const acceptedOffer = AcceptedOffer.create({
-        id: `${eventOfferId}:${event.args.agreement}`,
+        id: `${eventOfferId}:${event.args.indexer}`,
         indexerId: event.args.indexer,
         offerId: eventOfferId,
         serviceAgreementId: event.args.agreement,

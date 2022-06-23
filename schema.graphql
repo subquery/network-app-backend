@@ -176,8 +176,8 @@ type Offer @entity {
 }
 
 type AcceptedOffer @entity {
-  id: ID! # offerID:serviceAgreementID
+  id: ID! # offerID:indexer
   indexer: Indexer!
   offer: Offer!
-  serviceAgreement: ServiceAgreement!
+  serviceAgreement: ServiceAgreement
 }
