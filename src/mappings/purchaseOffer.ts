@@ -53,31 +53,36 @@ export async function handlePurchaseOfferCancelled(
 export async function handlePurchaseOfferAccepted(
   event: AcalaEvmEvent<OfferAcceptedEvent['args']>
 ): Promise<void> {
-  logger.info('handlePurchaseOfferCancelled');
+  logger.info('handlePurchaseOfferAccepted');
   assert(event.args, 'No event args');
 
   const eventOfferId = event.args.offerId.toString();
   const offer = await Offer.get(eventOfferId);
   assert(offer, `offer not found. offerID="${eventOfferId}"`);
 
-  if (offer.accepted < offer.limit) {
-    const acceptedAmount = offer.accepted + 1;
-    offer.accepted = acceptedAmount;
-    offer.reachLimit = acceptedAmount === offer.limit;
+  try {
+    if (offer.accepted < offer.limit) {
+      const acceptedAmount = offer.accepted + 1;
+      offer.accepted = acceptedAmount;
+      offer.reachLimit = acceptedAmount === offer.limit;
 
-    await offer.save();
+      await offer.save();
 
-    const acceptedOffer = AcceptedOffer.create({
-      id: `${eventOfferId}:${event.args.agreement}`,
-      indexerId: event.args.indexer,
-      offerId: eventOfferId,
-      serviceAgreementId: event.args.agreement,
-    });
+      const acceptedOffer = AcceptedOffer.create({
+        id: `${eventOfferId}:${event.args.agreement}`,
+        indexerId: event.args.indexer,
+        offerId: eventOfferId,
+        serviceAgreementId: event.args.agreement,
+      });
 
-    await acceptedOffer.save();
-  } else {
-    throw new Error(
-      'Method handlePurchaseOfferAccepted: max limit of offer acceptance exceed.'
-    );
+      await acceptedOffer.save();
+    } else {
+      throw new Error(
+        'Method handlePurchaseOfferAccepted: max limit of offer acceptance exceed.'
+      );
+    }
+  } catch (e) {
+    logger.info('handlePurchaseOfferAccepted', JSON.stringify(event, null, 2));
+    logger.error(e);
   }
 }
