@@ -72,7 +72,7 @@ export async function handlePurchaseOfferAccepted(
         id: `${eventOfferId}:${event.args.indexer}`,
         indexerId: event.args.indexer,
         offerId: eventOfferId,
-        serviceAgreementId: event.args.agreement,
+        // serviceAgreementId: event.args.agreement,
       });
 
       await acceptedOffer.save();
