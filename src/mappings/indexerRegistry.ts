@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { EraManager__factory } from '@subql/contract-sdk';
 import {
   RegisterIndexerEvent,
   RemoveControllerAccountEvent,
@@ -12,8 +11,7 @@ import {
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
 import { Indexer } from '../types';
-import FrontierEthProvider from './ethProvider';
-import { bytesToIpfsCid, upsertEraValue, ERA_MANAGER_ADDRESS } from './utils';
+import { bytesToIpfsCid } from './utils';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -23,36 +21,17 @@ export async function handleRegisterIndexer(
   assert(event.args, 'No event args');
   const { indexer: indexerAddress, metadata } = event.args;
 
-  let indexer = await Indexer.get(indexerAddress);
-  const eraManager = EraManager__factory.connect(
-    ERA_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const indexer = await Indexer.get(indexerAddress);
 
   if (indexer) {
     indexer.metadata = bytesToIpfsCid(metadata);
     indexer.active = true;
-  } else {
-    // Should not occurr. AddDelegation, SetCommissionRate events should happen first
-    indexer = Indexer.create({
-      id: indexerAddress,
-      metadata: bytesToIpfsCid(metadata),
-      totalStake: await upsertEraValue(eraManager, undefined, BigInt(0)),
-      // Set era to -1 as indicator to apply instantly in handleSetCommissionRate
-      commission: {
-        era: -1,
-        value: BigInt(0).toJSONType(),
-        valueAfter: BigInt(0).toJSONType(),
-      }, //await upsertEraValue(eraManager, undefined, BigInt(0)),
-      active: true,
-    });
+    await indexer.save();
   }
 
   /* WARNING, other events are emitted before this handler (AddDelegation, SetCommissionRate),
    * their handlers are used to set their relevant values.
    */
-
-  await indexer.save();
 }
 
 export async function handleUnregisterIndexer(
