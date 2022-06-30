@@ -174,8 +174,6 @@ async function updateFutureRewards(
   lastRewardedEra: BigNumber,
   prevEraRewards: Readonly<IndexerReward>
 ) {
-  const eraRewards: IndexerReward[] = [];
-
   let prev = prevEraRewards;
   let prevEraId = BigNumber.from(prevEraRewards.eraIdx);
 
@@ -186,7 +184,9 @@ async function updateFutureRewards(
 
     let eraReward = await IndexerReward.get(id);
 
-    if (!eraReward) {
+    if (eraReward) {
+      eraReward.amount = prev.amount + eraReward.additions - eraReward.removals;
+    } else {
       eraReward = IndexerReward.create({
         id,
         indexerId: indexer,
@@ -196,17 +196,10 @@ async function updateFutureRewards(
         removals: BigInt(0),
         amount: prev.amount,
       });
-
-      eraRewards.push(eraReward);
-    } else {
-      eraReward.amount = prev.amount + eraReward.additions - eraReward.removals;
-
-      await eraReward.save();
     }
+    await eraReward.save();
 
     prev = eraReward;
     prevEraId = eraId;
   }
-
-  await store.bulkCreate('IndexerReward', eraRewards);
 }
