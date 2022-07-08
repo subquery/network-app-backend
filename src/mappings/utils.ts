@@ -8,6 +8,7 @@ import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
 import { Delegator, Indexer, EraValue, JSONBigInt } from '../types';
 
+export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
 export const PLAN_MANAGER_ADDRESS = testnetAddresses.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
@@ -51,6 +52,10 @@ export function bytesToIpfsCid(raw: string): string {
   const hashHex = '1220' + raw.slice(2);
   const hashBytes = Buffer.from(hashHex, 'hex');
   return bs58.encode(hashBytes);
+}
+
+export function cidToBytes32(cid: string): string {
+  return '0x' + Buffer.from(bs58.decode(cid)).slice(2).toString('hex');
 }
 
 export function bnToDate(bn: BigNumber): Date {
