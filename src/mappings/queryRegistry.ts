@@ -43,32 +43,26 @@ async function createDeploymentIndexer({
   mmrRoot,
   status,
 }: ISaveDeploymentIndexer) {
-  logger.info(`createDeploymentIndexer: ${indexerId}`);
-  const sortedBlockHeight = blockHeight || BigInt(0);
+  logger.info(`createDeploymentIndexer: ${deploymentId}`);
+  let sortedBlockHeight = blockHeight || BigInt(0);
 
-  // try {
-  //   if (!blockHeight) {
-  //     const queryRegistryManager = QueryRegistry__factory.connect(
-  //       QUERY_REGISTRY_ADDRESS,
-  //       new FrontierEthProvider()
-  //     );
+  if (blockHeight === undefined) {
+    const queryRegistryManager = QueryRegistry__factory.connect(
+      QUERY_REGISTRY_ADDRESS,
+      new FrontierEthProvider()
+    );
 
-  //     const deploymentStatus =
-  //       await queryRegistryManager.deploymentStatusByIndexer(
-  //         cidToBytes32(deploymentId),
-  //         indexerId
-  //       );
+    const deploymentStatus =
+      await queryRegistryManager.deploymentStatusByIndexer(
+        cidToBytes32(deploymentId),
+        indexerId
+      );
 
-  //     logger.info(
-  //       `====== deploymentStatus: ${deploymentStatus?.blockHeight.toBigInt()}`
-  //     );
-
-  //     sortedBlockHeight = deploymentStatus.blockHeight.toBigInt();
-  //   }
-  // } catch (error) {
-  //   logger.error(error);
-  //   throw Error(error);
-  // }
+    sortedBlockHeight = deploymentStatus.blockHeight.toBigInt();
+    logger.info(
+      `createDeploymentIndexer - fetchDeploymentStatusByIndexer ${deploymentStatus.blockHeight.toBigInt()}`
+    );
+  }
 
   const indexer = DeploymentIndexer.create({
     id: getDeploymentIndexerId(indexerId, deploymentId),
@@ -190,7 +184,7 @@ export async function handleIndexingUpdate(
 
   if (!indexer) {
     await createDeploymentIndexer({
-      indexerId: id,
+      indexerId: event.args.indexer,
       deploymentId,
       blockHeight: event.args.blockheight.toBigInt(),
       mmrRoot: event.args.mmrRoot,
@@ -220,7 +214,7 @@ export async function handleIndexingReady(
 
   if (!indexer) {
     await createDeploymentIndexer({
-      indexerId: id,
+      indexerId: event.args.indexer,
       deploymentId,
       timestamp: event.blockTimestamp,
       status: Status.READY,
