@@ -6,7 +6,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { EraManager } from '@subql/contract-sdk';
 import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
-import { Delegator, Indexer, EraValue, JSONBigInt } from '../types';
+import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -185,4 +185,22 @@ export async function updateTotalDelegation(
   }
 
   await delegator.save();
+}
+
+export async function reportException(
+  handler: string,
+  eventLogIdx: number,
+  eventBlock: number,
+  error: string
+): Promise<void> {
+  const id = `${handler}:${eventBlock}:${eventLogIdx}`;
+
+  const exception = Exception.create({
+    id,
+    error: error || `Error: ${id}`,
+    handler,
+    createBlock: eventBlock,
+  });
+
+  await exception.save();
 }
