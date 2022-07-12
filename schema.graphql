@@ -181,3 +181,10 @@ type AcceptedOffer @entity {
   offer: Offer!
   # serviceAgreement: ServiceAgreement
 }
+
+type Exception @entity {
+  id: ID! # handler:eventBlock:eventLogIndex
+  handler: String!
+  error: String!
+  createBlock: Int!
+}

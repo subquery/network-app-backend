@@ -10,13 +10,14 @@ import {
   SetCommissionRateEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer } from '../types';
+import { Delegation, Withdrawl, Indexer, Exception } from '../types';
 import FrontierEthProvider from './ethProvider';
 import {
   ERA_MANAGER_ADDRESS,
   updateTotalStake,
   upsertEraValue,
   updateTotalDelegation,
+  reportException,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
@@ -123,7 +124,6 @@ export async function handleRemoveDelegation(
   await delegation.save();
 }
 
-/* TODO wait for new contracts */
 export async function handleWithdrawRequested(
   event: AcalaEvmEvent<UnbondRequestedEvent['args']>
 ): Promise<void> {
@@ -146,21 +146,53 @@ export async function handleWithdrawRequested(
   await withdrawl.save();
 }
 
+/**
+ *
+ * TOFIX:
+ * Issue at height 1505302
+ * handleWithdrawClaimed event trigger ahead handleWithdrawRequested event
+ *
+ */
 export async function handleWithdrawClaimed(
   event: AcalaEvmEvent<UnbondWithdrawnEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
 
-  const { source, index } = event.args;
+  const { source, index, amount } = event.args;
   const id = getWithdrawlId(source, index);
 
   const withdrawl = await Withdrawl.get(id);
-  assert(withdrawl, `Expected withdrawl (${id}) to exist`);
 
-  withdrawl.claimed = true;
+  if (withdrawl) {
+    withdrawl.claimed = true;
 
-  await withdrawl.save();
+    await withdrawl.save();
+  } else {
+    const withdrawl = Withdrawl.create({
+      id,
+      delegator: source,
+      indexer: '-',
+      index: index.toBigInt(),
+      startTime: event.blockTimestamp,
+      amount: amount.toBigInt(),
+      claimed: true,
+    });
+
+    await withdrawl.save();
+
+    logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
+    const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
+      event
+    )}`;
+
+    await reportException(
+      'handleWithdrawClaimed',
+      event.logIndex,
+      event.blockNumber,
+      exception
+    );
+  }
 }
 
 export async function handleSetCommissionRate(
