@@ -23,6 +23,7 @@ export async function handleNewEra(
     const previousEra = await Era.get(previousId.toHexString());
     if (previousEra) {
       previousEra.endTime = event.blockTimestamp;
+      previousEra.lastEvent = `handleNewEra:${event.blockNumber}`;
       await previousEra.save();
     } else {
       const eraManager = EraManager__factory.connect(
@@ -41,6 +42,7 @@ export async function handleNewEra(
         startTime,
         endTime,
         forceNext: true,
+        createdBlock: event.blockNumber,
       });
       await previousEra.save();
     }
@@ -50,6 +52,7 @@ export async function handleNewEra(
     id: id.toHexString(),
     startTime: event.blockTimestamp,
     forceNext: false,
+    createdBlock: event.blockNumber,
   });
 
   await era.save();

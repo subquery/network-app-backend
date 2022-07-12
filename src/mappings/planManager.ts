@@ -46,6 +46,7 @@ export async function handlePlanTemplateCreated(
         ? undefined
         : bytesToIpfsCid(rawPlanTemplate.metadata),
     active: true,
+    createdBlock: event.blockNumber,
   });
 
   await planTemplate.save();
@@ -62,6 +63,7 @@ export async function handlePlanTemplateMetadataUpdated(
   const planTemplate = await PlanTemplate.get(id);
   assert(planTemplate, `Plan template not found. templateId="${id}"`);
   planTemplate.metadata = bytesToIpfsCid(event.args.metadata);
+  planTemplate.lastEvent = `handlePlanTemplateMetadataUpdated:${event.blockNumber}`;
 
   await planTemplate.save();
 }
@@ -77,6 +79,7 @@ export async function handlePlanTemplateStatusUpdated(
   assert(planTemplate, `Plan template not found. templateId="${id}"`);
 
   planTemplate.active = event.args.active;
+  planTemplate.lastEvent = `handlePlanTemplateStatusUpdated:${event.blockNumber}`;
 
   await planTemplate.save();
 }
@@ -97,6 +100,7 @@ export async function handlePlanCreated(
       constants.HashZero === event.args.deploymentId
         ? undefined
         : bytesToIpfsCid(event.args.deploymentId),
+    createdBlock: event.blockNumber,
   });
 
   await plan.save();
@@ -114,6 +118,7 @@ export async function handlePlanRemoved(
   assert(plan, `Plan not found. planId="${planId}"`);
 
   plan.active = false;
+  plan.lastEvent = `handlePlanRemoved:${event.blockNumber}`;
 
   await plan.save();
 }

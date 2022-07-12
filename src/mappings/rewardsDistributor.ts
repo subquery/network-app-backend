@@ -63,9 +63,11 @@ export async function handleRewardsDistributed(
           delegatorAddress: delegator.delegatorId,
           indexerAddress: indexer,
           amount: rewards.toBigInt(),
+          createdBlock: event.blockNumber,
         });
       } else {
         reward.amount = rewards.toBigInt();
+        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
       }
 
       await reward.save();
@@ -101,6 +103,7 @@ export async function handleRewardsClaimed(
       delegatorAddress: event.args.delegator,
       amount: event.args.rewards.toBigInt(),
       claimedTime: event.blockTimestamp,
+      createdBlock: event.blockNumber,
     });
 
     await reward.save();
@@ -133,25 +136,32 @@ export async function handleRewardsUpdated(
       additions: additions.toBigInt(),
       removals: removals.toBigInt(),
       amount: BigInt(0), // Updated below
+      createdBlock: event.blockNumber,
     });
   } else {
     eraRewards.additions = additions.toBigInt();
     eraRewards.removals = removals.toBigInt();
+    eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
   }
 
   eraRewards.amount = prevAmount + additions.toBigInt() - removals.toBigInt();
 
   await eraRewards.save();
 
-  const lastEraIdx = await upsertIndexerLastRewardEra(indexer, eraIdx);
+  const lastEraIdx = await upsertIndexerLastRewardEra(
+    indexer,
+    eraIdx,
+    event.blockNumber
+  );
 
   /* Rewards changed events don't come in in order and may not be the latest set era */
-  await updateFutureRewards(indexer, lastEraIdx, eraRewards);
+  await updateFutureRewards(indexer, lastEraIdx, eraRewards, event.blockNumber);
 }
 
 async function upsertIndexerLastRewardEra(
   indexerAddress: string,
-  eraIdx: BigNumber
+  eraIdx: BigNumber,
+  eventBlock: number
 ): Promise<BigNumber> {
   const indexer = await Indexer.get(indexerAddress);
 
@@ -163,6 +173,7 @@ async function upsertIndexerLastRewardEra(
 
   if (!lastRewardedEra || lastRewardedEra.lt(eraIdx)) {
     indexer.lastRewardedEra = eraIdx.toHexString();
+    indexer.lastEvent = `handleRewardsUpdated:upsertIndexerLastRewardEra:${eventBlock}`;
 
     await indexer.save();
 
@@ -175,7 +186,8 @@ async function upsertIndexerLastRewardEra(
 async function updateFutureRewards(
   indexer: string,
   lastRewardedEra: BigNumber,
-  prevEraRewards: Readonly<IndexerReward>
+  prevEraRewards: Readonly<IndexerReward>,
+  eventBlock: number
 ) {
   let prev = prevEraRewards;
   let prevEraId = BigNumber.from(prevEraRewards.eraIdx);
@@ -189,6 +201,7 @@ async function updateFutureRewards(
 
     if (eraReward) {
       eraReward.amount = prev.amount + eraReward.additions - eraReward.removals;
+      eraReward.lastEvent = `handleRewardsUpdated:updateFutureRewards:${eventBlock}`;
     } else {
       eraReward = IndexerReward.create({
         id,
@@ -198,6 +211,7 @@ async function updateFutureRewards(
         additions: BigInt(0),
         removals: BigInt(0),
         amount: prev.amount,
+        createdBlock: eventBlock,
       });
     }
     await eraReward.save();

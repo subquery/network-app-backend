@@ -69,6 +69,7 @@ export async function handleAddDelegation(
       delegatorId: source,
       indexerId: indexer,
       amount: eraAmount,
+      createdBlock: event.blockNumber,
     });
 
     await updateTotalStake(
@@ -141,6 +142,7 @@ export async function handleWithdrawRequested(
     startTime: event.blockTimestamp,
     amount: amount.toBigInt(),
     claimed: false,
+    createdBlock: event.blockNumber,
   });
 
   await withdrawl.save();
@@ -166,6 +168,7 @@ export async function handleWithdrawClaimed(
 
   if (withdrawl) {
     withdrawl.claimed = true;
+    withdrawl.lastEvent = `handleWithdrawClaimed:${event.blockNumber}`;
 
     await withdrawl.save();
   } else {
@@ -177,6 +180,7 @@ export async function handleWithdrawClaimed(
       startTime: event.blockTimestamp,
       amount: amount.toBigInt(),
       claimed: true,
+      createdBlock: event.blockNumber,
     });
 
     await withdrawl.save();
@@ -224,6 +228,7 @@ export async function handleSetCommissionRate(
         valueAfter: BigInt(0).toJSONType(),
       },
       active: true,
+      createdBlock: event.blockNumber,
     });
 
     indexer;
@@ -239,6 +244,7 @@ export async function handleSetCommissionRate(
     // Apply instantly when era is -1, this is an indication that indexer has just registered
     indexer.commission.era === -1
   );
+  indexer.lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
 
   await indexer.save();
 }
