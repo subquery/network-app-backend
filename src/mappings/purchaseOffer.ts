@@ -29,6 +29,7 @@ export async function handlePurchaseOfferCreated(
     accepted: 0,
     reachLimit: false,
     withdrawn: false,
+    createdBlock: event.blockNumber,
   });
 
   await offer.save();
@@ -46,6 +47,7 @@ export async function handlePurchaseOfferCancelled(
   offer.expireDate = new Date(event.blockTimestamp);
   offer.withdrawn = true;
   offer.withdrawPenalty = event.args.penalty.toBigInt();
+  offer.lastEvent = `handlePurchaseOfferCancelled:${event.blockNumber}`;
 
   await offer.save();
 }
@@ -65,6 +67,7 @@ export async function handlePurchaseOfferAccepted(
       const acceptedAmount = offer.accepted + 1;
       offer.accepted = acceptedAmount;
       offer.reachLimit = acceptedAmount === offer.limit;
+      offer.lastEvent = `handlePurchaseOfferAccepted:${event.blockNumber}`;
 
       await offer.save();
 
@@ -73,6 +76,7 @@ export async function handlePurchaseOfferAccepted(
         indexerId: event.args.indexer,
         offerId: eventOfferId,
         // serviceAgreementId: event.args.agreement,
+        createdBlock: event.blockNumber,
       });
 
       await acceptedOffer.save();

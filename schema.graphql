@@ -15,6 +15,9 @@ type Project @entity {
   createdTimestamp: Date!
 
   deployments: [Deployment] @derivedFrom(field: "project")
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Deployment @entity {
@@ -25,6 +28,9 @@ type Deployment @entity {
   createdTimestamp: Date!
 
   plans: [Plan]! @derivedFrom(field: "deployment")
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type DeploymentIndexer @entity {
@@ -36,6 +42,9 @@ type DeploymentIndexer @entity {
   mmrRoot: String
   timestamp: Date
   status: Status!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Era @entity {
@@ -43,6 +52,8 @@ type Era @entity {
   startTime: Date! # Block timestamp the Era is started
   endTime: Date # Block timestamp that the successive Era is started
   forceNext: Boolean # True when force save previous Era
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 # Necessary without https://github.com/subquery/subql/issues/442
@@ -55,6 +66,9 @@ type EraValue @jsonField {
   era: Int!
   value: JSONBigInt!
   valueAfter: JSONBigInt!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Indexer @entity {
@@ -71,12 +85,18 @@ type Indexer @entity {
 
   lastRewardedEra: String # hex encoding
   active: Boolean!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Delegator @entity {
   id: ID! # Address
   totalDelegations: EraValue!
   delegations: [Delegation] @derivedFrom(field: "delegator")
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Delegation @entity {
@@ -85,6 +105,9 @@ type Delegation @entity {
   indexer: Indexer!
 
   amount: EraValue!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Withdrawl @entity {
@@ -96,6 +119,9 @@ type Withdrawl @entity {
   amount: BigInt!
 
   claimed: Boolean!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type PlanTemplate @entity {
@@ -105,6 +131,9 @@ type PlanTemplate @entity {
   rateLimit: BigInt!
   metadata: String
   active: Boolean!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Plan @entity {
@@ -115,6 +144,9 @@ type Plan @entity {
   active: Boolean!
 
   deployment: Deployment
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type ServiceAgreement @entity {
@@ -128,6 +160,9 @@ type ServiceAgreement @entity {
   endTime: Date!
 
   value: BigInt!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type UnclaimedReward @entity {
@@ -136,6 +171,9 @@ type UnclaimedReward @entity {
   delegatorAddress: String!
 
   amount: BigInt!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Reward @entity {
@@ -145,6 +183,9 @@ type Reward @entity {
 
   amount: BigInt!
   claimedTime: Date!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 # Expected total reward an indexer will get each epoch
@@ -158,6 +199,9 @@ type IndexerReward @entity {
   amount: BigInt!
   additions: BigInt!
   removals: BigInt!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Offer @entity {
@@ -173,6 +217,9 @@ type Offer @entity {
   reachLimit: Boolean! # whether reach limit
   withdrawn: Boolean! # withdraw by cancel event
   withdrawPenalty: BigInt
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type AcceptedOffer @entity {
@@ -180,6 +227,9 @@ type AcceptedOffer @entity {
   indexer: Indexer!
   offer: Offer!
   # serviceAgreement: ServiceAgreement
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }
 
 type Exception @entity {

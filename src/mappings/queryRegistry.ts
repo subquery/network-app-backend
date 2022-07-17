@@ -33,6 +33,7 @@ interface ISaveDeploymentIndexer {
   timestamp?: Date;
   mmrRoot?: string;
   status: Status;
+  lastEvent?: string;
 }
 
 async function createDeploymentIndexer({
@@ -42,6 +43,7 @@ async function createDeploymentIndexer({
   timestamp,
   mmrRoot,
   status,
+  lastEvent,
 }: ISaveDeploymentIndexer) {
   logger.info(`createDeploymentIndexer: ${deploymentId}`);
   let sortedBlockHeight = blockHeight || BigInt(0);
@@ -72,6 +74,7 @@ async function createDeploymentIndexer({
     timestamp,
     mmrRoot,
     status,
+    lastEvent,
   });
   await indexer.save();
 }
@@ -94,6 +97,7 @@ export async function handleNewQuery(
     currentVersion,
     updatedTimestamp: event.blockTimestamp,
     createdTimestamp: event.blockTimestamp,
+    createdBlock: event.blockNumber,
   });
 
   await project.save();
@@ -103,6 +107,7 @@ export async function handleNewQuery(
     version: currentVersion,
     createdTimestamp: event.blockTimestamp,
     projectId,
+    createdBlock: event.blockNumber,
   });
 
   await deployment.save();
@@ -120,6 +125,7 @@ export async function handleUpdateQueryMetadata(
 
   project.metadata = bytesToIpfsCid(event.args.metadata);
   project.updatedTimestamp = event.blockTimestamp;
+  project.lastEvent = `handleUpdateQueryMetadata:${event.blockNumber}`;
 
   await project.save();
 }
@@ -138,6 +144,7 @@ export async function handleUpdateQueryDeployment(
     version,
     createdTimestamp: event.blockTimestamp,
     projectId,
+    createdBlock: event.blockNumber,
   });
 
   await deployment.save();
@@ -149,6 +156,7 @@ export async function handleUpdateQueryDeployment(
   project.currentDeployment = deploymentId;
   project.currentVersion = version;
   project.updatedTimestamp = event.blockTimestamp;
+  project.lastEvent = `handleUpdateQueryDeployment:${event.blockNumber}`;
 
   await project.save();
 }
@@ -165,6 +173,7 @@ export async function handleStartIndexing(
     deploymentId: deploymentId,
     blockHeight: BigInt(0),
     status: Status.INDEXING,
+    createdBlock: event.blockNumber,
   });
   await indexer.save();
 }
@@ -190,11 +199,14 @@ export async function handleIndexingUpdate(
       mmrRoot: event.args.mmrRoot,
       timestamp: event.blockTimestamp,
       status: Status.READY,
+      lastEvent: `handleIndexingUpdate:forceUpsert:${event.blockNumber}`,
     });
   } else {
     indexer.blockHeight = event.args.blockheight.toBigInt();
     indexer.mmrRoot = event.args.mmrRoot;
     indexer.timestamp = bnToDate(event.args.timestamp);
+    indexer.lastEvent = `handleIndexingUpdate:${event.blockNumber}`;
+
     await indexer.save();
   }
 }
@@ -218,10 +230,13 @@ export async function handleIndexingReady(
       deploymentId,
       timestamp: event.blockTimestamp,
       status: Status.READY,
+      lastEvent: `handleIndexingReady:forceUpsert:${event.blockNumber}`,
     });
   } else {
     indexer.status = Status.READY;
     indexer.timestamp = event.blockTimestamp;
+    indexer.lastEvent = `handleIndexingReady:${event.blockNumber}`;
+
     await indexer.save();
   }
 }
@@ -237,6 +252,8 @@ export async function handleStopIndexing(
 
   assert(indexer, `Expected deployment indexer (${id}) to exist`);
   indexer.status = Status.TERMINATED;
+  indexer.lastEvent = `handleStopIndexing:${event.blockNumber}`;
+
   await indexer.save();
 
   // TODO remove indexer instead?

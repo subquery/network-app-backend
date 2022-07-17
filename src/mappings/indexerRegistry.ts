@@ -26,6 +26,7 @@ export async function handleRegisterIndexer(
   if (indexer) {
     indexer.metadata = bytesToIpfsCid(metadata);
     indexer.active = true;
+    indexer.lastEvent = `handleRegisterIndexer:${event.blockNumber}`;
     await indexer.save();
   }
 
@@ -44,6 +45,7 @@ export async function handleUnregisterIndexer(
   assert(indexer, `Expected indexer to exist: ${event.args.indexer}`);
 
   indexer.active = false;
+  indexer.lastEvent = `handleUnregisterIndexer:${event.blockNumber}`;
   await indexer.save();
 }
 
@@ -58,6 +60,7 @@ export async function handleUpdateIndexerMetadata(
   assert(indexer, `Expected indexer (${address}) to exist`);
 
   indexer.metadata = bytesToIpfsCid(event.args.metadata);
+  indexer.lastEvent = `handleUpdateIndexerMetadata:${event.blockNumber}`;
   await indexer.save();
 }
 
@@ -72,6 +75,7 @@ export async function handleSetControllerAccount(
   assert(indexer, `Expected indexer (${address}) to exist`);
 
   indexer.controller = event.args.controller;
+  indexer.lastEvent = `handleSetControllerAccount:${event.blockNumber}`;
 
   await indexer.save();
 }
@@ -87,6 +91,7 @@ export async function handleRemoveControllerAccount(
   assert(indexer, `Expected indexer (${address}) to exist`);
 
   delete indexer.controller;
+  indexer.lastEvent = `handleRemoveControllerAccount:${event.blockNumber}`;
 
   await indexer.save();
 }

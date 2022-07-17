@@ -38,6 +38,7 @@ export async function handleServiceAgreementCreated(
     value: value.toBigInt(),
     startTime: event.blockTimestamp,
     endTime,
+    createdBlock: event.blockNumber,
   });
 
   await sa.save();
