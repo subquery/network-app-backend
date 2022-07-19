@@ -11,7 +11,46 @@ import {
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
 import { Indexer } from '../types';
-import { bytesToIpfsCid } from './utils';
+import { bytesToIpfsCid, reportException } from './utils';
+
+interface CreateIndexerProps {
+  address: string;
+  metadata?: string;
+  active?: boolean;
+  createdBlock?: number;
+  lastEvent?: string;
+  controller?: string;
+}
+
+async function createIndexer({
+  address,
+  metadata = '',
+  active = true,
+  createdBlock,
+  lastEvent,
+  controller,
+}: CreateIndexerProps) {
+  const indexer = Indexer.create({
+    id: address,
+    metadata: metadata,
+    totalStake: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    commission: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    active: active,
+    controller,
+    createdBlock,
+    lastEvent,
+  });
+
+  await indexer.save();
+}
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -42,11 +81,30 @@ export async function handleUnregisterIndexer(
   assert(event.args, 'No event args');
 
   const indexer = await Indexer.get(event.args.indexer);
-  assert(indexer, `Expected indexer to exist: ${event.args.indexer}`);
+  const lastEvent = `handleUnregisterIndexer:${event.blockNumber}`;
 
-  indexer.active = false;
-  indexer.lastEvent = `handleUnregisterIndexer:${event.blockNumber}`;
-  await indexer.save();
+  if (indexer) {
+    indexer.active = false;
+    indexer.lastEvent = lastEvent;
+    await indexer.save();
+  } else {
+    logger.error(
+      `HandleUnregisterIndexer: Expected indexer to exist: ${event.args.indexer}`
+    );
+    await createIndexer({
+      address: event.args.indexer,
+      active: false,
+      lastEvent,
+      createdBlock: event.blockNumber,
+    });
+
+    await reportException(
+      'HandleUnregisterIndexer',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${event.args.indexer}`
+    );
+  }
 }
 
 export async function handleUpdateIndexerMetadata(
@@ -57,11 +115,30 @@ export async function handleUpdateIndexerMetadata(
   const address = event.args.indexer;
 
   const indexer = await Indexer.get(address);
-  assert(indexer, `Expected indexer (${address}) to exist`);
+  const lastEvent = `handleUpdateIndexerMetadata: ${event.blockNumber}`;
 
-  indexer.metadata = bytesToIpfsCid(event.args.metadata);
-  indexer.lastEvent = `handleUpdateIndexerMetadata:${event.blockNumber}`;
-  await indexer.save();
+  if (indexer) {
+    indexer.metadata = bytesToIpfsCid(event.args.metadata);
+    indexer.lastEvent = lastEvent;
+    await indexer.save();
+  } else {
+    logger.error(
+      `HandleUpdateIndexerMetadata: Expected indexer to exist: ${event.args.indexer}`
+    );
+    await createIndexer({
+      address: event.args.indexer,
+      metadata: bytesToIpfsCid(event.args.metadata),
+      lastEvent,
+      createdBlock: event.blockNumber,
+    });
+
+    await reportException(
+      'HandleUpdateIndexerMetadata',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${event.args.indexer}`
+    );
+  }
 }
 
 export async function handleSetControllerAccount(
@@ -72,12 +149,30 @@ export async function handleSetControllerAccount(
   const address = event.args.indexer;
 
   const indexer = await Indexer.get(address);
-  assert(indexer, `Expected indexer (${address}) to exist`);
+  const lastEvent = `handleSetControllerAccount:${event.blockNumber}`;
 
-  indexer.controller = event.args.controller;
-  indexer.lastEvent = `handleSetControllerAccount:${event.blockNumber}`;
+  if (indexer) {
+    indexer.controller = event.args.controller;
+    indexer.lastEvent = lastEvent;
+    await indexer.save();
+  } else {
+    logger.error(
+      `HandleSetControllerAccount: Expected indexer to exist: ${event.args.indexer}`
+    );
+    await createIndexer({
+      address: event.args.indexer,
+      controller: event.args.controller,
+      lastEvent,
+      createdBlock: event.blockNumber,
+    });
 
-  await indexer.save();
+    await reportException(
+      'HandleSetControllerAccount',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${event.args.indexer}`
+    );
+  }
 }
 
 export async function handleRemoveControllerAccount(
@@ -88,10 +183,28 @@ export async function handleRemoveControllerAccount(
   const address = event.args.indexer;
 
   const indexer = await Indexer.get(address);
-  assert(indexer, `Expected indexer (${address}) to exist`);
+  const lastEvent = `handleRemoveControllerAccount:${event.blockNumber}`;
 
-  delete indexer.controller;
-  indexer.lastEvent = `handleRemoveControllerAccount:${event.blockNumber}`;
+  if (indexer) {
+    delete indexer.controller;
+    indexer.lastEvent = lastEvent;
 
-  await indexer.save();
+    await indexer.save();
+  } else {
+    logger.error(
+      `HandleRemoveControllerAccount: Expected indexer to exist: ${event.args.indexer}`
+    );
+    await createIndexer({
+      address: event.args.indexer,
+      lastEvent,
+      createdBlock: event.blockNumber,
+    });
+
+    await reportException(
+      'HandleRemoveControllerAccount',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${event.args.indexer}`
+    );
+  }
 }
