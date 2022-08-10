@@ -226,7 +226,7 @@ type AcceptedOffer @entity {
   id: ID! # offerID:indexer
   indexer: Indexer!
   offer: Offer!
-  serviceAgreement: ServiceAgreement
+  serviceAgreement: ServiceAgreement!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber

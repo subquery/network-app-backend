@@ -265,4 +265,4 @@ dataSources:
           kind: substrate/AcalaEvmEvent
           filter:
             topics:
-              - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreement)
+              - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreementId)
