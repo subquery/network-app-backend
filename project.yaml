@@ -217,7 +217,7 @@ dataSources:
           kind: substrate/AcalaEvmEvent
           filter:
             topics:
-              - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, address serviceAgreement)
+              - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
   - <<: *frontier
     processor:
       <<: *frontier-processor

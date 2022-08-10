@@ -15,8 +15,10 @@ export async function handleServiceAgreementCreated(
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
 
+  const eventServiceAgreementId = event.args.serviceAgreementId.toString();
+
   const saContract = IServiceAgreement__factory.connect(
-    event.args.serviceAgreement,
+    eventServiceAgreementId,
     new FrontierEthProvider()
   );
 
@@ -30,7 +32,7 @@ export async function handleServiceAgreementCreated(
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
   const sa = ServiceAgreement.create({
-    id: event.args.serviceAgreement,
+    id: eventServiceAgreementId,
     indexerAddress: event.args.indexer,
     consumerAddress: event.args.consumer,
     deploymentId: bytesToIpfsCid(event.args.deploymentId),
