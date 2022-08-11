@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { CreateIndexerProps } from '../customTypes';
+import { CreateIndexerParams } from '../customTypes';
 import { Indexer } from '../types';
 import { bytesToIpfsCid, reportException } from './utils';
 
@@ -21,7 +21,7 @@ async function createIndexer({
   createdBlock,
   lastEvent,
   controller,
-}: CreateIndexerProps) {
+}: CreateIndexerParams) {
   const indexer = Indexer.create({
     id: address,
     metadata: metadata,

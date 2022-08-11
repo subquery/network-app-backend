@@ -5,7 +5,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import { Status } from './types';
 
-export interface WithdrawlParams {
+export interface CreateWithdrawlParams {
   id: string;
   delegator: string;
   indexer: string;
@@ -15,7 +15,7 @@ export interface WithdrawlParams {
   event: AcalaEvmEvent;
 }
 
-export interface CreateIndexerProps {
+export interface CreateIndexerParams {
   address: string;
   metadata?: string;
   active?: boolean;

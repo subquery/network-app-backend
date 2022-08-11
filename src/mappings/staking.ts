@@ -23,7 +23,7 @@ import {
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { WithdrawlParams } from '../customTypes';
+import { CreateWithdrawlParams } from '../customTypes';
 
 function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
@@ -41,7 +41,7 @@ async function createWithdrawl({
   amount,
   claimed,
   event,
-}: WithdrawlParams): Promise<void> {
+}: CreateWithdrawlParams): Promise<void> {
   const withdrawl = Withdrawl.create({
     id,
     delegator: delegator,
