@@ -12,7 +12,7 @@ import {
   SetCommissionRateEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer } from '../types';
+import { Delegation, Withdrawl, Indexer, WithdrawalStatus } from '../types';
 import FrontierEthProvider from './ethProvider';
 import {
   ERA_MANAGER_ADDRESS,
@@ -24,6 +24,8 @@ import {
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import { CreateWithdrawlParams } from '../interfaces';
+
+const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
 function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
@@ -39,7 +41,7 @@ async function createWithdrawl({
   indexer,
   index,
   amount,
-  claimed,
+  status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
   const withdrawl = Withdrawl.create({
@@ -49,7 +51,7 @@ async function createWithdrawl({
     index: index.toBigInt(),
     startTime: event.blockTimestamp,
     amount: amount.toBigInt(),
-    claimed,
+    status,
     createdBlock: event.blockNumber,
   });
 
@@ -166,7 +168,7 @@ export async function handleWithdrawRequested(
     indexer,
     index,
     amount,
-    claimed: false,
+    status: ONGOING,
     event,
   });
 }
@@ -190,7 +192,7 @@ export async function handleWithdrawClaimed(
   const withdrawl = await Withdrawl.get(id);
 
   if (withdrawl) {
-    withdrawl.claimed = true;
+    withdrawl.status = CLAIMED;
     withdrawl.lastEvent = `handleWithdrawClaimed:${event.blockNumber}`;
 
     await withdrawl.save();
@@ -201,7 +203,7 @@ export async function handleWithdrawClaimed(
       indexer: '-',
       index,
       amount,
-      claimed: true,
+      status: CLAIMED,
       event,
     });
 
@@ -227,6 +229,7 @@ export async function handleWithdrawCancelled(
   const withdrawl = await Withdrawl.get(id);
 
   if (withdrawl) {
+    withdrawl.status = CANCELLED;
     withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
     await withdrawl.save();
   } else {
@@ -236,7 +239,7 @@ export async function handleWithdrawCancelled(
       indexer,
       index,
       amount,
-      claimed: false,
+      status: CANCELLED,
       event,
     });
 

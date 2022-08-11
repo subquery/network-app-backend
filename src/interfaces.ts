@@ -3,7 +3,7 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { Status } from './types';
+import { Status, WithdrawalStatus } from './types';
 
 export interface CreateWithdrawlParams {
   id: string;
@@ -11,7 +11,7 @@ export interface CreateWithdrawlParams {
   indexer: string;
   index: BigNumber;
   amount: BigNumber;
-  claimed: boolean;
+  status: WithdrawalStatus;
   event: AcalaEvmEvent;
 }
 
