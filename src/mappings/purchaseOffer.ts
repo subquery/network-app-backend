@@ -59,6 +59,8 @@ export async function handlePurchaseOfferAccepted(
   assert(event.args, 'No event args');
 
   const eventOfferId = event.args.offerId.toString();
+  const eventAgreementId = event.args.agreementId.toString();
+
   const offer = await Offer.get(eventOfferId);
   assert(offer, `offer not found. offerID="${eventOfferId}"`);
 
@@ -75,7 +77,7 @@ export async function handlePurchaseOfferAccepted(
         id: `${eventOfferId}:${event.args.indexer}`,
         indexerId: event.args.indexer,
         offerId: eventOfferId,
-        serviceAgreementId: event.args.agreement,
+        serviceAgreementId: eventAgreementId,
         createdBlock: event.blockNumber,
       });
 

@@ -153,13 +153,14 @@ type ServiceAgreement @entity {
   id: ID! # contract address
   indexerAddress: String!
   consumerAddress: String!
-
   deployment: Deployment!
+  plan: Plan!
+  planTemplate: PlanTemplate!
+
   period: BigInt!
   startTime: Date!
   endTime: Date!
-
-  value: BigInt!
+  lockedAmount: BigInt!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -226,7 +227,7 @@ type AcceptedOffer @entity {
   id: ID! # offerID:indexer
   indexer: Indexer!
   offer: Offer!
-  serviceAgreement: ServiceAgreement
+  serviceAgreement: ServiceAgreement!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
