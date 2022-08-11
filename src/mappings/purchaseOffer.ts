@@ -8,7 +8,7 @@ import {
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { Offer, AcceptedOffer, ServiceAgreement } from '../types';
+import { Offer, AcceptedOffer } from '../types';
 import { bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
