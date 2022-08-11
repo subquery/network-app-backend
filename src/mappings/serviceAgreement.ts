@@ -5,7 +5,7 @@ import assert from 'assert';
 import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { ServiceAgreement } from '../types';
 import { bytesToIpfsCid } from './utils';
-import { IServiceAgreement__factory } from '@subql/contract-sdk';
+import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import FrontierEthProvider from './ethProvider';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 
@@ -15,31 +15,32 @@ export async function handleServiceAgreementCreated(
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
 
-  const eventServiceAgreementId = event.args.serviceAgreementId.toString();
+  const eventServiceAgreementId = event.args.serviceAgreementId;
 
-  const saContract = IServiceAgreement__factory.connect(
-    eventServiceAgreementId,
+  const agreementRegistry = IServiceAgreementRegistry__factory.connect(
+    eventServiceAgreementId.toString(),
     new FrontierEthProvider()
   );
 
-  const [period, value] = await Promise.all([
-    saContract.period(),
-    saContract.value(),
-  ]);
+  const agreement = await agreementRegistry.getClosedServiceAgreement(
+    eventServiceAgreementId
+  );
+  const { period, lockedAmount, planId, planTemplateId } = agreement;
 
   const endTime = new Date(event.blockTimestamp);
-
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
   const sa = ServiceAgreement.create({
-    id: eventServiceAgreementId,
+    id: eventServiceAgreementId.toString(),
     indexerAddress: event.args.indexer,
     consumerAddress: event.args.consumer,
     deploymentId: bytesToIpfsCid(event.args.deploymentId),
+    planId: planId.toHexString(),
+    planTemplateId: planTemplateId.toHexString(),
     period: period.toBigInt(),
-    value: value.toBigInt(),
     startTime: event.blockTimestamp,
     endTime,
+    lockedAmount: lockedAmount.toBigInt(),
     createdBlock: event.blockNumber,
   });
 

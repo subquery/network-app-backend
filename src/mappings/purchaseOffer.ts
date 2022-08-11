@@ -64,12 +64,6 @@ export async function handlePurchaseOfferAccepted(
   const offer = await Offer.get(eventOfferId);
   assert(offer, `offer not found. offerID="${eventOfferId}"`);
 
-  const serviceAgreement = await ServiceAgreement.get(eventAgreementId);
-  assert(
-    serviceAgreement,
-    `service agreement not found. aggreementId="${eventAgreementId}"`
-  );
-
   try {
     if (offer.accepted < offer.limit) {
       const acceptedAmount = offer.accepted + 1;
