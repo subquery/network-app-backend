@@ -138,8 +138,6 @@ export async function handleRemoveDelegation(
   // Entity has already been removed when indexer unregisters
   if (!delegation) return;
 
-  // assert(delegation, `Expected delegation (${id}) to exist`);
-
   delegation.amount = await upsertEraValue(
     eraManager,
     delegation.amount,
@@ -291,8 +289,6 @@ export async function handleSetCommissionRate(
 
     indexer;
   }
-
-  // assert(indexer, `Expected indexer (${address}) to exist`);
 
   indexer.commission = await upsertEraValue(
     eraManager,
