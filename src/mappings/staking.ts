@@ -12,7 +12,7 @@ import {
   SetCommissionRateEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer, Exception } from '../types';
+import { Delegation, Withdrawl, Indexer } from '../types';
 import FrontierEthProvider from './ethProvider';
 import {
   ERA_MANAGER_ADDRESS,
@@ -20,6 +20,7 @@ import {
   upsertEraValue,
   updateTotalDelegation,
   reportException,
+  upsertWithdrawlEntity,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
@@ -136,18 +137,15 @@ export async function handleWithdrawRequested(
   const { source, indexer, index, amount } = event.args;
   const id = getWithdrawlId(source, index);
 
-  const withdrawl = Withdrawl.create({
+  await upsertWithdrawlEntity({
     id,
     delegator: source,
     indexer,
-    index: index.toBigInt(),
-    startTime: event.blockTimestamp,
-    amount: amount.toBigInt(),
+    index,
+    amount,
     claimed: false,
-    createdBlock: event.blockNumber,
+    event,
   });
-
-  await withdrawl.save();
 }
 
 /**
@@ -174,18 +172,15 @@ export async function handleWithdrawClaimed(
 
     await withdrawl.save();
   } else {
-    const withdrawl = Withdrawl.create({
+    await upsertWithdrawlEntity({
       id,
       delegator: source,
       indexer: '-',
-      index: index.toBigInt(),
-      startTime: event.blockTimestamp,
-      amount: amount.toBigInt(),
+      index,
+      amount,
       claimed: true,
-      createdBlock: event.blockNumber,
+      event,
     });
-
-    await withdrawl.save();
 
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
@@ -202,7 +197,7 @@ export async function handleWithdrawClaimed(
 }
 
 export async function handleWithdrawCancelled(
-  event: AcalaEvmEvent<any> //FIXME: fix when types avaliable
+  event: AcalaEvmEvent<UnbondCancelledEvent['args']>
 ): Promise<void> {
   const { source, indexer, amount, index } = event.args;
   const id = getWithdrawlId(source, index);
@@ -212,20 +207,15 @@ export async function handleWithdrawCancelled(
     withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
     await withdrawl.save();
   } else {
-    const withdrawl = Withdrawl.create({
+    await upsertWithdrawlEntity({
       id,
       delegator: source,
-      indexer: indexer,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      index: index.toBigInt(),
-      startTime: event.blockTimestamp,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      amount: amount.toBigInt(),
+      indexer,
+      index,
+      amount,
       claimed: false,
-      createdBlock: event.blockNumber,
+      event,
     });
-
-    await withdrawl.save();
 
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(

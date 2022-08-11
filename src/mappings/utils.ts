@@ -6,7 +6,15 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { EraManager } from '@subql/contract-sdk';
 import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
-import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
+import {
+  Delegator,
+  Indexer,
+  EraValue,
+  JSONBigInt,
+  Exception,
+  Withdrawl,
+} from '../types';
+import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -14,6 +22,16 @@ export const PLAN_MANAGER_ADDRESS = testnetAddresses.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   testnetAddresses.ServiceAgreementRegistry.address;
 export const REWARD_DIST_ADDRESS = testnetAddresses.RewardsDistributer.address;
+
+interface WithdrawlParams {
+  id: string;
+  delegator: string;
+  indexer: string;
+  index: BigNumber;
+  amount: BigNumber;
+  claimed: boolean;
+  event: AcalaEvmEvent;
+}
 
 declare global {
   interface BigIntConstructor {
@@ -67,6 +85,29 @@ export const operations: Record<string, (a: bigint, b: bigint) => bigint> = {
   sub: (a, b) => a - b,
   replace: (a, b) => b,
 };
+
+export async function upsertWithdrawlEntity({
+  id,
+  delegator,
+  indexer,
+  index,
+  amount,
+  claimed,
+  event,
+}: WithdrawlParams): Promise<void> {
+  const withdrawl = Withdrawl.create({
+    id,
+    delegator: delegator,
+    indexer: indexer,
+    index: index.toBigInt(),
+    startTime: event.blockTimestamp,
+    amount: amount.toBigInt(),
+    claimed,
+    createdBlock: event.blockNumber,
+  });
+
+  await withdrawl.save();
+}
 
 export async function upsertEraValue(
   eraManager: EraManager,
