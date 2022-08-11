@@ -4,7 +4,7 @@
 import assert from 'assert';
 import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { ServiceAgreement } from '../types';
-import { bytesToIpfsCid } from './utils';
+import { bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import FrontierEthProvider from './ethProvider';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
@@ -15,10 +15,10 @@ export async function handleServiceAgreementCreated(
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
 
-  const eventServiceAgreementId = event.args.serviceAgreementId;
+  const eventServiceAgreementId = event.args.serviceAgreementId.toString();
 
   const agreementRegistry = IServiceAgreementRegistry__factory.connect(
-    eventServiceAgreementId.toString(),
+    SA_REGISTRY_ADDRESS,
     new FrontierEthProvider()
   );
 
