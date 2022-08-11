@@ -15,7 +15,7 @@ export async function handleServiceAgreementCreated(
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
 
-  const eventServiceAgreementId = event.args.serviceAgreementId.toString();
+  const eventServiceAgreementId = event.args.serviceAgreementId;
 
   const agreementRegistry = IServiceAgreementRegistry__factory.connect(
     SA_REGISTRY_ADDRESS,
