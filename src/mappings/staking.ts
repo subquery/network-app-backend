@@ -1,6 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { EraManager__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
@@ -192,6 +194,46 @@ export async function handleWithdrawClaimed(
 
     await reportException(
       'handleWithdrawClaimed',
+      event.logIndex,
+      event.blockNumber,
+      exception
+    );
+  }
+}
+
+export async function handleWithdrawCancelled(
+  event: AcalaEvmEvent<any> //FIXME: fix when types avaliable
+): Promise<void> {
+  const { source, indexer, amount, index } = event.args;
+  const id = getWithdrawlId(source, index);
+  const withdrawl = await Withdrawl.get(id);
+
+  if (withdrawl) {
+    withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
+    await withdrawl.save();
+  } else {
+    const withdrawl = Withdrawl.create({
+      id,
+      delegator: source,
+      indexer: indexer,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      index: index.toBigInt(),
+      startTime: event.blockTimestamp,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      amount: amount.toBigInt(),
+      claimed: false,
+      createdBlock: event.blockNumber,
+    });
+
+    await withdrawl.save();
+
+    logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
+    const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
+      event
+    )}`;
+
+    await reportException(
+      'handleWithdrawCancelled',
       event.logIndex,
       event.blockNumber,
       exception

@@ -121,6 +121,11 @@ dataSources:
           filter:
             topics:
               - UnbondWithdrawn(address indexed source, uint256 amount, uint256 index)
+        - handler: handleWithdrawCancelled
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
         - handler: handleSetCommissionRate
           kind: substrate/AcalaEvmEvent
           filter:
