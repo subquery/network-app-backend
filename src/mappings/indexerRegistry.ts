@@ -10,17 +10,9 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
+import { CreateIndexerProps } from '../customTypes';
 import { Indexer } from '../types';
 import { bytesToIpfsCid, reportException } from './utils';
-
-interface CreateIndexerProps {
-  address: string;
-  metadata?: string;
-  active?: boolean;
-  createdBlock?: number;
-  lastEvent?: string;
-  controller?: string;
-}
 
 async function createIndexer({
   address,

@@ -20,10 +20,10 @@ import {
   upsertEraValue,
   updateTotalDelegation,
   reportException,
-  upsertWithdrawlEntity,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { WithdrawlParams } from '../customTypes';
 
 function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
@@ -31,6 +31,29 @@ function getDelegationId(delegator: string, indexer: string): string {
 
 function getWithdrawlId(delegator: string, index: BigNumber): string {
   return `${delegator}:${index.toHexString()}`;
+}
+
+async function createWithdrawl({
+  id,
+  delegator,
+  indexer,
+  index,
+  amount,
+  claimed,
+  event,
+}: WithdrawlParams): Promise<void> {
+  const withdrawl = Withdrawl.create({
+    id,
+    delegator: delegator,
+    indexer: indexer,
+    index: index.toBigInt(),
+    startTime: event.blockTimestamp,
+    amount: amount.toBigInt(),
+    claimed,
+    createdBlock: event.blockNumber,
+  });
+
+  await withdrawl.save();
 }
 
 export async function handleAddDelegation(
@@ -137,7 +160,7 @@ export async function handleWithdrawRequested(
   const { source, indexer, index, amount } = event.args;
   const id = getWithdrawlId(source, index);
 
-  await upsertWithdrawlEntity({
+  await createWithdrawl({
     id,
     delegator: source,
     indexer,
@@ -172,7 +195,7 @@ export async function handleWithdrawClaimed(
 
     await withdrawl.save();
   } else {
-    await upsertWithdrawlEntity({
+    await createWithdrawl({
       id,
       delegator: source,
       indexer: '-',
@@ -207,7 +230,7 @@ export async function handleWithdrawCancelled(
     withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
     await withdrawl.save();
   } else {
-    await upsertWithdrawlEntity({
+    await createWithdrawl({
       id,
       delegator: source,
       indexer,

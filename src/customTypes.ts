@@ -3,6 +3,7 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { Status } from './types';
 
 export interface WithdrawlParams {
   id: string;
@@ -12,4 +13,23 @@ export interface WithdrawlParams {
   amount: BigNumber;
   claimed: boolean;
   event: AcalaEvmEvent;
+}
+
+export interface CreateIndexerProps {
+  address: string;
+  metadata?: string;
+  active?: boolean;
+  createdBlock?: number;
+  lastEvent?: string;
+  controller?: string;
+}
+
+export interface ISaveDeploymentIndexer {
+  indexerId: string;
+  deploymentId: string;
+  blockHeight?: bigint;
+  timestamp?: Date;
+  mmrRoot?: string;
+  status: Status;
+  lastEvent?: string;
 }
