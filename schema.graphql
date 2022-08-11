@@ -4,6 +4,12 @@ enum Status {
   TERMINATED
 }
 
+enum WithdrawalStatus {
+  ONGOING
+  CLAIMED
+  CANCELLED
+}
+
 type Project @entity {
   id: ID!
 
@@ -118,7 +124,7 @@ type Withdrawl @entity {
   startTime: Date!
   amount: BigInt!
 
-  claimed: Boolean!
+  status: WithdrawalStatus!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
