@@ -21,7 +21,7 @@ import {
 } from './utils';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 import FrontierEthProvider from './ethProvider';
-import { ISaveDeploymentIndexer } from '../customTypes';
+import { ISaveDeploymentIndexer } from '../interfaces';
 
 function getDeploymentIndexerId(indexer: string, deploymentId: string): string {
   return `${indexer}:${deploymentId}`;

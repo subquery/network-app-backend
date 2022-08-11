@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { CreateIndexerParams } from '../customTypes';
+import { CreateIndexerParams } from '../interfaces';
 import { Indexer } from '../types';
 import { bytesToIpfsCid, reportException } from './utils';
 

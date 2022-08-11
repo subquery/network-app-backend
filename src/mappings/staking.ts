@@ -23,7 +23,7 @@ import {
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
-import { CreateWithdrawlParams } from '../customTypes';
+import { CreateWithdrawlParams } from '../interfaces';
 
 function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
