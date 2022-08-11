@@ -14,7 +14,7 @@ import {
   Exception,
   Withdrawl,
 } from '../types';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { WithdrawlParams } from '../customTypes';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -22,16 +22,6 @@ export const PLAN_MANAGER_ADDRESS = testnetAddresses.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   testnetAddresses.ServiceAgreementRegistry.address;
 export const REWARD_DIST_ADDRESS = testnetAddresses.RewardsDistributer.address;
-
-interface WithdrawlParams {
-  id: string;
-  delegator: string;
-  indexer: string;
-  index: BigNumber;
-  amount: BigNumber;
-  claimed: boolean;
-  event: AcalaEvmEvent;
-}
 
 declare global {
   interface BigIntConstructor {
