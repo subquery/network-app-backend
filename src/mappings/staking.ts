@@ -10,7 +10,7 @@ import {
   SetCommissionRateEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer, Exception } from '../types';
+import { Delegation, Withdrawl, Indexer } from '../types';
 import FrontierEthProvider from './ethProvider';
 import {
   ERA_MANAGER_ADDRESS,
@@ -21,6 +21,7 @@ import {
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { createIndexer } from './utils';
 
 function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
@@ -211,30 +212,17 @@ export async function handleSetCommissionRate(
     new FrontierEthProvider()
   );
 
+  const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);
 
   if (!indexer) {
-    indexer = Indexer.create({
-      id: address,
-      metadata: '',
-      totalStake: {
-        era: -1,
-        value: BigInt(0).toJSONType(),
-        valueAfter: BigInt(0).toJSONType(),
-      },
-      commission: {
-        era: -1,
-        value: BigInt(0).toJSONType(),
-        valueAfter: BigInt(0).toJSONType(),
-      },
-      active: true,
+    indexer = await createIndexer({
+      address,
+      active: false,
+      lastEvent,
       createdBlock: event.blockNumber,
     });
-
-    indexer;
   }
-
-  // assert(indexer, `Expected indexer (${address}) to exist`);
 
   indexer.commission = await upsertEraValue(
     eraManager,

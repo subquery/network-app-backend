@@ -7,6 +7,7 @@ import { EraManager } from '@subql/contract-sdk';
 import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
+import { CreateIndexerParams } from '../interfaces';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -113,6 +114,37 @@ export async function upsertEraValue(
   };
 }
 
+export async function createIndexer({
+  address,
+  metadata = '',
+  active = true,
+  createdBlock,
+  lastEvent,
+  controller,
+}: CreateIndexerParams): Promise<Indexer> {
+  const indexer = Indexer.create({
+    id: address,
+    metadata: metadata,
+    totalStake: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    commission: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    active,
+    controller,
+    createdBlock,
+    lastEvent,
+  });
+
+  await indexer.save();
+  return indexer;
+}
+
 export async function updateTotalStake(
   eraManager: EraManager,
   indexerAddress: string,
@@ -120,36 +152,17 @@ export async function updateTotalStake(
   operation: keyof typeof operations,
   applyInstantly?: boolean
 ): Promise<void> {
-  let indexer = await Indexer.get(indexerAddress);
+  const indexer = await Indexer.get(indexerAddress);
 
-  if (!indexer) {
-    indexer = Indexer.create({
-      id: indexerAddress,
-      totalStake: await upsertEraValue(
-        eraManager,
-        undefined,
-        amount,
-        operation,
-        applyInstantly
-      ),
-      commission: await upsertEraValue(
-        eraManager,
-        undefined,
-        BigInt(0),
-        operation,
-        applyInstantly
-      ),
-      active: true,
-    });
-  } else {
-    indexer.totalStake = await upsertEraValue(
-      eraManager,
-      indexer.totalStake,
-      amount,
-      operation,
-      applyInstantly
-    );
-  }
+  if (!indexer) return;
+
+  indexer.totalStake = await upsertEraValue(
+    eraManager,
+    indexer.totalStake,
+    amount,
+    operation,
+    applyInstantly
+  );
 
   await indexer.save();
 }

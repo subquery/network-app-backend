@@ -11,46 +11,7 @@ import {
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
 import { Indexer } from '../types';
-import { bytesToIpfsCid, reportException } from './utils';
-
-interface CreateIndexerProps {
-  address: string;
-  metadata?: string;
-  active?: boolean;
-  createdBlock?: number;
-  lastEvent?: string;
-  controller?: string;
-}
-
-async function createIndexer({
-  address,
-  metadata = '',
-  active = true,
-  createdBlock,
-  lastEvent,
-  controller,
-}: CreateIndexerProps) {
-  const indexer = Indexer.create({
-    id: address,
-    metadata: metadata,
-    totalStake: {
-      era: -1,
-      value: BigInt(0).toJSONType(),
-      valueAfter: BigInt(0).toJSONType(),
-    },
-    commission: {
-      era: -1,
-      value: BigInt(0).toJSONType(),
-      valueAfter: BigInt(0).toJSONType(),
-    },
-    active: active,
-    controller,
-    createdBlock,
-    lastEvent,
-  });
-
-  await indexer.save();
-}
+import { bytesToIpfsCid, createIndexer, reportException } from './utils';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -67,6 +28,13 @@ export async function handleRegisterIndexer(
     indexer.active = true;
     indexer.lastEvent = `handleRegisterIndexer:${event.blockNumber}`;
     await indexer.save();
+  } else {
+    await createIndexer({
+      address: indexerAddress,
+      metadata: metadata,
+      createdBlock: event.blockNumber,
+      lastEvent: `handleRegisterIndexer:${event.blockNumber}`,
+    });
   }
 
   /* WARNING, other events are emitted before this handler (AddDelegation, SetCommissionRate),
@@ -91,12 +59,6 @@ export async function handleUnregisterIndexer(
     logger.error(
       `HandleUnregisterIndexer: Expected indexer to exist: ${event.args.indexer}`
     );
-    await createIndexer({
-      address: event.args.indexer,
-      active: false,
-      lastEvent,
-      createdBlock: event.blockNumber,
-    });
 
     await reportException(
       'HandleUnregisterIndexer',
@@ -125,12 +87,6 @@ export async function handleUpdateIndexerMetadata(
     logger.error(
       `HandleUpdateIndexerMetadata: Expected indexer to exist: ${event.args.indexer}`
     );
-    await createIndexer({
-      address: event.args.indexer,
-      metadata: bytesToIpfsCid(event.args.metadata),
-      lastEvent,
-      createdBlock: event.blockNumber,
-    });
 
     await reportException(
       'HandleUpdateIndexerMetadata',
@@ -159,12 +115,6 @@ export async function handleSetControllerAccount(
     logger.error(
       `HandleSetControllerAccount: Expected indexer to exist: ${event.args.indexer}`
     );
-    await createIndexer({
-      address: event.args.indexer,
-      controller: event.args.controller,
-      lastEvent,
-      createdBlock: event.blockNumber,
-    });
 
     await reportException(
       'HandleSetControllerAccount',
@@ -194,11 +144,6 @@ export async function handleRemoveControllerAccount(
     logger.error(
       `HandleRemoveControllerAccount: Expected indexer to exist: ${event.args.indexer}`
     );
-    await createIndexer({
-      address: event.args.indexer,
-      lastEvent,
-      createdBlock: event.blockNumber,
-    });
 
     await reportException(
       'HandleRemoveControllerAccount',
