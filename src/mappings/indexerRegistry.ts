@@ -10,8 +10,39 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
+import { CreateIndexerParams } from '../interfaces';
 import { Indexer } from '../types';
-import { bytesToIpfsCid, createIndexer, reportException } from './utils';
+import { bytesToIpfsCid, reportException } from './utils';
+
+async function createIndexer({
+  address,
+  metadata = '',
+  active = true,
+  createdBlock,
+  lastEvent,
+  controller,
+}: CreateIndexerParams) {
+  const indexer = Indexer.create({
+    id: address,
+    metadata: metadata,
+    totalStake: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    commission: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    active: active,
+    controller,
+    createdBlock,
+    lastEvent,
+  });
+
+  await indexer.save();
+}
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(

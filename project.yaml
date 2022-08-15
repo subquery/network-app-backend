@@ -49,7 +49,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0xbD9bb7981a069B39f2A9f61c3e8c700E84B257EE'
+        address: '0x7AE0FA3B24D6E9926e050e3e7d76d1b6cD2E88D2'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -63,7 +63,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x2608e875919453c3baA98121f1067Ba3954c373A'
+        address: '0x6cfA0433AfeB7D0b2B580a0e9f0D75B2d6aBe449'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -97,7 +97,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x529b57A3b0dFB3feFA55535783C1af153A4f16f9'
+        address: '0x149F71e87A7E4c7d2639F54A9152D41DcF8904a8'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -121,6 +121,11 @@ dataSources:
           filter:
             topics:
               - UnbondWithdrawn(address indexed source, uint256 amount, uint256 index)
+        - handler: handleWithdrawCancelled
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
         - handler: handleSetCommissionRate
           kind: substrate/AcalaEvmEvent
           filter:
@@ -131,7 +136,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0xB1BD8D58C5E74D0FD2C8432410A3603433F7c04B'
+        address: '0x5B5a9Cc889C1CBd1b2867C56908BEd38c5692d54'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -175,7 +180,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0x520A2F95aAfa0732F5E998EB910277f59DE789bC'
+        address: '0x89a010bdF6ebA79BFDd3eEe543e026CC5108e91d'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -209,7 +214,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0xe7EB14dE60C0fA847abA3ef48E5f3129F812333C'
+        address: '0x9351f39Bc4420d45671dc32Ac620a3687f9B66A6'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -217,13 +222,13 @@ dataSources:
           kind: substrate/AcalaEvmEvent
           filter:
             topics:
-              - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, address serviceAgreement)
+              - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
   - <<: *frontier
     processor:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0xf05c200B1d8608B748983084979e8F96e536DEaE'
+        address: '0xc61fAE279c91Af0B23827cba908afCbe25cCC577'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -247,7 +252,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x4851bE40De238Dd2978468c3Bd0f9D1c46180053'
+        address: '0x21071EF928b136cA724d5ef196e261BB70e44228'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -265,4 +270,4 @@ dataSources:
           kind: substrate/AcalaEvmEvent
           filter:
             topics:
-              - OfferAccepted(address indexed indexer, uint256 offerId, address agreement)
+              - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreementId)
