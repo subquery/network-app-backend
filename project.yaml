@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b' #mandala-tc7
-  endpoint: 'wss://mandala-tc7-rpcnode.aca-dev.network/ws'
+  endpoint: 'wss://acala-mandala.api.onfinality.io/public-ws'
   dictionary: 'https://api.subquery.network/sq/subquery/acala-mandala-tc7-dictionary'
 
   chaintypes:
