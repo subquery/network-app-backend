@@ -107,6 +107,7 @@ export async function handleAddDelegation(
       indexer,
       amountBn,
       'add',
+      event,
       indexer === source
     );
   } else {
@@ -116,7 +117,7 @@ export async function handleAddDelegation(
       amountBn
     );
 
-    await updateTotalStake(eraManager, indexer, amountBn, 'add');
+    await updateTotalStake(eraManager, indexer, amountBn, 'add', event);
   }
 
   await delegation.save();
@@ -148,7 +149,7 @@ export async function handleRemoveDelegation(
   );
 
   await updateTotalDelegation(eraManager, source, amount.toBigInt(), 'sub');
-  await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub');
+  await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub', event);
 
   await delegation.save();
 }
@@ -186,7 +187,7 @@ export async function handleWithdrawClaimed(
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
 
-  const { source, index, amount } = event.args;
+  const { source, index } = event.args;
   const id = getWithdrawlId(source, index);
 
   const withdrawl = await Withdrawl.get(id);
@@ -197,16 +198,6 @@ export async function handleWithdrawClaimed(
 
     await withdrawl.save();
   } else {
-    await createWithdrawl({
-      id,
-      delegator: source,
-      indexer: '-',
-      index,
-      amount,
-      status: CLAIMED,
-      event,
-    });
-
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
       event
@@ -227,7 +218,7 @@ export async function handleWithdrawCancelled(
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
 
-  const { source, indexer, amount, index } = event.args;
+  const { source, index } = event.args;
   const id = getWithdrawlId(source, index);
   const withdrawl = await Withdrawl.get(id);
 
@@ -236,16 +227,6 @@ export async function handleWithdrawCancelled(
     withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
     await withdrawl.save();
   } else {
-    await createWithdrawl({
-      id,
-      delegator: source,
-      indexer,
-      index,
-      amount,
-      status: CANCELLED,
-      event,
-    });
-
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
       event
@@ -278,7 +259,7 @@ export async function handleSetCommissionRate(
   if (!indexer) {
     indexer = await createIndexer({
       address,
-      active: false,
+      active: true,
       lastEvent,
       createdBlock: event.blockNumber,
     });

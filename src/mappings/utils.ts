@@ -8,6 +8,8 @@ import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
 import { CreateIndexerParams } from '../interfaces';
+import assert from 'assert';
+import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -150,21 +152,29 @@ export async function updateTotalStake(
   indexerAddress: string,
   amount: bigint,
   operation: keyof typeof operations,
+  event: AcalaEvmEvent,
   applyInstantly?: boolean
 ): Promise<void> {
   const indexer = await Indexer.get(indexerAddress);
 
-  if (!indexer) return;
+  if (indexer) {
+    indexer.totalStake = await upsertEraValue(
+      eraManager,
+      indexer.totalStake,
+      amount,
+      operation,
+      applyInstantly
+    );
 
-  indexer.totalStake = await upsertEraValue(
-    eraManager,
-    indexer.totalStake,
-    amount,
-    operation,
-    applyInstantly
-  );
-
-  await indexer.save();
+    await indexer.save();
+  } else {
+    await reportException(
+      'updateTotalStake',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${indexerAddress}`
+    );
+  }
 }
 
 export async function updateTotalDelegation(
@@ -216,4 +226,5 @@ export async function reportException(
   });
 
   await exception.save();
+  assert(false, id);
 }
