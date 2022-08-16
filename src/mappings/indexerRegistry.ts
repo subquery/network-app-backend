@@ -62,9 +62,8 @@ export async function handleUnregisterIndexer(
 
     await reportException(
       'HandleUnregisterIndexer',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      `Expected indexer to exist: ${event.args.indexer}`,
+      event
     );
   }
 }
@@ -90,9 +89,8 @@ export async function handleUpdateIndexerMetadata(
 
     await reportException(
       'HandleUpdateIndexerMetadata',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      `Expected indexer to exist: ${event.args.indexer}`,
+      event
     );
   }
 }
@@ -118,9 +116,8 @@ export async function handleSetControllerAccount(
 
     await reportException(
       'HandleSetControllerAccount',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      `Expected indexer to exist: ${event.args.indexer}`,
+      event
     );
   }
 }
@@ -147,9 +144,8 @@ export async function handleRemoveControllerAccount(
 
     await reportException(
       'HandleRemoveControllerAccount',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      `Expected indexer to exist: ${event.args.indexer}`,
+      event
     );
   }
 }
