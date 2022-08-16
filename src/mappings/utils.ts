@@ -147,6 +147,20 @@ export async function createIndexer({
   return indexer;
 }
 
+export async function reportIndexerNonExistException(
+  handler: string,
+  indexerAddress: string,
+  event: AcalaEvmEvent<any>
+): Promise<void> {
+  logger.error(`${handler}: Expected indexer to exist: ${indexerAddress}`);
+
+  return reportException(
+    handler,
+    `Expected indexer to exist: ${indexerAddress}`,
+    event
+  );
+}
+
 export async function updateTotalStake(
   eraManager: EraManager,
   indexerAddress: string,
@@ -168,11 +182,10 @@ export async function updateTotalStake(
 
     await indexer.save();
   } else {
-    await reportException(
+    await reportIndexerNonExistException(
       'updateTotalStake',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${indexerAddress}`
+      indexerAddress,
+      event
     );
   }
 }
@@ -212,19 +225,18 @@ export async function updateTotalDelegation(
 
 export async function reportException(
   handler: string,
-  eventLogIdx: number,
-  eventBlock: number,
-  error: string
+  error: string,
+  event: AcalaEvmEvent<any>
 ): Promise<void> {
-  const id = `${handler}:${eventBlock}:${eventLogIdx}`;
+  const id = `${event.blockNumber}:${event.transactionHash}`;
 
   const exception = Exception.create({
     id,
     error: error || `Error: ${id}`,
     handler,
-    createBlock: eventBlock,
   });
 
   await exception.save();
-  assert(false, `${id}:Error: ${error});` );
+
+  assert(false, `${id}: Error at ${handler}: ${error});`);
 }

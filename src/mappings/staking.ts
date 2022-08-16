@@ -203,12 +203,7 @@ export async function handleWithdrawClaimed(
       event
     )}`;
 
-    await reportException(
-      'handleWithdrawClaimed',
-      event.logIndex,
-      event.blockNumber,
-      exception
-    );
+    await reportException('handleWithdrawClaimed', exception, event);
   }
 }
 
@@ -232,12 +227,7 @@ export async function handleWithdrawCancelled(
       event
     )}`;
 
-    await reportException(
-      'handleWithdrawCancelled',
-      event.logIndex,
-      event.blockNumber,
-      exception
-    );
+    await reportException('handleWithdrawCancelled', exception, event);
   }
 }
 

@@ -11,7 +11,12 @@ import {
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
 import { Indexer } from '../types';
-import { bytesToIpfsCid, createIndexer, reportException } from './utils';
+import {
+  bytesToIpfsCid,
+  createIndexer,
+  reportException,
+  reportIndexerNonExistException,
+} from './utils';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -56,15 +61,10 @@ export async function handleUnregisterIndexer(
     indexer.lastEvent = lastEvent;
     await indexer.save();
   } else {
-    logger.error(
-      `HandleUnregisterIndexer: Expected indexer to exist: ${event.args.indexer}`
-    );
-
-    await reportException(
+    await reportIndexerNonExistException(
       'HandleUnregisterIndexer',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      event.args.indexer,
+      event
     );
   }
 }
@@ -84,15 +84,10 @@ export async function handleUpdateIndexerMetadata(
     indexer.lastEvent = lastEvent;
     await indexer.save();
   } else {
-    logger.error(
-      `HandleUpdateIndexerMetadata: Expected indexer to exist: ${event.args.indexer}`
-    );
-
-    await reportException(
+    await reportIndexerNonExistException(
       'HandleUpdateIndexerMetadata',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      event.args.indexer,
+      event
     );
   }
 }
@@ -112,15 +107,10 @@ export async function handleSetControllerAccount(
     indexer.lastEvent = lastEvent;
     await indexer.save();
   } else {
-    logger.error(
-      `HandleSetControllerAccount: Expected indexer to exist: ${event.args.indexer}`
-    );
-
-    await reportException(
+    await reportIndexerNonExistException(
       'HandleSetControllerAccount',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      event.args.indexer,
+      event
     );
   }
 }
@@ -141,15 +131,10 @@ export async function handleRemoveControllerAccount(
 
     await indexer.save();
   } else {
-    logger.error(
-      `HandleRemoveControllerAccount: Expected indexer to exist: ${event.args.indexer}`
-    );
-
     await reportException(
       'HandleRemoveControllerAccount',
-      event.logIndex,
-      event.blockNumber,
-      `Expected indexer to exist: ${event.args.indexer}`
+      event.args.indexer,
+      event
     );
   }
 }

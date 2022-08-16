@@ -240,8 +240,7 @@ type AcceptedOffer @entity {
 }
 
 type Exception @entity {
-  id: ID! # handler:eventBlock:eventLogIndex
+  id: ID! #eventBlock:txhash
   handler: String!
   error: String!
-  createBlock: Int!
 }
