@@ -226,5 +226,5 @@ export async function reportException(
   });
 
   await exception.save();
-  assert(false, id);
+  assert(false, `${id}:Error: ${error});` );
 }
