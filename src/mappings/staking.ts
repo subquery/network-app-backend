@@ -9,6 +9,7 @@ import {
   DelegationRemovedEvent,
   UnbondRequestedEvent,
   UnbondWithdrawnEvent,
+  UnbondCancelledEvent,
   SetCommissionRateEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
@@ -23,6 +24,7 @@ import {
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
@@ -105,6 +107,7 @@ export async function handleAddDelegation(
       indexer,
       amountBn,
       'add',
+      event,
       indexer === source
     );
   } else {
@@ -114,7 +117,7 @@ export async function handleAddDelegation(
       amountBn
     );
 
-    await updateTotalStake(eraManager, indexer, amountBn, 'add');
+    await updateTotalStake(eraManager, indexer, amountBn, 'add', event);
   }
 
   await delegation.save();
@@ -146,7 +149,7 @@ export async function handleRemoveDelegation(
   );
 
   await updateTotalDelegation(eraManager, source, amount.toBigInt(), 'sub');
-  await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub');
+  await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub', event);
 
   await delegation.save();
 }
@@ -184,7 +187,7 @@ export async function handleWithdrawClaimed(
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
 
-  const { source, index, amount } = event.args;
+  const { source, index } = event.args;
   const id = getWithdrawlId(source, index);
 
   const withdrawl = await Withdrawl.get(id);
@@ -195,16 +198,6 @@ export async function handleWithdrawClaimed(
 
     await withdrawl.save();
   } else {
-    await createWithdrawl({
-      id,
-      delegator: source,
-      indexer: '-',
-      index,
-      amount,
-      status: CLAIMED,
-      event,
-    });
-
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
       event
@@ -222,7 +215,10 @@ export async function handleWithdrawClaimed(
 export async function handleWithdrawCancelled(
   event: AcalaEvmEvent<UnbondCancelledEvent['args']>
 ): Promise<void> {
-  const { source, indexer, amount, index } = event.args;
+  logger.info('handleWithdrawClaimed');
+  assert(event.args, 'No event args');
+
+  const { source, index } = event.args;
   const id = getWithdrawlId(source, index);
   const withdrawl = await Withdrawl.get(id);
 
@@ -231,16 +227,6 @@ export async function handleWithdrawCancelled(
     withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
     await withdrawl.save();
   } else {
-    await createWithdrawl({
-      id,
-      delegator: source,
-      indexer,
-      index,
-      amount,
-      status: CANCELLED,
-      event,
-    });
-
     logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
     const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
       event
@@ -267,27 +253,16 @@ export async function handleSetCommissionRate(
     new FrontierEthProvider()
   );
 
+  const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);
 
   if (!indexer) {
-    indexer = Indexer.create({
-      id: address,
-      metadata: '',
-      totalStake: {
-        era: -1,
-        value: BigInt(0).toJSONType(),
-        valueAfter: BigInt(0).toJSONType(),
-      },
-      commission: {
-        era: -1,
-        value: BigInt(0).toJSONType(),
-        valueAfter: BigInt(0).toJSONType(),
-      },
+    indexer = await createIndexer({
+      address,
       active: true,
+      lastEvent,
       createdBlock: event.blockNumber,
     });
-
-    indexer;
   }
 
   indexer.commission = await upsertEraValue(

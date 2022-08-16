@@ -7,6 +7,9 @@ import { EraManager } from '@subql/contract-sdk';
 import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
+import { CreateIndexerParams } from '../interfaces';
+import assert from 'assert';
+import { AcalaEvmEvent } from '@subql/acala-evm-processor';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -113,35 +116,48 @@ export async function upsertEraValue(
   };
 }
 
+export async function createIndexer({
+  address,
+  metadata = '',
+  active = true,
+  createdBlock,
+  lastEvent,
+  controller,
+}: CreateIndexerParams): Promise<Indexer> {
+  const indexer = Indexer.create({
+    id: address,
+    metadata: metadata,
+    totalStake: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    commission: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    active,
+    controller,
+    createdBlock,
+    lastEvent,
+  });
+
+  await indexer.save();
+  return indexer;
+}
+
 export async function updateTotalStake(
   eraManager: EraManager,
   indexerAddress: string,
   amount: bigint,
   operation: keyof typeof operations,
+  event: AcalaEvmEvent,
   applyInstantly?: boolean
 ): Promise<void> {
-  let indexer = await Indexer.get(indexerAddress);
+  const indexer = await Indexer.get(indexerAddress);
 
-  if (!indexer) {
-    indexer = Indexer.create({
-      id: indexerAddress,
-      totalStake: await upsertEraValue(
-        eraManager,
-        undefined,
-        amount,
-        operation,
-        applyInstantly
-      ),
-      commission: await upsertEraValue(
-        eraManager,
-        undefined,
-        BigInt(0),
-        operation,
-        applyInstantly
-      ),
-      active: true,
-    });
-  } else {
+  if (indexer) {
     indexer.totalStake = await upsertEraValue(
       eraManager,
       indexer.totalStake,
@@ -149,9 +165,16 @@ export async function updateTotalStake(
       operation,
       applyInstantly
     );
-  }
 
-  await indexer.save();
+    await indexer.save();
+  } else {
+    await reportException(
+      'updateTotalStake',
+      event.logIndex,
+      event.blockNumber,
+      `Expected indexer to exist: ${indexerAddress}`
+    );
+  }
 }
 
 export async function updateTotalDelegation(
@@ -203,4 +226,5 @@ export async function reportException(
   });
 
   await exception.save();
+  assert(false, `${id}:Error: ${error});` );
 }

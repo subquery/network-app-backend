@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b' #mandala-tc7
-  endpoint: 'wss://mandala-tc7-rpcnode.aca-dev.network/ws'
+  endpoint: 'wss://acala-mandala.api.onfinality.io/public-ws'
   dictionary: 'https://api.subquery.network/sq/subquery/acala-mandala-tc7-dictionary'
 
   chaintypes:
@@ -49,7 +49,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0x7AE0FA3B24D6E9926e050e3e7d76d1b6cD2E88D2'
+        address: '0xD9d0EB30589A50642F3200E3f41C462B63369364'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -63,7 +63,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x6cfA0433AfeB7D0b2B580a0e9f0D75B2d6aBe449'
+        address: '0x7A3c383eD9F0657ab4b8B81CefbB663F3D57CD14'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -97,7 +97,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x149F71e87A7E4c7d2639F54A9152D41DcF8904a8'
+        address: '0x03C46fEA46812a023DC8c7B4d6aE90972eCBe955'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -136,7 +136,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0x5B5a9Cc889C1CBd1b2867C56908BEd38c5692d54'
+        address: '0xCAec8A3EfAA98F3749C23268EB3De698E0597e40'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -180,7 +180,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0x89a010bdF6ebA79BFDd3eEe543e026CC5108e91d'
+        address: '0x7c0E1a61DB94e979C870c9F9A031705f019760E9'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -214,7 +214,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0x9351f39Bc4420d45671dc32Ac620a3687f9B66A6'
+        address: '0xDC545bcB504Be3f04B57714551b1fD2266E87193'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -228,7 +228,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0xc61fAE279c91Af0B23827cba908afCbe25cCC577'
+        address: '0xFE469B4f216Af17e5dB08A2eE6A0268CEFD870Be'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -252,7 +252,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x21071EF928b136cA724d5ef196e261BB70e44228'
+        address: '0x48f66c84381e4d5E49D5e1C157D189209b23a840'
     mapping:
       file: ./dist/index.js
       handlers:
