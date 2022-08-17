@@ -42,6 +42,8 @@ x-frontier: &frontier
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
     rewardsDistributor:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
+    stateChannel:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
 
 dataSources:
   - <<: *frontier
@@ -271,3 +273,47 @@ dataSources:
           filter:
             topics:
               - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreementId)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: stateChannel
+        address: '0xC0cdBCf840A3a9C0198036725496cea86a9853da'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleChannelOpen
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelOpen(uint256 channelId, address indexer, address consumer, uint256 total, uint256 expiration, bytes32 deploymentId)
+        - handler: handleChannelExtend
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelExtend(uint256 channelId, uint256 expiration)
+        - handler: handleChannelFund
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelFund(uint256 channelId, uint256 total)
+        - handler: handleChannelCheckpoint
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelCheckpoint(uint256 channelId, uint256 spent);
+        - handler: handleChannelChallenge
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelChallenge(uint256 channelId, uint256 spent, uint256 expiration);
+        - handler: handleChannelRespond
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelRespond(uint256 channelId, uint256 spent);
+        - handler: handleChannelFinalize
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ChannelFinalize(uint256 channelId);
