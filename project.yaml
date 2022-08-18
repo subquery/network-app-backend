@@ -180,7 +180,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0x7c0E1a61DB94e979C870c9F9A031705f019760E9'
+        address: '0xB3720Cb42eE6c32B394e5330493AFB43F330e61C'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -252,7 +252,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x48f66c84381e4d5E49D5e1C157D189209b23a840'
+        address: '0x063196110577d17574c48A2c923BeF69fE883943'
     mapping:
       file: ./dist/index.js
       handlers:
