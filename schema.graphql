@@ -244,3 +244,26 @@ type Exception @entity {
   handler: String!
   error: String!
 }
+
+enum ChannelStatus {
+  FINALIZED,
+  OPEN,
+  CHALLENGE,
+}
+
+type StateChannel @entity {
+  id: ID!
+
+  indexer: String!
+  consumer: String!
+  status: ChannelStatus!
+  deploymentId: String!
+  total: BigInt!
+  spent: BigInt!
+  isFinal: Boolean!
+  expirationAt: Date!
+  challengeAt: Date!
+  startTime: Date!
+
+  lastEvent: String #topicHandler:blockNumber
+}
