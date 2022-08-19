@@ -63,7 +63,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x7A3c383eD9F0657ab4b8B81CefbB663F3D57CD14'
+        address: '0xe8C022357B640077dc285153BF405f952c26dad3'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -97,7 +97,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x03C46fEA46812a023DC8c7B4d6aE90972eCBe955'
+        address: '0xB33ca1f9F7171f3cac24E85161e8Ea5D8F6aB5Dd'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -136,7 +136,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0xCAec8A3EfAA98F3749C23268EB3De698E0597e40'
+        address: '0x5970f451485BA5Dbe9B402D7eCb73849E4a3c039'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -180,7 +180,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0xB3720Cb42eE6c32B394e5330493AFB43F330e61C'
+        address: '0xa9836581477798413bf3DdD3Cab0e88840089979'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -214,7 +214,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0xDC545bcB504Be3f04B57714551b1fD2266E87193'
+        address: '0xcAA7B1E34d6C39B831e57af1A54b38E98f8D9796'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -228,7 +228,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0xFE469B4f216Af17e5dB08A2eE6A0268CEFD870Be'
+        address: '0x32231d8f7516D5Aa0baA7928f602490287623adC'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -252,7 +252,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x063196110577d17574c48A2c923BeF69fE883943'
+        address: '0xb2166797cEdC5FD08b095F20DCb6C66fFEe141C0'
     mapping:
       file: ./dist/index.js
       handlers:
