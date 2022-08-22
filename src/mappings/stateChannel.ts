@@ -13,7 +13,7 @@ import {
 } from '@subql/contract-sdk/typechain/StateChannel';
 import { StateChannel, ChannelStatus } from '../types';
 import { bytesToIpfsCid } from './utils';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
 export async function handleChannelOpen(
   event: FrontierEvmEvent<ChannelOpenEvent['args']>

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { Status, WithdrawalStatus } from './types';
 
 export interface CreateWithdrawlParams {

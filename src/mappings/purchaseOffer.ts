@@ -7,7 +7,7 @@ import {
   PurchaseOfferCancelledEvent,
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { Offer, AcceptedOffer } from '../types';
 import { bytesToIpfsCid } from './utils';
 

@@ -41,8 +41,8 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@subql/contract-processors": "^0.6.0",
-    "@subql/contract-sdk": "0.10.2-5",
+    "@subql/contract-sdk": "0.10.2-8",
+    "@subql/frontier-evm-processor": "^0.0.1-0",
     "@types/pino": "^7.0.5",
     "@types/validator": "^13.7.1",
     "bs58": "^4.0.1",
@@ -57,7 +57,7 @@
     "*.{ts,css,md}": "prettier --write"
   },
   "exports": {
-    "frontierEvm": "./node_modules/@subql/contract-processors/dist/frontierEvm.js",
+    "frontierEvm": "./node_modules/@subql/frontier-evm-processor/dist/index.js",
     "chaintypes": "./chaintypes.js"
   }
 }

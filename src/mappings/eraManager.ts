@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
 import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';

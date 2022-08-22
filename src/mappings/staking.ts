@@ -23,7 +23,7 @@ import {
   reportException,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
 

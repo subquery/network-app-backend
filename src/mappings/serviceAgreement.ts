@@ -7,7 +7,7 @@ import { ServiceAgreement } from '../types';
 import { bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import FrontierEthProvider from './ethProvider';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
 export async function handleServiceAgreementCreated(
   event: FrontierEvmEvent<ClosedAgreementCreatedEvent['args']>

@@ -21,12 +21,13 @@ import {
 import { Network } from '@ethersproject/networks';
 import { Deferrable, resolveProperties } from '@ethersproject/properties';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+
 import {
   EthLog,
   EthRichBlock,
   EthTransaction,
 } from '@polkadot/types/interfaces';
-import { Bytes } from '@polkadot/api/node_modules/@polkadot/types';
+import { Bytes } from '@polkadot/types/primitive';
 import RpcInterface from '@polkadot/rpc-core/types/jsonrpc';
 
 function ethTransactionToTransactionResponse(

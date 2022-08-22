@@ -14,7 +14,7 @@ import { Plan, PlanTemplate } from '../types';
 import FrontierEthProvider from './ethProvider';
 import { bytesToIpfsCid, PLAN_MANAGER_ADDRESS } from './utils';
 import { constants } from 'ethers';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { BigNumber } from '@ethersproject/bignumber';
 
 function getPlanId(indexer: string, idx: BigNumber): string {

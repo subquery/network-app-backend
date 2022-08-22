@@ -17,7 +17,7 @@ import {
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/RewardsDistributer';
 import { REWARD_DIST_ADDRESS } from './utils';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
 import { BigNumber } from '@ethersproject/bignumber';
 

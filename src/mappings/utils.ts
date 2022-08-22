@@ -9,7 +9,7 @@ import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;

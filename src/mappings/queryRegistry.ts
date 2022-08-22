@@ -19,7 +19,7 @@ import {
   cidToBytes32,
   QUERY_REGISTRY_ADDRESS,
 } from './utils';
-import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import FrontierEthProvider from './ethProvider';
 import { ISaveDeploymentIndexer } from '../interfaces';
 
