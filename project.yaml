@@ -4,10 +4,10 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: '>=1.1.0'
+    version: '>=1.8.0'
   query:
     name: '@subql/query'
-    version: '>=1.1.0'
+    version: '>=1.5.0'
 description: 'Query registry project for SubQuery Testnet'
 repository: ''
 schema:
