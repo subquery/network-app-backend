@@ -57,6 +57,7 @@
     "*.{ts,css,md}": "prettier --write"
   },
   "exports": {
+    "frontierEvm": "./node_modules/@subql/contract-processors/dist/frontierEvm.js",
     "chaintypes": "./chaintypes.js"
   }
 }

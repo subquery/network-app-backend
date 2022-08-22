@@ -22,9 +22,9 @@ network:
 
 x-frontier: &frontier
   kind: substrate/FrontierEvm
-  startBlock: 1748143
+  startBlock: 2701125
   processor: &frontier-processor
-    file: './dist/acalaEvm.js'
+    file: './dist/frontierEvm.js'
   assets:
     eraManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
@@ -238,7 +238,7 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - DistributeRewards(address indexed indexer, uint256 indexed eraIdx)
+              - DistributeRewards(address indexed indexer, uint256 indexed eraIdx, uint256 rewards)
         - handler: handleRewardsClaimed
           kind: substrate/FrontierEvmEvent
           filter:
