@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
 import { Status, WithdrawalStatus } from './types';
 
 export interface CreateWithdrawlParams {
@@ -12,7 +12,7 @@ export interface CreateWithdrawlParams {
   index: BigNumber;
   amount: BigNumber;
   status: WithdrawalStatus;
-  event: AcalaEvmEvent;
+  event: FrontierEvmEvent;
 }
 
 export interface CreateIndexerParams {

@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
 import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
 import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
@@ -11,7 +11,7 @@ import FrontierEthProvider from './ethProvider';
 
 /* Era Handlers */
 export async function handleNewEra(
-  event: AcalaEvmEvent<NewEraStartEvent['args']>
+  event: FrontierEvmEvent<NewEraStartEvent['args']>
 ): Promise<void> {
   logger.info('handleNewEra');
   assert(event.args, 'No event args');

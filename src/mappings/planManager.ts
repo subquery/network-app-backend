@@ -14,7 +14,7 @@ import { Plan, PlanTemplate } from '../types';
 import FrontierEthProvider from './ethProvider';
 import { bytesToIpfsCid, PLAN_MANAGER_ADDRESS } from './utils';
 import { constants } from 'ethers';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
 import { BigNumber } from '@ethersproject/bignumber';
 
 function getPlanId(indexer: string, idx: BigNumber): string {
@@ -22,7 +22,7 @@ function getPlanId(indexer: string, idx: BigNumber): string {
 }
 
 export async function handlePlanTemplateCreated(
-  event: AcalaEvmEvent<PlanTemplateCreatedEvent['args']>
+  event: FrontierEvmEvent<PlanTemplateCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateCreated');
   assert(event.args, 'No event args');
@@ -53,7 +53,7 @@ export async function handlePlanTemplateCreated(
 }
 
 export async function handlePlanTemplateMetadataUpdated(
-  event: AcalaEvmEvent<PlanTemplateMetadataChangedEvent['args']>
+  event: FrontierEvmEvent<PlanTemplateMetadataChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateMetadataUpdated');
   assert(event.args, 'No event args');
@@ -69,7 +69,7 @@ export async function handlePlanTemplateMetadataUpdated(
 }
 
 export async function handlePlanTemplateStatusUpdated(
-  event: AcalaEvmEvent<PlanTemplateStatusChangedEvent['args']>
+  event: FrontierEvmEvent<PlanTemplateStatusChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateStatusUpdated');
   assert(event.args, 'No event args');
@@ -85,7 +85,7 @@ export async function handlePlanTemplateStatusUpdated(
 }
 
 export async function handlePlanCreated(
-  event: AcalaEvmEvent<PlanCreatedEvent['args']>
+  event: FrontierEvmEvent<PlanCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanCreated');
   assert(event.args, 'No event args');
@@ -107,7 +107,7 @@ export async function handlePlanCreated(
 }
 
 export async function handlePlanRemoved(
-  event: AcalaEvmEvent<PlanRemovedEvent['args']>
+  event: FrontierEvmEvent<PlanRemovedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanRemoved');
   assert(event.args, 'No event args');

@@ -9,7 +9,7 @@ import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
 
 export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
@@ -150,7 +150,7 @@ export async function createIndexer({
 export async function reportIndexerNonExistException(
   handler: string,
   indexerAddress: string,
-  event: AcalaEvmEvent<any>
+  event: FrontierEvmEvent<any>
 ): Promise<void> {
   logger.error(`${handler}: Expected indexer to exist: ${indexerAddress}`);
 
@@ -166,7 +166,7 @@ export async function updateTotalStake(
   indexerAddress: string,
   amount: bigint,
   operation: keyof typeof operations,
-  event: AcalaEvmEvent,
+  event: FrontierEvmEvent,
   applyInstantly?: boolean
 ): Promise<void> {
   const indexer = await Indexer.get(indexerAddress);
@@ -226,7 +226,7 @@ export async function updateTotalDelegation(
 export async function reportException(
   handler: string,
   error: string,
-  event: AcalaEvmEvent<any>
+  event: FrontierEvmEvent<any>
 ): Promise<void> {
   const id = `${event.blockNumber}:${event.transactionHash}`;
 

@@ -23,7 +23,7 @@ import {
   reportException,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
 
@@ -46,22 +46,23 @@ async function createWithdrawl({
   status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
+  const { blockTimestamp, blockNumber } = event;
   const withdrawl = Withdrawl.create({
     id,
     delegator: delegator,
     indexer: indexer,
     index: index.toBigInt(),
-    startTime: event.blockTimestamp,
+    startTime: blockTimestamp,
     amount: amount.toBigInt(),
     status,
-    createdBlock: event.blockNumber,
+    createdBlock: blockNumber,
   });
 
   await withdrawl.save();
 }
 
 export async function handleAddDelegation(
-  event: AcalaEvmEvent<DelegationAddedEvent['args']>
+  event: FrontierEvmEvent<DelegationAddedEvent['args']>
 ): Promise<void> {
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
@@ -124,7 +125,7 @@ export async function handleAddDelegation(
 }
 
 export async function handleRemoveDelegation(
-  event: AcalaEvmEvent<DelegationRemovedEvent['args']>
+  event: FrontierEvmEvent<DelegationRemovedEvent['args']>
 ): Promise<void> {
   logger.info('handleRemoveDelegation');
   assert(event.args, 'No event args');
@@ -155,7 +156,7 @@ export async function handleRemoveDelegation(
 }
 
 export async function handleWithdrawRequested(
-  event: AcalaEvmEvent<UnbondRequestedEvent['args']>
+  event: FrontierEvmEvent<UnbondRequestedEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawRequested');
   assert(event.args, 'No event args');
@@ -182,7 +183,7 @@ export async function handleWithdrawRequested(
  *
  */
 export async function handleWithdrawClaimed(
-  event: AcalaEvmEvent<UnbondWithdrawnEvent['args']>
+  event: FrontierEvmEvent<UnbondWithdrawnEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
@@ -208,7 +209,7 @@ export async function handleWithdrawClaimed(
 }
 
 export async function handleWithdrawCancelled(
-  event: AcalaEvmEvent<UnbondCancelledEvent['args']>
+  event: FrontierEvmEvent<UnbondCancelledEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
@@ -232,7 +233,7 @@ export async function handleWithdrawCancelled(
 }
 
 export async function handleSetCommissionRate(
-  event: AcalaEvmEvent<SetCommissionRateEvent['args']>
+  event: FrontierEvmEvent<SetCommissionRateEvent['args']>
 ): Promise<void> {
   logger.info('handleSetCommissionRate');
   assert(event.args, 'No event args');

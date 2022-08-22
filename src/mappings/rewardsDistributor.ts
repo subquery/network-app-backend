@@ -17,7 +17,8 @@ import {
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/RewardsDistributer';
 import { REWARD_DIST_ADDRESS } from './utils';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/contract-processors/dist/frontierEvm';
+
 import { BigNumber } from '@ethersproject/bignumber';
 
 function buildRewardId(indexer: string, delegator: string): string {
@@ -33,7 +34,7 @@ function getPrevIndexerRewardId(indexer: string, eraIdx: BigNumber): string {
 }
 
 export async function handleRewardsDistributed(
-  event: AcalaEvmEvent<DistributeRewardsEvent['args']>
+  event: FrontierEvmEvent<DistributeRewardsEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsDistributed');
   assert(event.args, 'No event args');
@@ -76,7 +77,7 @@ export async function handleRewardsDistributed(
 }
 
 export async function handleRewardsClaimed(
-  event: AcalaEvmEvent<ClaimRewardsEvent['args']>
+  event: FrontierEvmEvent<ClaimRewardsEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsClaimed');
   assert(event.args, 'No event args');
@@ -113,7 +114,7 @@ export async function handleRewardsClaimed(
 }
 
 export async function handleRewardsUpdated(
-  event: AcalaEvmEvent<RewardsChangedEvent['args']>
+  event: FrontierEvmEvent<RewardsChangedEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsUpdated');
   assert(event.args, 'No event args');
