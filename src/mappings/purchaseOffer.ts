@@ -7,12 +7,12 @@ import {
   PurchaseOfferCancelledEvent,
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { Offer, AcceptedOffer } from '../types';
 import { bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
-  event: AcalaEvmEvent<PurchaseOfferCreatedEvent['args']>
+  event: FrontierEvmEvent<PurchaseOfferCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferCreated');
   assert(event.args, 'No event args');
@@ -36,7 +36,7 @@ export async function handlePurchaseOfferCreated(
 }
 
 export async function handlePurchaseOfferCancelled(
-  event: AcalaEvmEvent<PurchaseOfferCancelledEvent['args']>
+  event: FrontierEvmEvent<PurchaseOfferCancelledEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferCancelled');
   assert(event.args, 'No event args');
@@ -53,7 +53,7 @@ export async function handlePurchaseOfferCancelled(
 }
 
 export async function handlePurchaseOfferAccepted(
-  event: AcalaEvmEvent<OfferAcceptedEvent['args']>
+  event: FrontierEvmEvent<OfferAcceptedEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferAccepted');
   assert(event.args, 'No event args');

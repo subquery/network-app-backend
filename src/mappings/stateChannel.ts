@@ -13,10 +13,10 @@ import {
 } from '@subql/contract-sdk/typechain/StateChannel';
 import { StateChannel, ChannelStatus } from '../types';
 import { bytesToIpfsCid } from './utils';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
 export async function handleChannelOpen(
-  event: AcalaEvmEvent<ChannelOpenEvent['args']>
+  event: FrontierEvmEvent<ChannelOpenEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
@@ -42,7 +42,7 @@ export async function handleChannelOpen(
 }
 
 export async function handleChannelExtend(
-  event: AcalaEvmEvent<ChannelExtendEvent['args']>
+  event: FrontierEvmEvent<ChannelExtendEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelExtend');
   assert(event.args, 'No event args');
@@ -55,7 +55,7 @@ export async function handleChannelExtend(
 }
 
 export async function handleChannelFund(
-  event: AcalaEvmEvent<ChannelFundEvent['args']>
+  event: FrontierEvmEvent<ChannelFundEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelFund');
   assert(event.args, 'No event args');
@@ -68,7 +68,7 @@ export async function handleChannelFund(
 }
 
 export async function handleChannelCheckpoint(
-  event: AcalaEvmEvent<ChannelCheckpointEvent['args']>
+  event: FrontierEvmEvent<ChannelCheckpointEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
@@ -81,7 +81,7 @@ export async function handleChannelCheckpoint(
 }
 
 export async function handleChannelChallenge(
-  event: AcalaEvmEvent<ChannelChallengeEvent['args']>
+  event: FrontierEvmEvent<ChannelChallengeEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
@@ -96,7 +96,7 @@ export async function handleChannelChallenge(
 }
 
 export async function handleChannelRespond(
-  event: AcalaEvmEvent<ChannelRespondEvent['args']>
+  event: FrontierEvmEvent<ChannelRespondEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
@@ -112,7 +112,7 @@ export async function handleChannelRespond(
 }
 
 export async function handleChannelFinalize(
-  event: AcalaEvmEvent<ChannelFinalizeEvent['args']>
+  event: FrontierEvmEvent<ChannelFinalizeEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');

@@ -19,7 +19,7 @@ import {
   cidToBytes32,
   QUERY_REGISTRY_ADDRESS,
 } from './utils';
-import { AcalaEvmEvent } from '@subql/acala-evm-processor';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import FrontierEthProvider from './ethProvider';
 import { ISaveDeploymentIndexer } from '../interfaces';
 
@@ -71,7 +71,7 @@ async function createDeploymentIndexer({
 }
 
 export async function handleNewQuery(
-  event: AcalaEvmEvent<CreateQueryEvent['args']>
+  event: FrontierEvmEvent<CreateQueryEvent['args']>
 ): Promise<void> {
   logger.info('handleNewQuery');
   assert(event.args, 'No event args');
@@ -105,7 +105,7 @@ export async function handleNewQuery(
 }
 
 export async function handleUpdateQueryMetadata(
-  event: AcalaEvmEvent<UpdateQueryMetadataEvent['args']>
+  event: FrontierEvmEvent<UpdateQueryMetadataEvent['args']>
 ): Promise<void> {
   logger.info('handleUpdateQueryMetadata');
   assert(event.args, 'No event args');
@@ -122,7 +122,7 @@ export async function handleUpdateQueryMetadata(
 }
 
 export async function handleUpdateQueryDeployment(
-  event: AcalaEvmEvent<UpdateQueryDeploymentEvent['args']>
+  event: FrontierEvmEvent<UpdateQueryDeploymentEvent['args']>
 ): Promise<void> {
   logger.info('handleUpdateQueryDeployment');
   assert(event.args, 'No event args');
@@ -153,7 +153,7 @@ export async function handleUpdateQueryDeployment(
 }
 
 export async function handleStartIndexing(
-  event: AcalaEvmEvent<StartIndexingEvent['args']>
+  event: FrontierEvmEvent<StartIndexingEvent['args']>
 ): Promise<void> {
   logger.info('handleStartIndexing');
   assert(event.args, 'No event args');
@@ -174,7 +174,7 @@ export async function handleStartIndexing(
  * Event order: handleIndexingReady -> handleIndexingUpdate
  */
 export async function handleIndexingUpdate(
-  event: AcalaEvmEvent<UpdateDeploymentStatusEvent['args']>
+  event: FrontierEvmEvent<UpdateDeploymentStatusEvent['args']>
 ): Promise<void> {
   logger.info('handleIndexingUpdate');
   assert(event.args, 'No event args');
@@ -207,7 +207,7 @@ export async function handleIndexingUpdate(
  * Event order: handleStartIndexing -> handleIndexingReady
  */
 export async function handleIndexingReady(
-  event: AcalaEvmEvent<UpdateIndexingStatusToReadyEvent['args']>
+  event: FrontierEvmEvent<UpdateIndexingStatusToReadyEvent['args']>
 ): Promise<void> {
   logger.info('handleIndexingReady');
   assert(event.args, 'No event args');
@@ -233,7 +233,7 @@ export async function handleIndexingReady(
 }
 
 export async function handleStopIndexing(
-  event: AcalaEvmEvent<StopIndexingEvent['args']>
+  event: FrontierEvmEvent<StopIndexingEvent['args']>
 ): Promise<void> {
   logger.info('handleStopIndexing');
   assert(event.args, 'No event args');
