@@ -9,6 +9,7 @@
     "publish": "subql publish",
     "validate": "subql validate",
     "prepare": "husky install",
+    "postinstall": "sh ./scripts/postinstall.sh",
     "prepack": "rm -rf dist && yarn build",
     "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts"
   },
@@ -53,7 +54,7 @@
     "class-transformer": "0.4.0",
     "ipfs-unixfs": "6.0.6",
     "@polkadot/util": "10.1.5",
-    "ethers": "5.6.9"
+    "@ethersproject/base64": "5.7.0"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
