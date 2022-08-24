@@ -1,10 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Block,
   BlockTag,
@@ -21,14 +17,11 @@ import {
 import { Network } from '@ethersproject/networks';
 import { Deferrable, resolveProperties } from '@ethersproject/properties';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-
 import {
   EthLog,
   EthRichBlock,
   EthTransaction,
 } from '@polkadot/types/interfaces';
-import { Bytes } from '@polkadot/types/primitive';
-import RpcInterface from '@polkadot/rpc-core/types/jsonrpc';
 
 function ethTransactionToTransactionResponse(
   tx: EthTransaction
@@ -136,9 +129,7 @@ export default class FrontierEthProvider extends Provider {
 
     const tx = await resolveProperties(transaction);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const r = await api.rpc.evm.call({
+    const r = await this.eth.call({
       ...tx,
       nonce: tx.nonce && BNishToHex(tx.nonce),
       gas: tx.gasLimit && BNishToHex(tx.gasLimit),
@@ -146,27 +137,25 @@ export default class FrontierEthProvider extends Provider {
       value: tx.value && BNishToHex(tx.value),
       data: tx.data,
     });
-
-    return (r as Bytes).toHex();
+    return r.toHex();
   }
 
-  /*async*/ getBlockWithTransactions(
+  async getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | Promise<BlockTag>
   ): Promise<BlockWithTransactions> {
-    throw new Error('Not implemented');
-    // const raw = await this.eth.getBlockByHash(
-    //   blockHashOrBlockTag.toString(),
-    //   true
-    // );
+    const raw = await this.eth.getBlockByHash(
+      blockHashOrBlockTag.toString(),
+      true
+    );
 
-    // const b = raw.unwrap();
+    const b = raw.unwrap();
 
-    // return {
-    //   ...ethRichBlockToBlock(b),
-    //   transactions: b.transactions
-    //     .toArray()
-    //     .map(ethTransactionToTransactionResponse),
-    // };
+    return {
+      ...ethRichBlockToBlock(b),
+      transactions: b.transactions
+        .toArray()
+        .map(ethTransactionToTransactionResponse),
+    };
   }
 
   getBlock(blockHashOrBlockTag: BlockTag | Promise<BlockTag>): Promise<Block> {
