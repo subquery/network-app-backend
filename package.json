@@ -4,6 +4,7 @@
   "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
+    "postinstall": "./scripts/fix-webpack-ethers",
     "build": "yarn check-filters && subql build",
     "codegen": "subql codegen",
     "publish": "subql publish",

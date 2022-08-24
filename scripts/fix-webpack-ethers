@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# exit when any command fails
+set -e
+
+
+# Removes the module field from a json file
+function remove_module() {
+  echo "$1"
+
+  tmp=$(mktemp)
+  jq "del(.module)" "$1" > "$tmp"
+  mv "$tmp" "$1"
+}
+
+
+# Because of this issue we need to modify all the package.json files relating to ethers
+# https://github.com/ethers-io/ethers.js/issues/1108
+
+for path in "$(dirname "$0")"/../node_modules/@ethersproject/*/package.json; do
+  remove_module "$path"
+done
+
+remove_module "$(dirname "$0")/../node_modules/ethers/package.json"
+
