@@ -4,19 +4,19 @@
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
 import { EraManager } from '@subql/contract-sdk';
-import testnetAddresses from '@subql/contract-sdk/publish/testnet.json';
+import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
 
 import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
-export const QUERY_REGISTRY_ADDRESS = testnetAddresses.QueryRegistry.address;
-export const ERA_MANAGER_ADDRESS = testnetAddresses.EraManager.address;
-export const PLAN_MANAGER_ADDRESS = testnetAddresses.PlanManager.address;
+export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
+export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
+export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
-  testnetAddresses.ServiceAgreementRegistry.address;
-export const REWARD_DIST_ADDRESS = testnetAddresses.RewardsDistributer.address;
+  deploymentFile.ServiceAgreementRegistry.address;
+export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
 
 declare global {
   interface BigIntConstructor {
