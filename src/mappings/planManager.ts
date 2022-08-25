@@ -12,14 +12,9 @@ import {
 import assert from 'assert';
 import { Plan, PlanTemplate } from '../types';
 import FrontierEthProvider from './ethProvider';
-import { bytesToIpfsCid, PLAN_MANAGER_ADDRESS } from './utils';
+import { bytesToIpfsCid, generatePlanId, PLAN_MANAGER_ADDRESS } from './utils';
 import { constants } from 'ethers';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-import { BigNumber } from '@ethersproject/bignumber';
-
-function getPlanId(indexer: string, idx: BigNumber): string {
-  return `${indexer}:${idx.toHexString()}`;
-}
 
 export async function handlePlanTemplateCreated(
   event: FrontierEvmEvent<PlanTemplateCreatedEvent['args']>
@@ -91,7 +86,7 @@ export async function handlePlanCreated(
   assert(event.args, 'No event args');
 
   const plan = Plan.create({
-    id: getPlanId(event.args.creator, event.args.planId),
+    id: generatePlanId(event.args.creator, event.args.planId),
     planTemplateId: event.args.planTemplateId.toHexString(),
     creator: event.args.creator,
     price: event.args.price.toBigInt(),
@@ -112,7 +107,7 @@ export async function handlePlanRemoved(
   logger.info('handlePlanRemoved');
   assert(event.args, 'No event args');
 
-  const planId = getPlanId(event.args.source, event.args.id);
+  const planId = generatePlanId(event.args.source, event.args.id);
 
   const plan = await Plan.get(planId);
   assert(plan, `Plan not found. planId="${planId}"`);

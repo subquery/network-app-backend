@@ -160,7 +160,6 @@ type ServiceAgreement @entity {
   indexerAddress: String!
   consumerAddress: String!
   deployment: Deployment!
-  plan: Plan!
   planTemplate: PlanTemplate!
 
   period: BigInt!

@@ -15,7 +15,7 @@ export async function handleServiceAgreementCreated(
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
 
-  const eventServiceAgreementId = event.args.serviceAgreementId;
+  const { indexer, consumer, deploymentId, serviceAgreementId } = event.args;
 
   const agreementRegistry = IServiceAgreementRegistry__factory.connect(
     SA_REGISTRY_ADDRESS,
@@ -23,19 +23,18 @@ export async function handleServiceAgreementCreated(
   );
 
   const agreement = await agreementRegistry.getClosedServiceAgreement(
-    eventServiceAgreementId
+    serviceAgreementId
   );
-  const { period, lockedAmount, planId, planTemplateId } = agreement;
+  const { period, lockedAmount, planTemplateId } = agreement;
 
   const endTime = new Date(event.blockTimestamp);
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
   const sa = ServiceAgreement.create({
-    id: eventServiceAgreementId.toString(),
-    indexerAddress: event.args.indexer,
-    consumerAddress: event.args.consumer,
-    deploymentId: bytesToIpfsCid(event.args.deploymentId),
-    planId: planId.toHexString(),
+    id: serviceAgreementId.toString(),
+    indexerAddress: indexer,
+    consumerAddress: consumer,
+    deploymentId: bytesToIpfsCid(deploymentId),
     planTemplateId: planTemplateId.toHexString(),
     period: period.toBigInt(),
     startTime: event.blockTimestamp,

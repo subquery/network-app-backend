@@ -16,7 +16,9 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:v1.7.0
+    image: onfinality/subql-node:v1.8.0
+    mem_limit: 4096m
+    cpus: 6
     depends_on:
       'postgres':
         condition: service_healthy
@@ -32,7 +34,7 @@ services:
     command:
       - -f=/app
       - --db-schema=app
-      - --unsafe
+      - --batch-size=100
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s

@@ -65,6 +65,10 @@ export function bnToDate(bn: BigNumber): Date {
   return new Date(bn.toNumber() * 1000);
 }
 
+export function generatePlanId(indexer: string, idx: BigNumber): string {
+  return `${indexer}:${idx.toHexString()}`;
+}
+
 export const operations: Record<string, (a: bigint, b: bigint) => bigint> = {
   add: (a, b) => a + b,
   sub: (a, b) => a - b,
