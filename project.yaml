@@ -22,7 +22,7 @@ network:
 
 x-frontier: &frontier
   kind: substrate/FrontierEvm
-  startBlock: 2701125
+  startBlock: 2721745
   processor: &frontier-processor
     file: './dist/frontierEvm.js'
   assets:
@@ -51,7 +51,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0xaf7AB22fde12D6b5E31fe07C6ECA6648434E4414'
+        address: '0x9f3B0868d1Daf71da134F83B1Be195756e3929b4'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -65,7 +65,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x7762Dea96A4aDdbF85596874ae41B01F7bFc8E3B'
+        address: '0x26fF84Bc422724Ca0e142CF21ED3d14bC00f3931'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -99,7 +99,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x45b0cC9ba3FFD3193Fac634Fa3C2F130E5bCB25A'
+        address: '0x494bB82Da0943FcC56767e1EAAE52d2Cdb29c43D'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -138,7 +138,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0x4803E643443eF4aBE37B0035C50Bc4F66a8C54cF'
+        address: '0xB5B1F1B024FdaBf89024CD7FA2725d71885A2cc1'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -182,7 +182,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0xaD589bb88CcDd58B24e150D31EA0D4366202A92d'
+        address: '0x76A5cd01F32C9FCAcFa3d6C8395fc03BF639553D'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -216,7 +216,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0xb00cfCFB028A50A483ab0071a929b3D418a06Ed7'
+        address: '0xF8004d897AD72a74C2F2cD26070856Ce13FEfdF6'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -230,7 +230,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0x9Ef7a9D8d7d71c06fd58cF8858d78Af62E2732d2'
+        address: '0x16Ea9AEF51e28e8f84D87b8667f8e7103804061b'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -254,7 +254,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x1F9D5beCB1a88aaee80E9F8E33DCF1dE02939149'
+        address: '0xAc3F9B0ebF6f3f18b872c523D9f9454Da0813330'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -278,7 +278,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: stateChannel
-        address: '0x4A4cE3364FA1067E0Bf3B79C6ed20Ae0AAE4af49'
+        address: '0x6E82849E7F520103954d28A8Ea2C5e00175d67Fa'
     mapping:
       file: ./dist/index.js
       handlers:
