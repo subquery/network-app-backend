@@ -1944,10 +1944,10 @@
     reflect-metadata "^0.1.13"
     semver "^7.3.5"
 
-"@subql/contract-sdk@0.10.2-8":
-  version "0.10.2-8"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.10.2-8.tgz#9f93619090d1dc1dea5387d8d1b1afc6cf08b39e"
-  integrity sha512-HBYT3+jEkrtOZcHjCPiPhb3ukOV7tzemT/IVEvLLdRMgRhFy/mk+aED0kPodUCR6RzRHbHrhnszRiEIuWezxdg==
+"@subql/contract-sdk@0.10.2-14":
+  version "0.10.2-14"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.10.2-14.tgz#6d99c5b5efc9cb4be5d1c951835e6b029569e918"
+  integrity sha512-ri/ZeGUaKZFPInp25Kd5sFslyBLXaagG/qC8xI7lSBJ1E258lUbX40tY5AKCmgOPrvMGipeQ4ojK/VaFf0Z6BQ==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.5.2"
     "@polkadot/ui-keyring" "^2.9.4"
