@@ -1,5 +1,5 @@
 specVersion: 1.0.0
-name: subquery-network-subql-project 
+name: subquery-network-subql-project
 version: 1.0.0
 runner:
   node:
@@ -316,4 +316,4 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - ChannelFinalize(uint256 channelId)
+              - ChannelFinalize(uint256 channelId, uint256 total, uint256 remain)

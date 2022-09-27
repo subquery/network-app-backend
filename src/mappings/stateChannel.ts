@@ -117,9 +117,10 @@ export async function handleChannelFinalize(
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
 
-  const { channelId } = event.args;
+  const { channelId, total, remain } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   sc.status = ChannelStatus.FINALIZED;
+  sc.spent = total.toBigInt() - remain.toBigInt();
   await sc.save();
 }
