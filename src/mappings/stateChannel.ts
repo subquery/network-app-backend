@@ -7,8 +7,7 @@ import {
   ChannelExtendEvent,
   ChannelFundEvent,
   ChannelCheckpointEvent,
-  ChannelChallengeEvent,
-  ChannelRespondEvent,
+  ChannelTerminateEvent,
   ChannelFinalizeEvent,
 } from '@subql/contract-sdk/typechain/StateChannel';
 import { StateChannel, ChannelStatus } from '../types';
@@ -21,7 +20,7 @@ export async function handleChannelOpen(
   logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
 
-  const { channelId, indexer, consumer, total, expiration, deploymentId } =
+  const { channelId, indexer, consumer, total, expiredAt, deploymentId } =
     event.args;
 
   const sc = StateChannel.create({
@@ -32,9 +31,10 @@ export async function handleChannelOpen(
     total: total.toBigInt(),
     spent: BigInt(0),
     isFinal: false,
-    expirationAt: new Date(expiration.toNumber() * 1000),
-    challengeAt: new Date(expiration.toNumber() * 1000),
+    expiredAt: new Date(expiredAt.toNumber() * 1000),
+    terminatedAt: new Date(expiredAt.toNumber() * 1000),
     deploymentId: bytesToIpfsCid(deploymentId),
+    terminateByIndexer: false,
     startTime: event.blockTimestamp,
   });
 
@@ -47,10 +47,10 @@ export async function handleChannelExtend(
   logger.info('handleChannelExtend');
   assert(event.args, 'No event args');
 
-  const { channelId, expiration } = event.args;
+  const { channelId, expiredAt } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
-  sc.expirationAt = new Date(expiration.toNumber() * 1000);
+  sc.expiredAt = new Date(expiredAt.toNumber() * 1000);
   await sc.save();
 }
 
@@ -80,34 +80,19 @@ export async function handleChannelCheckpoint(
   await sc.save();
 }
 
-export async function handleChannelChallenge(
-  event: FrontierEvmEvent<ChannelChallengeEvent['args']>
+export async function handleChannelTerminate(
+  event: FrontierEvmEvent<ChannelTerminateEvent['args']>
 ): Promise<void> {
-  logger.info('handleChannelCheckpoint');
+  logger.info('handleChannelTerminate');
   assert(event.args, 'No event args');
 
-  const { channelId, spent, expiration } = event.args;
+  const { channelId, spent, terminatedAt, terminateByIndexer } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   sc.spent = spent.toBigInt();
-  sc.status = ChannelStatus.CHALLENGE;
-  sc.challengeAt = new Date(expiration.toNumber() * 1000);
-  await sc.save();
-}
-
-export async function handleChannelRespond(
-  event: FrontierEvmEvent<ChannelRespondEvent['args']>
-): Promise<void> {
-  logger.info('handleChannelCheckpoint');
-  assert(event.args, 'No event args');
-
-  const { channelId, spent } = event.args;
-  const sc = await StateChannel.get(channelId.toHexString());
-  assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
-  sc.spent = spent.toBigInt();
-  if (sc.status != ChannelStatus.FINALIZED) {
-    sc.status = ChannelStatus.OPEN;
-  }
+  sc.status = ChannelStatus.TERMINATING;
+  sc.terminatedAt = new Date(terminatedAt.toNumber() * 1000);
+  sc.terminateByIndexer = terminateByIndexer;
   await sc.save();
 }
 
