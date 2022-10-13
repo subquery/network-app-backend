@@ -254,9 +254,9 @@ type Exception @entity {
 }
 
 enum ChannelStatus {
-  FINALIZED,
-  OPEN,
-  TERMINATING,
+  FINALIZED
+  OPEN
+  TERMINATING
 }
 
 type StateChannel @entity {
