@@ -21,6 +21,7 @@ import {
   upsertEraValue,
   updateTotalDelegation,
   reportException,
+  updateTotalLock,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
@@ -121,6 +122,7 @@ export async function handleAddDelegation(
     await updateTotalStake(eraManager, indexer, amountBn, 'add', event);
   }
 
+  await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
 }
 
@@ -151,6 +153,13 @@ export async function handleRemoveDelegation(
 
   await updateTotalDelegation(eraManager, source, amount.toBigInt(), 'sub');
   await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub', event);
+  await updateTotalLock(
+    eraManager,
+    amount.toBigInt(),
+    'sub',
+    indexer === source,
+    event
+  );
 
   await delegation.save();
 }

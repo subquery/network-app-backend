@@ -238,6 +238,15 @@ type AcceptedOffer @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
+type TotalLock @entity {
+  id: ID! # TotalLock
+  totalDelegation: EraValue!
+  totalStake: EraValue!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
 type Exception @entity {
   id: ID! #eventBlock:txhash
   handler: String!
@@ -245,9 +254,9 @@ type Exception @entity {
 }
 
 enum ChannelStatus {
-  FINALIZED,
-  OPEN,
-  CHALLENGE,
+  FINALIZED
+  OPEN
+  CHALLENGE
 }
 
 type StateChannel @entity {

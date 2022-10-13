@@ -6,7 +6,14 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { EraManager } from '@subql/contract-sdk';
 import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
 
-import { Delegator, Indexer, EraValue, JSONBigInt, Exception } from '../types';
+import {
+  Delegator,
+  Indexer,
+  EraValue,
+  JSONBigInt,
+  Exception,
+  TotalLock,
+} from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
@@ -225,6 +232,58 @@ export async function updateTotalDelegation(
   }
 
   await delegator.save();
+}
+
+export async function updateTotalLock(
+  eraManager: EraManager,
+  amount: bigint,
+  operation: keyof typeof operations = 'add',
+  isSelf: boolean,
+  event: FrontierEvmEvent<any>
+): Promise<void> {
+  const totalLockID = 'TotalLock';
+  let totalLock = await TotalLock.get(totalLockID);
+  const updatedStakeAmount = isSelf
+    ? BigNumber.from(amount)
+    : BigNumber.from(0);
+  const updatedDelegateAmount = isSelf
+    ? BigNumber.from(0)
+    : BigNumber.from(amount);
+
+  if (!totalLock) {
+    totalLock = TotalLock.create({
+      id: totalLockID,
+      totalStake: await upsertEraValue(
+        eraManager,
+        undefined,
+        updatedStakeAmount.toBigInt(),
+        operation
+      ),
+      totalDelegation: await upsertEraValue(
+        eraManager,
+        undefined,
+        updatedDelegateAmount.toBigInt(),
+        operation
+      ),
+      createdBlock: event.blockNumber,
+    });
+  } else {
+    totalLock.totalStake = await upsertEraValue(
+      eraManager,
+      totalLock.totalStake,
+      updatedStakeAmount.toBigInt(),
+      operation
+    );
+    totalLock.totalDelegation = await upsertEraValue(
+      eraManager,
+      totalLock.totalDelegation,
+      updatedDelegateAmount.toBigInt(),
+      operation
+    );
+    totalLock.lastEvent = `updateTotalLock - ${event.transactionHash}`;
+  }
+
+  await totalLock.save();
 }
 
 export async function reportException(
