@@ -256,7 +256,7 @@ type Exception @entity {
 enum ChannelStatus {
   FINALIZED
   OPEN
-  CHALLENGE
+  TERMINATING
 }
 
 type StateChannel @entity {
@@ -269,8 +269,9 @@ type StateChannel @entity {
   total: BigInt!
   spent: BigInt!
   isFinal: Boolean!
-  expirationAt: Date!
-  challengeAt: Date!
+  expiredAt: Date!
+  terminatedAt: Date!
+  terminateByIndexer: Boolean!
   startTime: Date!
 
   lastEvent: String #topicHandler:blockNumber

@@ -286,12 +286,12 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - ChannelOpen(uint256 channelId, address indexer, address consumer, uint256 total, uint256 expiration, bytes32 deploymentId)
+              - ChannelOpen(uint256 channelId, address indexer, address consumer, uint256 total, uint256 expiredAt, bytes32 deploymentId)
         - handler: handleChannelExtend
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - ChannelExtend(uint256 channelId, uint256 expiration)
+              - ChannelExtend(uint256 channelId, uint256 expiredAt)
         - handler: handleChannelFund
           kind: substrate/FrontierEvmEvent
           filter:
@@ -302,16 +302,11 @@ dataSources:
           filter:
             topics:
               - ChannelCheckpoint(uint256 channelId, uint256 spent)
-        - handler: handleChannelChallenge
+        - handler: handleChannelTerminate
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - ChannelChallenge(uint256 channelId, uint256 spent, uint256 expiration)
-        - handler: handleChannelRespond
-          kind: substrate/FrontierEvmEvent
-          filter:
-            topics:
-              - ChannelRespond(uint256 channelId, uint256 spent)
+              - ChannelTerminate(uint256 channelId, uint256 spent, uint256 terminatedAt, bool terminateByIndexer)
         - handler: handleChannelFinalize
           kind: substrate/FrontierEvmEvent
           filter:
