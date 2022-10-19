@@ -86,6 +86,7 @@ type Indexer @entity {
   commission: EraValue!
   totalStake: EraValue!
 
+  projects: [DeploymentIndexer] @derivedFrom(field: "indexer")
   delegations: [Delegation] @derivedFrom(field: "indexer")
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 
