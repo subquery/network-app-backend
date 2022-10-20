@@ -33,6 +33,7 @@ services:
       - ./:/app
     command:
       - -f=/app
+      - --unsafe
       - --db-schema=app
       - --batch-size=100
     healthcheck:

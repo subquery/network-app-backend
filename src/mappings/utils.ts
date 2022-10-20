@@ -9,6 +9,7 @@ import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
 import {
   Delegator,
   Indexer,
+  IndexerMetadata,
   EraValue,
   JSONBigInt,
   Exception,
@@ -18,12 +19,16 @@ import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 
+import axios from 'axios';
+
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
 export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
 export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
+
+type Metadata = { name: string; endpoint: string };
 
 declare global {
   interface BigIntConstructor {
@@ -127,6 +132,53 @@ export async function upsertEraValue(
   };
 }
 
+export async function decodeMetadata(
+  metadata: string
+): Promise<Metadata | undefined> {
+  try {
+    const res = await axios({
+      method: 'post',
+      url: `https://unauthipfs.subquery.network/ipfs/api/v0/cat?arg=${metadata}`,
+      headers: {},
+    });
+
+    const json = res.data as Metadata;
+    logger.info(`Fetched metadata from cid: ${metadata}`);
+    return json;
+  } catch (error) {
+    logger.error(`Cannot decode metadata from cid: ${metadata}`);
+    logger.error(error);
+    return undefined;
+  }
+}
+
+export async function upsertIndexerMetadata(
+  address: string,
+  metadata: string
+): Promise<void> {
+  const metadataRes = await decodeMetadata(metadata);
+  const { name, endpoint } = metadataRes || {};
+
+  let indexerMetadata = await IndexerMetadata.get(metadata);
+
+  if (!indexerMetadata) {
+    indexerMetadata = IndexerMetadata.create({
+      id: address,
+      metadata: metadata,
+      name,
+      endpoint,
+    });
+  } else {
+    indexerMetadata.metadata = metadata;
+    indexerMetadata.name = name;
+    indexerMetadata.endpoint = endpoint;
+  }
+
+  console.log(indexerMetadata);
+
+  await indexerMetadata.save();
+}
+
 export async function createIndexer({
   address,
   metadata = '',
@@ -137,7 +189,7 @@ export async function createIndexer({
 }: CreateIndexerParams): Promise<Indexer> {
   const indexer = Indexer.create({
     id: address,
-    metadata: metadata,
+    metadataId: metadata ? address : undefined,
     totalStake: {
       era: -1,
       value: BigInt(0).toJSONType(),

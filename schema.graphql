@@ -79,8 +79,8 @@ type EraValue @jsonField {
 
 type Indexer @entity {
   id: ID! # Indexers address
-  metadata: String # Ipfs hash to metadata
   controller: String # Controller address for the indexer
+  metadata: IndexerMetadata
   # rewardPool: String! # Address for the reward pool contract
 
   commission: EraValue!
@@ -95,6 +95,13 @@ type Indexer @entity {
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
+}
+
+type IndexerMetadata @entity {
+  id: ID! # indexer address
+  metadata: String # Ipfs hash to metadata
+  name: String # indexer name
+  endpoint: String # indexer proxy endpoint
 }
 
 type Delegator @entity {
