@@ -18,8 +18,8 @@ import {
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-
-import axios from 'axios';
+import * as https from 'https';
+import { HttpRequest } from '../http';
 
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
@@ -28,7 +28,7 @@ export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
 export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
 
-type Metadata = { name: string; endpoint: string };
+type Metadata = { name: string; url: string };
 
 declare global {
   interface BigIntConstructor {
@@ -136,15 +136,18 @@ export async function decodeMetadata(
   metadata: string
 ): Promise<Metadata | undefined> {
   try {
-    const res = await axios({
-      method: 'post',
-      url: `https://unauthipfs.subquery.network/ipfs/api/v0/cat?arg=${metadata}`,
+    const requestOptions: https.RequestOptions = {
+      hostname: 'unauthipfs.subquery.network',
+      method: 'POST',
+      path: `/ipfs/api/v0/cat?arg=${metadata}`,
       headers: {},
-    });
+    };
 
-    const json = res.data as Metadata;
+    const request = new HttpRequest();
+    const resp = (await request.send(requestOptions)) as Metadata;
+
     logger.info(`Fetched metadata from cid: ${metadata}`);
-    return json;
+    return resp;
   } catch (error) {
     logger.error(`Cannot decode metadata from cid: ${metadata}`);
     logger.error(error);
@@ -157,7 +160,7 @@ export async function upsertIndexerMetadata(
   metadata: string
 ): Promise<void> {
   const metadataRes = await decodeMetadata(metadata);
-  const { name, endpoint } = metadataRes || {};
+  const { name, url } = metadataRes || {};
 
   let indexerMetadata = await IndexerMetadata.get(metadata);
 
@@ -166,15 +169,13 @@ export async function upsertIndexerMetadata(
       id: address,
       metadata: metadata,
       name,
-      endpoint,
+      endpoint: url,
     });
   } else {
     indexerMetadata.metadata = metadata;
     indexerMetadata.name = name;
-    indexerMetadata.endpoint = endpoint;
+    indexerMetadata.endpoint = url;
   }
-
-  console.log(indexerMetadata);
 
   await indexerMetadata.save();
 }
