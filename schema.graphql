@@ -77,11 +77,17 @@ type EraValue @jsonField {
   lastEvent: String #topicHandler:blockNumber
 }
 
+type IndexerMetadata @entity {
+  id: ID! # indexer address
+  metadataCID: String # Ipfs hash to metadata
+  name: String # indexer name
+  url: String # indexer proxy endpoint
+}
+
 type Indexer @entity {
   id: ID! # Indexers address
-  metadata: String # Ipfs hash to metadata
   controller: String # Controller address for the indexer
-  # rewardPool: String! # Address for the reward pool contract
+  metadata: IndexerMetadata
 
   commission: EraValue!
   totalStake: EraValue!

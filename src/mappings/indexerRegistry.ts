@@ -16,6 +16,7 @@ import {
   createIndexer,
   reportException,
   reportIndexerNonExistException,
+  upsertIndexerMetadata,
 } from './utils';
 
 /* Indexer Registry Handlers */
@@ -26,17 +27,20 @@ export async function handleRegisterIndexer(
   assert(event.args, 'No event args');
   const { indexer: indexerAddress, metadata } = event.args;
 
+  const cid = bytesToIpfsCid(metadata);
+  await upsertIndexerMetadata(indexerAddress, cid);
+
   const indexer = await Indexer.get(indexerAddress);
 
   if (indexer) {
-    indexer.metadata = bytesToIpfsCid(metadata);
+    indexer.metadataId = indexerAddress;
     indexer.active = true;
     indexer.lastEvent = `handleRegisterIndexer:${event.blockNumber}`;
     await indexer.save();
   } else {
     await createIndexer({
       address: indexerAddress,
-      metadata: metadata,
+      metadata,
       createdBlock: event.blockNumber,
       lastEvent: `handleRegisterIndexer:${event.blockNumber}`,
     });
@@ -80,7 +84,10 @@ export async function handleUpdateIndexerMetadata(
   const lastEvent = `handleUpdateIndexerMetadata: ${event.blockNumber}`;
 
   if (indexer) {
-    indexer.metadata = bytesToIpfsCid(event.args.metadata);
+    const cid = bytesToIpfsCid(event.args.metadata);
+    await upsertIndexerMetadata(address, cid);
+
+    indexer.metadataId = address;
     indexer.lastEvent = lastEvent;
     await indexer.save();
   } else {
