@@ -48,6 +48,7 @@
     "@types/pino": "^7.0.5",
     "@types/validator": "^13.7.1",
     "bs58": "^4.0.1",
+    "node-fetch": "^2.6.7",
     "pino": "^7.8.0"
   },
   "resolutions": {

@@ -1,10 +1,16 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
 import { EraManager } from '@subql/contract-sdk';
 import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
+import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import fetch from 'node-fetch';
 
 import {
   Delegator,
@@ -17,9 +23,6 @@ import {
 } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-import * as https from 'https';
-import { HttpRequest } from '../http';
 
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
@@ -132,24 +135,23 @@ export async function upsertEraValue(
   };
 }
 
+const metadataHost = 'https://unauthipfs.subquery.network/ipfs/api/v0/cat?arg=';
+
 export async function decodeMetadata(
-  metadata: string
+  metadataCID: string
 ): Promise<Metadata | undefined> {
   try {
-    const requestOptions: https.RequestOptions = {
-      hostname: 'unauthipfs.subquery.network',
-      method: 'POST',
-      path: `/ipfs/api/v0/cat?arg=${metadata}`,
-      headers: {},
-    };
+    const url = `${metadataHost}${metadataCID}`;
+    const response = await fetch(url, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-    const request = new HttpRequest();
-    const resp = (await request.send(requestOptions)) as Metadata;
-
-    logger.info(`Fetched metadata from cid: ${metadata}`);
-    return resp;
+    const metadata = response.json() as unknown as Metadata;
+    logger.info(`Fetched metadata from cid: ${metadataCID}`);
+    return metadata;
   } catch (error) {
-    logger.error(`Cannot decode metadata from cid: ${metadata}`);
+    logger.error(`Cannot decode metadata from cid: ${metadataCID}`);
     logger.error(error);
     return undefined;
   }
@@ -157,27 +159,26 @@ export async function decodeMetadata(
 
 export async function upsertIndexerMetadata(
   address: string,
-  metadata: string
+  metadataCID: string
 ): Promise<void> {
-  const metadataRes = await decodeMetadata(metadata);
+  const metadataRes = await decodeMetadata(metadataCID);
   const { name, url } = metadataRes || {};
 
-  let indexerMetadata = await IndexerMetadata.get(metadata);
-
-  if (!indexerMetadata) {
-    indexerMetadata = IndexerMetadata.create({
+  let metadata = await IndexerMetadata.get(metadataCID);
+  if (!metadata) {
+    metadata = IndexerMetadata.create({
       id: address,
-      metadata: metadata,
+      metadataCID,
       name,
-      endpoint: url,
+      url,
     });
   } else {
-    indexerMetadata.metadata = metadata;
-    indexerMetadata.name = name;
-    indexerMetadata.endpoint = url;
+    metadata.metadataCID = metadataCID;
+    metadata.name = name;
+    metadata.url = url;
   }
 
-  await indexerMetadata.save();
+  await metadata.save();
 }
 
 export async function createIndexer({
