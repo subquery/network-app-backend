@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527' #moonbase alpha
-  endpoint: 'wss://moonbeam-alpha.api.onfinality.io/public-ws'
+  endpoint: 'wss://moonbeam-alpha.api.onfinality.io/ws?apikey=e7acc294-c859-48ed-a742-5aadf0a084b9'
   dictionary: 'https://api.subquery.network/sq/subquery/go-dict'
 
   chaintypes:
