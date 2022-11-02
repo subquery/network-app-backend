@@ -278,7 +278,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: stateChannel
-        address: '0xc3CffBcD31e00adB82E54F4EB7512AbC78b90000'
+        address: '0xCa5952Ce8EdcE65cfF76cCfB0f79FE3485179130'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -286,7 +286,7 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - ChannelOpen(uint256 channelId, address indexer, address consumer, uint256 total, uint256 expiredAt, bytes32 deploymentId)
+              - ChannelOpen(uint256 indexed channelId, address indexer, address consumer, uint256 total, uint256 expiredAt, bytes32 deploymentId, bytes callback)
         - handler: handleChannelExtend
           kind: substrate/FrontierEvmEvent
           filter:
