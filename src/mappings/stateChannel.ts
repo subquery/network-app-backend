@@ -20,8 +20,15 @@ export async function handleChannelOpen(
   logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
 
-  const { channelId, indexer, consumer, total, expiredAt, deploymentId } =
-    event.args;
+  const {
+    channelId,
+    indexer,
+    consumer,
+    total,
+    price,
+    expiredAt,
+    deploymentId,
+  } = event.args;
 
   const sc = StateChannel.create({
     id: channelId.toHexString(),
@@ -29,6 +36,7 @@ export async function handleChannelOpen(
     consumer: consumer,
     status: ChannelStatus.OPEN,
     total: total.toBigInt(),
+    price: price.toBigInt(),
     spent: BigInt(0),
     isFinal: false,
     expiredAt: new Date(expiredAt.toNumber() * 1000),

@@ -274,6 +274,7 @@ type StateChannel @entity {
   status: ChannelStatus!
   deploymentId: String!
   total: BigInt!
+  price: BigInt!
   spent: BigInt!
   isFinal: Boolean!
   expiredAt: Date!
