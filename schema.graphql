@@ -272,7 +272,7 @@ type StateChannel @entity {
   indexer: String!
   consumer: String!
   status: ChannelStatus!
-  deploymentId: String!
+  deployment: Deployment!
   total: BigInt!
   price: BigInt!
   spent: BigInt!
