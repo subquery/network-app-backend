@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { ethers } from 'ethers';
 import {
   ChannelOpenEvent,
   ChannelExtendEvent,
@@ -23,17 +24,22 @@ export async function handleChannelOpen(
   const {
     channelId,
     indexer,
-    consumer,
+    consumer: agent,
     total,
     price,
     expiredAt,
     deploymentId,
+    callback,
   } = event.args;
+
+  const abi = ethers.utils.defaultAbiCoder;
+  const consumer = abi.decode(['address'], callback);
 
   const sc = StateChannel.create({
     id: channelId.toHexString(),
     indexer: indexer,
-    consumer: consumer,
+    consumer: consumer.toString(),
+    agent,
     status: ChannelStatus.OPEN,
     total: total.toBigInt(),
     price: price.toBigInt(),
@@ -44,6 +50,7 @@ export async function handleChannelOpen(
     deploymentId: bytesToIpfsCid(deploymentId),
     terminateByIndexer: false,
     startTime: event.blockTimestamp,
+    lastEvent: `handleChannelOpen:${event.transactionHash}`,
   });
 
   await sc.save();
