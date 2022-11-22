@@ -1,6 +1,6 @@
 # Subquery Network Subql Project
 
-Subql project for indexing data for Subquery Network
+Subql project for indexing data for Subquery Network (Moonbase Alpha Testnet)
 
 ## Building
 
