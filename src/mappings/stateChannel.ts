@@ -24,7 +24,7 @@ export async function handleChannelOpen(
   const {
     channelId,
     indexer,
-    consumer: agent,
+    consumer: creator,
     total,
     price,
     expiredAt,
@@ -33,7 +33,8 @@ export async function handleChannelOpen(
   } = event.args;
 
   const abi = ethers.utils.defaultAbiCoder;
-  const consumer = abi.decode(['address'], callback);
+  const consumer = abi.decode(['address'], callback)[0] as string;
+  const agent = creator === consumer ? consumer : undefined;
 
   const sc = StateChannel.create({
     id: channelId.toHexString(),
