@@ -3,7 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { EraManager__factory, Staking__factory } from '@subql/contract-sdk';
+import { EraManager__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
