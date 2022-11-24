@@ -157,10 +157,7 @@ export async function handleRemoveDelegation(
   );
 
   await delegation.save();
-
-  if (source === indexer) {
-    await updateIndexerCapacity(indexer, event);
-  }
+  await updateIndexerCapacity(indexer, event);
 }
 
 export async function handleWithdrawRequested(

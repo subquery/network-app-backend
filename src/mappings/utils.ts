@@ -331,11 +331,13 @@ export async function updateIndexerCapacity(
     const indexerStake = delegation?.amount;
     const indexerTotalStake = indexer?.totalStake;
 
-    const stakeCurr = BigNumber.from(indexerStake?.value.value);
-    const stakeAfter = BigNumber.from(indexerStake?.valueAfter.value);
+    const stakeCurr = BigNumber.from(indexerStake?.value.value ?? 0);
+    const stakeAfter = BigNumber.from(indexerStake?.valueAfter.value ?? 0);
 
-    const totalStakeCurr = BigNumber.from(indexerTotalStake?.value.value);
-    const totalStakeAfter = BigNumber.from(indexerTotalStake?.valueAfter.value);
+    const totalStakeCurr = BigNumber.from(indexerTotalStake?.value.value ?? 0);
+    const totalStakeAfter = BigNumber.from(
+      indexerTotalStake?.valueAfter.value ?? 0
+    );
 
     const current =
       stakeCurr?.mul(leverageLimit).sub(totalStakeCurr || 0) ||
