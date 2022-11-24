@@ -105,6 +105,14 @@ export function getWithdrawlId(delegator: string, index: BigNumber): string {
   return `${delegator}:${index.toHexString()}`;
 }
 
+export function bigNumberFrom(value: unknown): BigNumber {
+  try {
+    return BigNumber.from(value);
+  } catch (e) {
+    return BigNumber.from(0);
+  }
+}
+
 export async function upsertEraValue(
   eraManager: EraManager,
   eraValue: EraValue | undefined,
@@ -331,20 +339,14 @@ export async function updateIndexerCapacity(
     const indexerStake = delegation?.amount;
     const indexerTotalStake = indexer?.totalStake;
 
-    const stakeCurr = BigNumber.from(indexerStake?.value.value ?? 0);
-    const stakeAfter = BigNumber.from(indexerStake?.valueAfter.value ?? 0);
+    const stakeCurr = bigNumberFrom(indexerStake?.value.value);
+    const stakeAfter = bigNumberFrom(indexerStake?.valueAfter.value);
 
-    const totalStakeCurr = BigNumber.from(indexerTotalStake?.value.value ?? 0);
-    const totalStakeAfter = BigNumber.from(
-      indexerTotalStake?.valueAfter.value ?? 0
-    );
+    const totalStakeCurr = bigNumberFrom(indexerTotalStake?.value.value);
+    const totalStakeAfter = bigNumberFrom(indexerTotalStake?.valueAfter.value);
 
-    const current =
-      stakeCurr?.mul(leverageLimit).sub(totalStakeCurr || 0) ||
-      BigNumber.from(0);
-    const after =
-      stakeAfter?.mul(leverageLimit).sub(totalStakeAfter || 0) ||
-      BigNumber.from(0);
+    const current = stakeCurr.mul(leverageLimit).sub(totalStakeCurr);
+    const after = stakeAfter.mul(leverageLimit).sub(totalStakeAfter);
 
     const currentEra = await eraManager.eraNumber().then((r) => r.toNumber());
 
