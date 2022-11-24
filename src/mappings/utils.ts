@@ -33,6 +33,7 @@ import assert from 'assert';
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
 export const STAKING_ADDRESS = deploymentFile.Staking.address;
+export const INDEXER_REGISTRY_ADDRESS = deploymentFile.IndexerRegistry.address;
 export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
@@ -111,6 +112,8 @@ export function bigNumberFrom(value: unknown): BigNumber {
   } catch (e) {
     return BigNumber.from(0);
   }
+export function min(a: BigNumber, b: BigNumber): BigNumber {
+  return a.lte(b) ? a : b;
 }
 
 export async function upsertEraValue(
@@ -225,6 +228,7 @@ export async function createIndexer({
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
+    maxUnstakeAmount: BigInt(0),
     commission: {
       era: -1,
       value: BigInt(0).toJSONType(),

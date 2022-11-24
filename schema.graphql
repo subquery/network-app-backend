@@ -91,7 +91,11 @@ type Indexer @entity {
 
   commission: EraValue!
   totalStake: EraValue!
+<<<<<<< HEAD
   capacity: EraValue!
+=======
+  maxUnstakeAmount: BigInt!
+>>>>>>> 5f400e2 (update graphql schema add updateMaxUnstakeAmount)
 
   projects: [DeploymentIndexer] @derivedFrom(field: "indexer")
   delegations: [Delegation] @derivedFrom(field: "indexer")
