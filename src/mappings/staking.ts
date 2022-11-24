@@ -22,21 +22,15 @@ import {
   updateTotalDelegation,
   reportException,
   updateTotalLock,
+  updateIndexerCapacity,
+  getWithdrawlId,
+  getDelegationId,
 } from './utils';
-import { BigNumber } from '@ethersproject/bignumber';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
-
-function getDelegationId(delegator: string, indexer: string): string {
-  return `${delegator}:${indexer}`;
-}
-
-function getWithdrawlId(delegator: string, index: BigNumber): string {
-  return `${delegator}:${index.toHexString()}`;
-}
 
 async function createWithdrawl({
   id,
@@ -124,6 +118,7 @@ export async function handleAddDelegation(
 
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
+  await updateIndexerCapacity(indexer, event);
 }
 
 export async function handleRemoveDelegation(
@@ -162,6 +157,7 @@ export async function handleRemoveDelegation(
   );
 
   await delegation.save();
+  await updateIndexerCapacity(indexer, event);
 }
 
 export async function handleWithdrawRequested(

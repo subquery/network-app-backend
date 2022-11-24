@@ -7,9 +7,14 @@
 
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
-import { EraManager } from '@subql/contract-sdk';
+import {
+  EraManager,
+  EraManager__factory,
+  Staking__factory,
+} from '@subql/contract-sdk';
 import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import FrontierEthProvider from './ethProvider';
 import fetch from 'node-fetch';
 
 import {
@@ -20,12 +25,14 @@ import {
   JSONBigInt,
   Exception,
   TotalLock,
+  Delegation,
 } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
 
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
+export const STAKING_ADDRESS = deploymentFile.Staking.address;
 export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
@@ -89,6 +96,22 @@ export const operations: Record<string, (a: bigint, b: bigint) => bigint> = {
   sub: (a, b) => a - b,
   replace: (a, b) => b,
 };
+
+export function getDelegationId(delegator: string, indexer: string): string {
+  return `${delegator}:${indexer}`;
+}
+
+export function getWithdrawlId(delegator: string, index: BigNumber): string {
+  return `${delegator}:${index.toHexString()}`;
+}
+
+export function bigNumberFrom(value: unknown): BigNumber {
+  try {
+    return BigNumber.from(value);
+  } catch (e) {
+    return BigNumber.from(0);
+  }
+}
 
 export async function upsertEraValue(
   eraManager: EraManager,
@@ -192,6 +215,11 @@ export async function createIndexer({
   const indexer = Indexer.create({
     id: address,
     metadataId: metadata ? address : undefined,
+    capacity: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
     totalStake: {
       era: -1,
       value: BigInt(0).toJSONType(),
@@ -246,6 +274,7 @@ export async function updateTotalStake(
     );
 
     await indexer.save();
+    await updateIndexerCapacity(indexerAddress, event);
   } else {
     await reportIndexerNonExistException(
       'updateTotalStake',
@@ -286,6 +315,55 @@ export async function updateTotalDelegation(
   }
 
   await delegator.save();
+}
+
+export async function updateIndexerCapacity(
+  address: string,
+  event: FrontierEvmEvent
+): Promise<void> {
+  const indexer = await Indexer.get(address);
+  const delegationId = getDelegationId(address, address);
+  const delegation = await Delegation.get(delegationId);
+  const staking = Staking__factory.connect(
+    STAKING_ADDRESS,
+    new FrontierEthProvider()
+  );
+  const eraManager = EraManager__factory.connect(
+    ERA_MANAGER_ADDRESS,
+    new FrontierEthProvider()
+  );
+
+  const leverageLimit = await staking.indexerLeverageLimit();
+
+  if (indexer) {
+    const indexerStake = delegation?.amount;
+    const indexerTotalStake = indexer?.totalStake;
+
+    const stakeCurr = bigNumberFrom(indexerStake?.value.value);
+    const stakeAfter = bigNumberFrom(indexerStake?.valueAfter.value);
+
+    const totalStakeCurr = bigNumberFrom(indexerTotalStake?.value.value);
+    const totalStakeAfter = bigNumberFrom(indexerTotalStake?.valueAfter.value);
+
+    const current = stakeCurr.mul(leverageLimit).sub(totalStakeCurr);
+    const after = stakeAfter.mul(leverageLimit).sub(totalStakeAfter);
+
+    const currentEra = await eraManager.eraNumber().then((r) => r.toNumber());
+
+    indexer.capacity = {
+      era: currentEra,
+      value: current.toBigInt().toJSONType(),
+      valueAfter: after.toBigInt().toJSONType(),
+    };
+
+    await indexer.save();
+  } else {
+    await reportIndexerNonExistException(
+      'updateIndexerCapacity',
+      address,
+      event
+    );
+  }
 }
 
 export async function updateTotalLock(
