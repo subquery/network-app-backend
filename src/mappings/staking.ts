@@ -23,21 +23,14 @@ import {
   reportException,
   updateTotalLock,
   updateIndexerCapacity,
+  getWithdrawlId,
+  getDelegationId,
 } from './utils';
-import { BigNumber } from '@ethersproject/bignumber';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
-
-export function getDelegationId(delegator: string, indexer: string): string {
-  return `${delegator}:${indexer}`;
-}
-
-function getWithdrawlId(delegator: string, index: BigNumber): string {
-  return `${delegator}:${index.toHexString()}`;
-}
 
 async function createWithdrawl({
   id,

@@ -71,6 +71,14 @@ BigInt.fromJSONType = function (value: JSONBigInt): bigint {
   return BigNumber.from(value.value).toBigInt();
 };
 
+export function getDelegationId(delegator: string, indexer: string): string {
+  return `${delegator}:${indexer}`;
+}
+
+export function getWithdrawlId(delegator: string, index: BigNumber): string {
+  return `${delegator}:${index.toHexString()}`;
+}
+
 export function bytesToIpfsCid(raw: string): string {
   // Add our default ipfs values for first 2 bytes:
   // function:0x12=sha2, size:0x20=256 bits
