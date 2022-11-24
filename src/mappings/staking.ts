@@ -3,7 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { EraManager__factory } from '@subql/contract-sdk';
+import { EraManager__factory, Staking__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
@@ -22,6 +22,7 @@ import {
   updateTotalDelegation,
   reportException,
   updateTotalLock,
+  updateIndexerCapacity,
 } from './utils';
 import { BigNumber } from '@ethersproject/bignumber';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
@@ -30,7 +31,7 @@ import { CreateWithdrawlParams } from '../interfaces';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
-function getDelegationId(delegator: string, indexer: string): string {
+export function getDelegationId(delegator: string, indexer: string): string {
   return `${delegator}:${indexer}`;
 }
 
@@ -124,6 +125,7 @@ export async function handleAddDelegation(
 
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
+  await updateIndexerCapacity(indexer, event);
 }
 
 export async function handleRemoveDelegation(
@@ -162,6 +164,10 @@ export async function handleRemoveDelegation(
   );
 
   await delegation.save();
+
+  if (source === indexer) {
+    await updateIndexerCapacity(indexer, event);
+  }
 }
 
 export async function handleWithdrawRequested(
