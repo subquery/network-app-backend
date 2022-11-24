@@ -29,7 +29,6 @@ import {
 } from '../types';
 import { CreateIndexerParams } from '../interfaces';
 import assert from 'assert';
-import { getDelegationId } from './staking';
 
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
@@ -71,14 +70,6 @@ BigInt.fromJSONType = function (value: JSONBigInt): bigint {
   return BigNumber.from(value.value).toBigInt();
 };
 
-export function getDelegationId(delegator: string, indexer: string): string {
-  return `${delegator}:${indexer}`;
-}
-
-export function getWithdrawlId(delegator: string, index: BigNumber): string {
-  return `${delegator}:${index.toHexString()}`;
-}
-
 export function bytesToIpfsCid(raw: string): string {
   // Add our default ipfs values for first 2 bytes:
   // function:0x12=sha2, size:0x20=256 bits
@@ -105,6 +96,14 @@ export const operations: Record<string, (a: bigint, b: bigint) => bigint> = {
   sub: (a, b) => a - b,
   replace: (a, b) => b,
 };
+
+export function getDelegationId(delegator: string, indexer: string): string {
+  return `${delegator}:${indexer}`;
+}
+
+export function getWithdrawlId(delegator: string, index: BigNumber): string {
+  return `${delegator}:${index.toHexString()}`;
+}
 
 export async function upsertEraValue(
   eraManager: EraManager,
