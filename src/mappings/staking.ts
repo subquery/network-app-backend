@@ -31,7 +31,6 @@ import {
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
-import { BigNumber } from 'ethers';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 

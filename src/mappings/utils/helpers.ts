@@ -13,6 +13,7 @@ import assert from 'assert';
 export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
 export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
 export const STAKING_ADDRESS = deploymentFile.Staking.address;
+export const INDEXER_REGISTRY_ADDRESS = deploymentFile.IndexerRegistry.address;
 export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
@@ -49,6 +50,13 @@ BigInt.fromJSONType = function (value: JSONBigInt): bigint {
 
   return BigNumber.from(value.value).toBigInt();
 };
+
+export function bigNumbertoJSONType(value: BigNumber): JSONBigInt {
+  return {
+    type: 'bigint',
+    value: value.toHexString(),
+  };
+}
 
 export function bytesToIpfsCid(raw: string): string {
   // Add our default ipfs values for first 2 bytes:

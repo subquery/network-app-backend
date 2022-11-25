@@ -22,9 +22,11 @@ import {
 } from '../../types';
 import {
   bigNumberFrom,
+  bigNumbertoJSONType,
   decodeMetadata,
   ERA_MANAGER_ADDRESS,
   getDelegationId,
+  INDEXER_REGISTRY_ADDRESS,
   min,
   operations,
   reportIndexerNonExistException,
@@ -76,7 +78,7 @@ export async function createIndexer({
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
-    maxUnstakeAmount: BigInt(0),
+    maxUnstakeAmount: BigInt(0).toJSONType(),
     commission: {
       era: -1,
       value: BigInt(0).toJSONType(),
@@ -146,7 +148,7 @@ export async function updateMaxUnstakeAmount(
     new FrontierEthProvider()
   );
   const indexerRegistry = IndexerRegistry__factory.connect(
-    STAKING_ADDRESS,
+    INDEXER_REGISTRY_ADDRESS,
     new FrontierEthProvider()
   );
 
@@ -165,7 +167,9 @@ export async function updateMaxUnstakeAmount(
     const ownStakeAfter = bigNumberFrom(ownStake?.valueAfter.value);
 
     if (leverageLimit.eq(1)) {
-      indexer.maxUnstakeAmount = ownStakeAfter.sub(minStakingAmount).toBigInt();
+      indexer.maxUnstakeAmount = bigNumbertoJSONType(
+        ownStakeAfter.sub(minStakingAmount)
+      );
     } else {
       const maxUnstakeAmount = min(
         ownStakeAfter.sub(minStakingAmount),
@@ -175,9 +179,9 @@ export async function updateMaxUnstakeAmount(
           .div(leverageLimit.sub(1))
       );
 
-      indexer.maxUnstakeAmount = (
+      indexer.maxUnstakeAmount = bigNumbertoJSONType(
         maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount
-      ).toBigInt();
+      );
     }
 
     await indexer.save();
