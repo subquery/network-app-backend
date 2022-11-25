@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { EraManager__factory } from '@subql/contract-sdk';
 import {
@@ -25,6 +26,7 @@ import {
   updateIndexerCapacity,
   getWithdrawlId,
   getDelegationId,
+  updateMaxUnstakeAmount,
 } from './utils';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
@@ -80,6 +82,15 @@ export async function handleAddDelegation(
     indexer === source && !delegation
   );
 
+  await updateTotalStake(
+    eraManager,
+    indexer,
+    amountBn,
+    'add',
+    event,
+    indexer === source && !delegation
+  );
+
   if (!delegation) {
     // Indexers first stake is effective immediately
     const eraAmount = await upsertEraValue(
@@ -97,28 +108,17 @@ export async function handleAddDelegation(
       amount: eraAmount,
       createdBlock: event.blockNumber,
     });
-
-    await updateTotalStake(
-      eraManager,
-      indexer,
-      amountBn,
-      'add',
-      event,
-      indexer === source
-    );
   } else {
     delegation.amount = await upsertEraValue(
       eraManager,
       delegation.amount,
       amountBn
     );
-
-    await updateTotalStake(eraManager, indexer, amountBn, 'add', event);
   }
-
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
+  await updateMaxUnstakeAmount(indexer, event);
 }
 
 export async function handleRemoveDelegation(
@@ -158,6 +158,7 @@ export async function handleRemoveDelegation(
 
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
+  await updateMaxUnstakeAmount(indexer, event);
 }
 
 export async function handleWithdrawRequested(

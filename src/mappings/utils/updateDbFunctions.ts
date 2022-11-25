@@ -1,116 +1,97 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
-import bs58 from 'bs58';
-import { BigNumber } from '@ethersproject/bignumber';
 import {
   EraManager,
   EraManager__factory,
+  IndexerRegistry__factory,
   Staking__factory,
 } from '@subql/contract-sdk';
-import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-import FrontierEthProvider from './ethProvider';
-import fetch from 'node-fetch';
-
+import FrontierEthProvider from '../ethProvider';
+import { BigNumber } from 'ethers';
+import { CreateIndexerParams } from '../../interfaces';
 import {
-  Delegator,
-  Indexer,
   IndexerMetadata,
+  Indexer,
   EraValue,
   JSONBigInt,
-  Exception,
-  TotalLock,
   Delegation,
-} from '../types';
-import { CreateIndexerParams } from '../interfaces';
-import assert from 'assert';
+  Delegator,
+  TotalLock,
+} from '../../types';
+import {
+  bigNumberFrom,
+  bigNumbertoJSONType,
+  decodeMetadata,
+  ERA_MANAGER_ADDRESS,
+  getDelegationId,
+  INDEXER_REGISTRY_ADDRESS,
+  min,
+  operations,
+  reportIndexerNonExistException,
+  STAKING_ADDRESS,
+} from './helpers';
 
-export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
-export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
-export const STAKING_ADDRESS = deploymentFile.Staking.address;
-export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
-export const SA_REGISTRY_ADDRESS =
-  deploymentFile.ServiceAgreementRegistry.address;
-export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
+export async function upsertIndexerMetadata(
+  address: string,
+  metadataCID: string
+): Promise<void> {
+  const metadataRes = await decodeMetadata(metadataCID);
+  const { name, url } = metadataRes || {};
 
-type Metadata = { name: string; url: string };
-
-declare global {
-  interface BigIntConstructor {
-    fromJSONType(value: unknown): bigint;
-  }
-  interface BigInt {
-    toJSON(): string;
-    toJSONType(): JSONBigInt;
-    fromJSONType(value: unknown): bigint;
-  }
-}
-
-BigInt.prototype.toJSON = function (): string {
-  return BigNumber.from(this).toHexString();
-};
-
-BigInt.prototype.toJSONType = function () {
-  return {
-    type: 'bigint',
-    value: this.toJSON(),
-  };
-};
-
-BigInt.fromJSONType = function (value: JSONBigInt): bigint {
-  if (value?.type !== 'bigint' && !value.value) {
-    throw new Error('Value is not JSOBigInt');
+  let metadata = await IndexerMetadata.get(metadataCID);
+  if (!metadata) {
+    metadata = IndexerMetadata.create({
+      id: address,
+      metadataCID,
+      name,
+      url,
+    });
+  } else {
+    metadata.metadataCID = metadataCID;
+    metadata.name = name;
+    metadata.url = url;
   }
 
-  return BigNumber.from(value.value).toBigInt();
-};
-
-export function bytesToIpfsCid(raw: string): string {
-  // Add our default ipfs values for first 2 bytes:
-  // function:0x12=sha2, size:0x20=256 bits
-  // and cut off leading "0x"
-  const hashHex = '1220' + raw.slice(2);
-  const hashBytes = Buffer.from(hashHex, 'hex');
-  return bs58.encode(hashBytes);
+  await metadata.save();
 }
 
-export function cidToBytes32(cid: string): string {
-  return '0x' + Buffer.from(bs58.decode(cid)).slice(2).toString('hex');
-}
+export async function createIndexer({
+  address,
+  metadata = '',
+  active = true,
+  createdBlock,
+  lastEvent,
+  controller,
+}: CreateIndexerParams): Promise<Indexer> {
+  const indexer = Indexer.create({
+    id: address,
+    metadataId: metadata ? address : undefined,
+    capacity: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    totalStake: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    maxUnstakeAmount: BigInt(0).toJSONType(),
+    commission: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    active,
+    controller,
+    createdBlock,
+    lastEvent,
+  });
 
-export function bnToDate(bn: BigNumber): Date {
-  return new Date(bn.toNumber() * 1000);
-}
-
-export function generatePlanId(indexer: string, idx: BigNumber): string {
-  return `${indexer}:${idx.toHexString()}`;
-}
-
-export const operations: Record<string, (a: bigint, b: bigint) => bigint> = {
-  add: (a, b) => a + b,
-  sub: (a, b) => a - b,
-  replace: (a, b) => b,
-};
-
-export function getDelegationId(delegator: string, indexer: string): string {
-  return `${delegator}:${indexer}`;
-}
-
-export function getWithdrawlId(delegator: string, index: BigNumber): string {
-  return `${delegator}:${index.toHexString()}`;
-}
-
-export function bigNumberFrom(value: unknown): BigNumber {
-  try {
-    return BigNumber.from(value);
-  } catch (e) {
-    return BigNumber.from(0);
-  }
+  await indexer.save();
+  return indexer;
 }
 
 export async function upsertEraValue(
@@ -158,100 +139,59 @@ export async function upsertEraValue(
   };
 }
 
-const metadataHost = 'https://unauthipfs.subquery.network/ipfs/api/v0/cat?arg=';
-
-export async function decodeMetadata(
-  metadataCID: string
-): Promise<Metadata | undefined> {
-  try {
-    const url = `${metadataHost}${metadataCID}`;
-    const response = await fetch(url, {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const metadata = response.json() as unknown as Metadata;
-    logger.info(`Fetched metadata from cid: ${metadataCID}`);
-    return metadata;
-  } catch (error) {
-    logger.error(`Cannot decode metadata from cid: ${metadataCID}`);
-    logger.error(error);
-    return undefined;
-  }
-}
-
-export async function upsertIndexerMetadata(
-  address: string,
-  metadataCID: string
-): Promise<void> {
-  const metadataRes = await decodeMetadata(metadataCID);
-  const { name, url } = metadataRes || {};
-
-  let metadata = await IndexerMetadata.get(metadataCID);
-  if (!metadata) {
-    metadata = IndexerMetadata.create({
-      id: address,
-      metadataCID,
-      name,
-      url,
-    });
-  } else {
-    metadata.metadataCID = metadataCID;
-    metadata.name = name;
-    metadata.url = url;
-  }
-
-  await metadata.save();
-}
-
-export async function createIndexer({
-  address,
-  metadata = '',
-  active = true,
-  createdBlock,
-  lastEvent,
-  controller,
-}: CreateIndexerParams): Promise<Indexer> {
-  const indexer = Indexer.create({
-    id: address,
-    metadataId: metadata ? address : undefined,
-    capacity: {
-      era: -1,
-      value: BigInt(0).toJSONType(),
-      valueAfter: BigInt(0).toJSONType(),
-    },
-    totalStake: {
-      era: -1,
-      value: BigInt(0).toJSONType(),
-      valueAfter: BigInt(0).toJSONType(),
-    },
-    commission: {
-      era: -1,
-      value: BigInt(0).toJSONType(),
-      valueAfter: BigInt(0).toJSONType(),
-    },
-    active,
-    controller,
-    createdBlock,
-    lastEvent,
-  });
-
-  await indexer.save();
-  return indexer;
-}
-
-export async function reportIndexerNonExistException(
-  handler: string,
+export async function updateMaxUnstakeAmount(
   indexerAddress: string,
-  event: FrontierEvmEvent<any>
+  event: FrontierEvmEvent
 ): Promise<void> {
-  logger.error(`${handler}: Expected indexer to exist: ${indexerAddress}`);
-
-  return reportException(
-    handler,
-    `Expected indexer to exist: ${indexerAddress}`,
-    event
+  const staking = Staking__factory.connect(
+    STAKING_ADDRESS,
+    new FrontierEthProvider()
   );
+  const indexerRegistry = IndexerRegistry__factory.connect(
+    INDEXER_REGISTRY_ADDRESS,
+    new FrontierEthProvider()
+  );
+
+  const leverageLimit = await staking.indexerLeverageLimit();
+  const minStakingAmount = await indexerRegistry.minimumStakingAmount();
+
+  const indexer = await Indexer.get(indexerAddress);
+
+  if (indexer) {
+    const { totalStake } = indexer;
+
+    const delegationId = getDelegationId(indexerAddress, indexerAddress);
+    const { amount: ownStake } = (await Delegation.get(delegationId)) || {};
+
+    const totalStakingAmountAfter = bigNumberFrom(totalStake.valueAfter.value);
+    const ownStakeAfter = bigNumberFrom(ownStake?.valueAfter.value);
+
+    if (leverageLimit.eq(1)) {
+      indexer.maxUnstakeAmount = bigNumbertoJSONType(
+        ownStakeAfter.sub(minStakingAmount)
+      );
+    } else {
+      const maxUnstakeAmount = min(
+        ownStakeAfter.sub(minStakingAmount),
+        ownStakeAfter
+          .mul(leverageLimit)
+          .sub(totalStakingAmountAfter)
+          .div(leverageLimit.sub(1))
+      );
+
+      indexer.maxUnstakeAmount = bigNumbertoJSONType(
+        maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount
+      );
+    }
+
+    await indexer.save();
+  } else {
+    await reportIndexerNonExistException(
+      'updateMaxUnstakeAmount',
+      indexerAddress,
+      event
+    );
+  }
 }
 
 export async function updateTotalStake(
@@ -416,22 +356,4 @@ export async function updateTotalLock(
   }
 
   await totalLock.save();
-}
-
-export async function reportException(
-  handler: string,
-  error: string,
-  event: FrontierEvmEvent<any>
-): Promise<void> {
-  const id = `${event.blockNumber}:${event.transactionHash}`;
-
-  const exception = Exception.create({
-    id,
-    error: error || `Error: ${id}`,
-    handler,
-  });
-
-  await exception.save();
-
-  assert(false, `${id}: Error at ${handler}: ${error});`);
 }
