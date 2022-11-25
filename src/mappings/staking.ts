@@ -1,7 +1,9 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import {
   EraManager__factory,
@@ -36,6 +38,7 @@ import {
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
 import { CreateWithdrawlParams } from '../interfaces';
+import { BigNumber } from 'ethers';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
@@ -180,11 +183,8 @@ export async function handleAddDelegation(
 
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
-<<<<<<< HEAD
   await updateIndexerCapacity(indexer, event);
-=======
   await updateMaxUnstakeAmount(indexer, event);
->>>>>>> 5f400e2 (update graphql schema add updateMaxUnstakeAmount)
 }
 
 export async function handleRemoveDelegation(
@@ -223,11 +223,8 @@ export async function handleRemoveDelegation(
   );
 
   await delegation.save();
-<<<<<<< HEAD
   await updateIndexerCapacity(indexer, event);
-=======
   await updateMaxUnstakeAmount(indexer, event);
->>>>>>> 5f400e2 (update graphql schema add updateMaxUnstakeAmount)
 }
 
 export async function handleWithdrawRequested(
