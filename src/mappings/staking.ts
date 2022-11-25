@@ -82,6 +82,15 @@ export async function handleAddDelegation(
     indexer === source && !delegation
   );
 
+  await updateTotalStake(
+    eraManager,
+    indexer,
+    amountBn,
+    'add',
+    event,
+    indexer === source && !delegation
+  );
+
   if (!delegation) {
     // Indexers first stake is effective immediately
     const eraAmount = await upsertEraValue(
@@ -106,15 +115,6 @@ export async function handleAddDelegation(
       amountBn
     );
   }
-
-  await updateTotalStake(
-    eraManager,
-    indexer,
-    amountBn,
-    'add',
-    event,
-    indexer === source && !delegation
-  );
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
