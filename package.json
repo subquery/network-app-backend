@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@subql/contract-sdk": "^0.10.2-44",
-    "@subql/frontier-evm-processor": "0.0.3-0",
+    "@subql/frontier-evm-processor": "^0.1.2",
     "@types/pino": "^7.0.5",
     "@types/validator": "^13.7.1",
     "bs58": "^4.0.1",
