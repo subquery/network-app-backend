@@ -1,9 +1,14 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import {
   EraManager,
   EraManager__factory,
+  IndexerRegistry__factory,
   Staking__factory,
 } from '@subql/contract-sdk';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
@@ -24,6 +29,7 @@ import {
   decodeMetadata,
   ERA_MANAGER_ADDRESS,
   getDelegationId,
+  min,
   operations,
   reportIndexerNonExistException,
   STAKING_ADDRESS,
@@ -133,6 +139,59 @@ export async function upsertEraValue(
     value: newValue,
     valueAfter,
   };
+}
+
+export async function updateMaxUnstakeAmount(
+  indexerAddress: string,
+  event: FrontierEvmEvent
+): Promise<void> {
+  const staking = Staking__factory.connect(
+    STAKING_ADDRESS,
+    new FrontierEthProvider()
+  );
+  const indexerRegistry = IndexerRegistry__factory.connect(
+    STAKING_ADDRESS,
+    new FrontierEthProvider()
+  );
+
+  const leverageLimit = await staking.indexerLeverageLimit();
+  const minStakingAmount = await indexerRegistry.minimumStakingAmount();
+
+  const indexer = await Indexer.get(indexerAddress);
+
+  if (indexer) {
+    const { totalStake } = indexer;
+
+    const delegationId = getDelegationId(indexerAddress, indexerAddress);
+    const { amount: ownStake } = (await Delegation.get(delegationId)) || {};
+
+    const totalStakingAmountAfter = bigNumberFrom(totalStake.valueAfter.value);
+    const ownStakeAfter = bigNumberFrom(ownStake?.valueAfter.value);
+
+    if (leverageLimit.eq(1)) {
+      indexer.maxUnstakeAmount = ownStakeAfter.sub(minStakingAmount).toBigInt();
+    } else {
+      const maxUnstakeAmount = min(
+        ownStakeAfter.sub(minStakingAmount),
+        ownStakeAfter
+          .mul(leverageLimit)
+          .sub(totalStakingAmountAfter)
+          .div(leverageLimit.sub(1))
+      );
+
+      indexer.maxUnstakeAmount = (
+        maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount
+      ).toBigInt();
+    }
+
+    await indexer.save();
+  } else {
+    await reportIndexerNonExistException(
+      'updateMaxUnstakeAmount',
+      indexerAddress,
+      event
+    );
+  }
 }
 
 export async function updateTotalStake(

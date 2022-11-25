@@ -5,11 +5,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import {
-  EraManager__factory,
-  IndexerRegistry__factory,
-  Staking__factory,
-} from '@subql/contract-sdk';
+import { EraManager__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
@@ -31,9 +27,7 @@ import {
   updateIndexerCapacity,
   getWithdrawlId,
   getDelegationId,
-  STAKING_ADDRESS,
-  reportIndexerNonExistException,
-  min,
+  updateMaxUnstakeAmount,
 } from './utils';
 import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
 import { createIndexer } from './utils';
@@ -64,61 +58,6 @@ async function createWithdrawl({
   });
 
   await withdrawl.save();
-}
-
-async function updateMaxUnstakeAmount(
-  indexerAddress: string,
-  event: FrontierEvmEvent
-): Promise<void> {
-  const staking = Staking__factory.connect(
-    STAKING_ADDRESS,
-    new FrontierEthProvider()
-  );
-  const indexerRegistry = IndexerRegistry__factory.connect(
-    STAKING_ADDRESS,
-    new FrontierEthProvider()
-  );
-
-  const leverageLimit = await staking.indexerLeverageLimit();
-  const minStakingAmount = await indexerRegistry.minimumStakingAmount();
-
-  const indexer = await Indexer.get(indexerAddress);
-
-  if (indexer) {
-    const { totalStake } = indexer;
-
-    const delegationId = getDelegationId(indexerAddress, indexerAddress);
-    const { amount: ownStake } = (await Delegation.get(delegationId)) || {};
-
-    const totalStakingAmountAfter = BigNumber.from(
-      totalStake.valueAfter.value ?? 0
-    );
-    const ownStakeAfter = BigNumber.from(ownStake?.valueAfter.value ?? 0);
-
-    if (leverageLimit.eq(1)) {
-      indexer.maxUnstakeAmount = ownStakeAfter.sub(minStakingAmount).toBigInt();
-    } else {
-      const maxUnstakeAmount = min(
-        ownStakeAfter.sub(minStakingAmount),
-        ownStakeAfter
-          .mul(leverageLimit)
-          .sub(totalStakingAmountAfter)
-          .div(leverageLimit.sub(1))
-      );
-
-      indexer.maxUnstakeAmount = (
-        maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount
-      ).toBigInt();
-    }
-
-    await indexer.save();
-  } else {
-    await reportIndexerNonExistException(
-      'updateMaxUnstakeAmount',
-      indexerAddress,
-      event
-    );
-  }
 }
 
 export async function handleAddDelegation(
@@ -162,25 +101,22 @@ export async function handleAddDelegation(
       amount: eraAmount,
       createdBlock: event.blockNumber,
     });
-
-    await updateTotalStake(
-      eraManager,
-      indexer,
-      amountBn,
-      'add',
-      event,
-      indexer === source
-    );
   } else {
     delegation.amount = await upsertEraValue(
       eraManager,
       delegation.amount,
       amountBn
     );
-
-    await updateTotalStake(eraManager, indexer, amountBn, 'add', event);
   }
 
+  await updateTotalStake(
+    eraManager,
+    indexer,
+    amountBn,
+    'add',
+    event,
+    indexer === source && !delegation
+  );
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
