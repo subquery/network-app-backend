@@ -65,7 +65,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x09BC7383b37046A658d8594F03d7A827a03F1bFA'
+        address: '0x2f744920315B9c9CbEEaD435B0737A76Bec56e14'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -99,7 +99,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x6e18729C5dc6238B5dfF48cDc356e973565dda98'
+        address: '0x89b8288640B27A4bA43a4C95C4B627adD129Feb5'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -138,7 +138,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0x909BaF0C75fBD1AeCB731dd8799da0457cB91E1a'
+        address: '0x81169D2B0ABa33C54b8847F523DAA2D7dcE4de59'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -182,7 +182,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0x52d524054e5A54Dd99aD00C3E1F9541bcEFb8Ec8'
+        address: '0xDB2436c1e15E19dDff95c2d5255B119437B3cf41'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -216,7 +216,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0x328D2f0Dd21Ed3E51b45Ba8272C539b0c754B544'
+        address: '0x6C7d2D40bB68533bC09534597e044d94Df27c77F'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -230,7 +230,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0x4b8eA88f02eB393418A3489920051ac54D3832c8'
+        address: '0x832143d3297F0150993DE44039889d41fc094494'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -254,7 +254,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x5c0b44e4B569147EEc45eaB05Eaac017A5cf770A'
+        address: '0x79847328ECE315bb704f7Cb23c703cc89CFcB262'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -278,7 +278,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: stateChannel
-        address: '0xc42939904aB03BD9Dcabb45e5d053D3a52b0c3F4'
+        address: '0x6A61C5b6B7bd3df0d093bd38BD195b7A1efD5817'
     mapping:
       file: ./dist/index.js
       handlers:
