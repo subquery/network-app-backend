@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { Indexer } from '../types';
+import { Controller, Indexer } from '../types';
 import {
   bytesToIpfsCid,
   createIndexer,
@@ -150,5 +150,15 @@ export async function handleRemoveControllerAccount(
       event.args.indexer,
       event
     );
+  }
+
+  const controller = await Controller.get(
+    `${event.args.indexer}:${event.args.controller}`
+  );
+
+  if (controller) {
+    controller.lastEvent = lastEvent;
+    controller.isSet = false;
+    await controller.save();
   }
 }

@@ -87,8 +87,6 @@ type IndexerMetadata @entity {
 type Indexer @entity {
   id: ID! # Indexers address
   controller: String # Controller address for the indexer
-  controllerHistory: [Controller]! @derivedFrom(field: "indexer")
-
   metadata: IndexerMetadata
 
   commission: EraValue!
@@ -96,6 +94,7 @@ type Indexer @entity {
   capacity: EraValue!
   maxUnstakeAmount: JSONBigInt!
 
+  controllers: [Controller] @derivedFrom(field: "indexer")
   projects: [DeploymentIndexer] @derivedFrom(field: "indexer")
   delegations: [Delegation] @derivedFrom(field: "indexer")
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
@@ -108,27 +107,11 @@ type Indexer @entity {
 }
 
 type Controller @entity {
-  id: ID! # Indexer Address + Controller Address 
-
-  controller: String! # Controller Address
+  id: ID! # indexer Address + controller Address 
+  controller: String! 
   indexer: Indexer!
 
-  createdBlock: Int
-  lastEvent: String #topicHandler:blockNumber
-}
-
-type Consumer @entity {
-  id: ID! # Consumer Address  
-  user: [User] @derivedFrom(field: "consumer")
-
-  createdBlock: Int
-  lastEvent: String #topicHandler:blockNumber
-}
-
-type User @entity {
-  id: ID! # User address
-  consumer: Consumer!
-  
+  isSet: Boolean! # Controller currently set to this indexer
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
@@ -163,6 +146,22 @@ type Withdrawl @entity {
 
   status: WithdrawalStatus!
 
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type Consumer @entity {
+  id: ID! # Consumer Address  
+  users: [User] @derivedFrom(field: "consumer")
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type User @entity {
+  id: ID! # User address
+  consumer: Consumer!
+  
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
