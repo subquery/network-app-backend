@@ -225,6 +225,16 @@ dataSources:
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
+        - handler: handleUserAdded
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - UserAdded(address indexed consumer, address user)
+        - handler: handleUserRemoved
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - UserRemoved(address indexed consumer, address user)
   - <<: *frontier
     processor:
       <<: *frontier-processor
