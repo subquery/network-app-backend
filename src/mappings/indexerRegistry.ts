@@ -16,6 +16,7 @@ import {
   createIndexer,
   reportException,
   reportIndexerNonExistException,
+  upsertControllerAccount,
   upsertIndexerMetadata,
 } from './utils';
 
@@ -104,18 +105,24 @@ export async function handleSetControllerAccount(
 ): Promise<void> {
   logger.info('handleSetControllerAccount');
   assert(event.args, 'No event args');
-  const address = event.args.indexer;
+  const { indexer: indexerAddress, controller: controllerAddress } = event.args;
 
-  const indexer = await Indexer.get(address);
+  const indexer = await Indexer.get(indexerAddress);
   const lastEvent = `handleSetControllerAccount:${event.blockNumber}`;
 
   if (indexer) {
     indexer.controller = event.args.controller;
     indexer.lastEvent = lastEvent;
     await indexer.save();
+    await upsertControllerAccount(
+      indexerAddress,
+      controllerAddress,
+      event,
+      lastEvent
+    );
   } else {
     await reportIndexerNonExistException(
-      'HandleSetControllerAccount',
+      'handleSetControllerAccount',
       event.args.indexer,
       event
     );
