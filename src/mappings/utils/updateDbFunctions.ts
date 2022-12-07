@@ -19,6 +19,7 @@ import {
   Delegation,
   Delegator,
   TotalLock,
+  Controller,
 } from '../../types';
 import {
   bigNumberFrom,
@@ -32,30 +33,6 @@ import {
   reportIndexerNonExistException,
   STAKING_ADDRESS,
 } from './helpers';
-
-export async function upsertIndexerMetadata(
-  address: string,
-  metadataCID: string
-): Promise<void> {
-  const metadataRes = await decodeMetadata(metadataCID);
-  const { name, url } = metadataRes || {};
-
-  let metadata = await IndexerMetadata.get(metadataCID);
-  if (!metadata) {
-    metadata = IndexerMetadata.create({
-      id: address,
-      metadataCID,
-      name,
-      url,
-    });
-  } else {
-    metadata.metadataCID = metadataCID;
-    metadata.name = name;
-    metadata.url = url;
-  }
-
-  await metadata.save();
-}
 
 export async function createIndexer({
   address,
@@ -92,6 +69,55 @@ export async function createIndexer({
 
   await indexer.save();
   return indexer;
+}
+
+export async function upsertIndexerMetadata(
+  address: string,
+  metadataCID: string
+): Promise<void> {
+  const metadataRes = await decodeMetadata(metadataCID);
+  const { name, url } = metadataRes || {};
+
+  let metadata = await IndexerMetadata.get(metadataCID);
+  if (!metadata) {
+    metadata = IndexerMetadata.create({
+      id: address,
+      metadataCID,
+      name,
+      url,
+    });
+  } else {
+    metadata.metadataCID = metadataCID;
+    metadata.name = name;
+    metadata.url = url;
+  }
+
+  await metadata.save();
+}
+
+export async function upsertControllerAccount(
+  indexerAddress: string,
+  controllerAddress: string,
+  event: FrontierEvmEvent,
+  lastEvent: string
+): Promise<void> {
+  let controller = await Controller.get(controllerAddress);
+
+  if (!controller) {
+    controller = Controller.create({
+      id: `${indexerAddress}:${controllerAddress}`,
+      indexerId: indexerAddress,
+      controller: controllerAddress,
+      lastEvent,
+      createdBlock: event.blockNumber,
+      isActive: true,
+    });
+  } else {
+    controller.indexerId = indexerAddress;
+    controller.lastEvent = lastEvent;
+    controller.isActive = true;
+  }
+  await controller.save();
 }
 
 export async function upsertEraValue(

@@ -94,6 +94,7 @@ type Indexer @entity {
   capacity: EraValue!
   maxUnstakeAmount: JSONBigInt!
 
+  controllers: [Controller] @derivedFrom(field: "indexer")
   projects: [DeploymentIndexer] @derivedFrom(field: "indexer")
   delegations: [Delegation] @derivedFrom(field: "indexer")
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
@@ -101,6 +102,16 @@ type Indexer @entity {
   lastRewardedEra: String # hex encoding
   active: Boolean!
 
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type Controller @entity {
+  id: ID! # indexer Address + controller Address 
+  controller: String! 
+  indexer: Indexer!
+
+  isActive: Boolean! # Controller currently set to this indexer
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
@@ -135,6 +146,22 @@ type Withdrawl @entity {
 
   status: WithdrawalStatus!
 
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type Consumer @entity {
+  id: ID! # Consumer Address  
+  users: [User] @derivedFrom(field: "consumer")
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type User @entity {
+  id: ID! # User address
+  consumer: Consumer!
+  
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
