@@ -158,7 +158,7 @@ export async function handleRemoveControllerAccount(
 
   if (controller) {
     controller.lastEvent = lastEvent;
-    controller.isSet = false;
+    controller.isActive = false;
     await controller.save();
   }
 }

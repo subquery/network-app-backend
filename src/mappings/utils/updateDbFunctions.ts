@@ -110,12 +110,12 @@ export async function upsertControllerAccount(
       controller: controllerAddress,
       lastEvent,
       createdBlock: event.blockNumber,
-      isSet: true,
+      isActive: true,
     });
   } else {
     controller.indexerId = indexerAddress;
     controller.lastEvent = lastEvent;
-    controller.isSet = true;
+    controller.isActive = true;
   }
   await controller.save();
 }

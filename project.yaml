@@ -51,7 +51,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0x9bc2828501b9C2296004fEF05102ed38F441CC1b'
+        address: '0x7a91eF214454a4C26A66B8091AB740B5ec369691'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -99,7 +99,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x89b8288640B27A4bA43a4C95C4B627adD129Feb5'
+        address: '0x759e46e0176eF48309d313654cC1FceCc0E9890b'
     mapping:
       file: ./dist/index.js
       handlers:

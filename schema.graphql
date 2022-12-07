@@ -111,7 +111,7 @@ type Controller @entity {
   controller: String! 
   indexer: Indexer!
 
-  isSet: Boolean! # Controller currently set to this indexer
+  isActive: Boolean! # Controller currently set to this indexer
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
