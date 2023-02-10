@@ -27,12 +27,12 @@ export async function handlePlanTemplateCreated(
     new FrontierEthProvider()
   );
 
-  const rawPlanTemplate = await planManager.planTemplates(
-    event.args.planTemplateId
+  const rawPlanTemplate = await planManager.getPlanTemplate(
+    event.args.templateId
   );
 
   const planTemplate = PlanTemplate.create({
-    id: event.args.planTemplateId.toHexString(),
+    id: event.args.templateId.toHexString(),
     period: rawPlanTemplate.period.toBigInt(),
     dailyReqCap: rawPlanTemplate.dailyReqCap.toBigInt(),
     rateLimit: rawPlanTemplate.rateLimit.toBigInt(),
@@ -53,7 +53,7 @@ export async function handlePlanTemplateMetadataUpdated(
   logger.info('handlePlanTemplateMetadataUpdated');
   assert(event.args, 'No event args');
 
-  const id = event.args.planTemplateId.toHexString();
+  const id = event.args.templateId.toHexString();
 
   const planTemplate = await PlanTemplate.get(id);
   assert(planTemplate, `Plan template not found. templateId="${id}"`);
@@ -69,7 +69,7 @@ export async function handlePlanTemplateStatusUpdated(
   logger.info('handlePlanTemplateStatusUpdated');
   assert(event.args, 'No event args');
 
-  const id = event.args.planTemplateId.toHexString();
+  const id = event.args.templateId.toHexString();
   const planTemplate = await PlanTemplate.get(id);
   assert(planTemplate, `Plan template not found. templateId="${id}"`);
 
@@ -106,10 +106,9 @@ export async function handlePlanRemoved(
 ): Promise<void> {
   logger.info('handlePlanRemoved');
   assert(event.args, 'No event args');
-
-  const planId = generatePlanId(event.args.source, event.args.id);
-
+  const planId = event.args.planId.toHexString();
   const plan = await Plan.get(planId);
+
   assert(plan, `Plan not found. planId="${planId}"`);
 
   plan.active = false;

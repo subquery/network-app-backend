@@ -1,10 +1,14 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import {
+  FrontierEthProvider,
+  FrontierEvmEvent,
+} from '@subql/frontier-evm-processor';
 import {
   RegisterIndexerEvent,
   RemoveControllerAccountEvent,
+  SetCommissionRateEvent,
   SetControllerAccountEvent,
   UnregisterIndexerEvent,
   UpdateMetadataEvent,
@@ -14,11 +18,14 @@ import { Controller, Indexer } from '../types';
 import {
   bytesToIpfsCid,
   createIndexer,
+  ERA_MANAGER_ADDRESS,
   reportException,
   reportIndexerNonExistException,
   upsertControllerAccount,
+  upsertEraValue,
   upsertIndexerMetadata,
 } from './utils';
+import { EraManager__factory } from '@subql/contract-sdk';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -161,4 +168,41 @@ export async function handleRemoveControllerAccount(
     controller.isActive = false;
     await controller.save();
   }
+}
+
+export async function handleSetCommissionRate(
+  event: FrontierEvmEvent<SetCommissionRateEvent['args']>
+): Promise<void> {
+  logger.info('handleSetCommissionRate');
+  assert(event.args, 'No event args');
+
+  const address = event.args.indexer;
+  const eraManager = EraManager__factory.connect(
+    ERA_MANAGER_ADDRESS,
+    new FrontierEthProvider()
+  );
+
+  const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
+  let indexer = await Indexer.get(address);
+
+  if (!indexer) {
+    indexer = await createIndexer({
+      address,
+      active: true,
+      lastEvent,
+      createdBlock: event.blockNumber,
+    });
+  }
+
+  indexer.commission = await upsertEraValue(
+    eraManager,
+    indexer.commission,
+    event.args.amount.toBigInt(),
+    'replace',
+    // Apply instantly when era is -1, this is an indication that indexer has just registered
+    indexer.commission.era === -1
+  );
+  indexer.lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
+
+  await indexer.save();
 }
