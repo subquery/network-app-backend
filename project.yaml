@@ -22,7 +22,7 @@ network:
 
 x-frontier: &frontier
   kind: substrate/FrontierEvm
-  startBlock: 3301462
+  startBlock: 3717981
   processor: &frontier-processor
     file: './dist/frontierEvm.js'
   assets:
@@ -44,6 +44,8 @@ x-frontier: &frontier
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
+    disputeManager:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
 
 dataSources:
   - <<: *frontier
@@ -51,7 +53,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0x7a91eF214454a4C26A66B8091AB740B5ec369691'
+        address: '0xD4cd9D8C6CE931a76E0525A7d9643677F1AA1F51'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -65,7 +67,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: indexerRegistry
-        address: '0x2f744920315B9c9CbEEaD435B0737A76Bec56e14'
+        address: '0xee8E989c88c427d0fAf1D448d4657bdFBE5a5D80'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -94,12 +96,17 @@ dataSources:
           filter:
             topics:
               - UnregisterIndexer(address indexed indexer)
+        - handler: handleSetCommissionRate
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - SetCommissionRate(address indexed indexer, uint256 amount)
   - <<: *frontier
     processor:
       <<: *frontier-processor
       options:
         abi: staking
-        address: '0x759e46e0176eF48309d313654cC1FceCc0E9890b'
+        address: '0x3E7DA8F65E980f09c35118E5F7332412747D3636'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -117,7 +124,7 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+              - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index, uint8 _type)
         - handler: handleWithdrawClaimed
           kind: substrate/FrontierEvmEvent
           filter:
@@ -128,17 +135,12 @@ dataSources:
           filter:
             topics:
               - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
-        - handler: handleSetCommissionRate
-          kind: substrate/FrontierEvmEvent
-          filter:
-            topics:
-              - SetCommissionRate(address indexed indexer, uint256 amount)
   - <<: *frontier
     processor:
       <<: *frontier-processor
       options:
         abi: queryRegistry
-        address: '0x81169D2B0ABa33C54b8847F523DAA2D7dcE4de59'
+        address: '0x938e3d4BC2280ee27cbb0b0c0A6859eE09cDe629'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -182,7 +184,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: planManager
-        address: '0xDB2436c1e15E19dDff95c2d5255B119437B3cf41'
+        address: '0x608D10db5a800c86bD5192dCE07D352c12624EBd'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -205,18 +207,18 @@ dataSources:
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - PlanCreated(address indexed creator, bytes32 indexed deploymentId, uint256 planTemplateId, uint256 planId, uint256 price)
+              - PlanCreated(uint256 indexed planId, address creator, bytes32 deploymentId, uint256 planTemplateId, uint256 price)
         - handler: handlePlanRemoved
           kind: substrate/FrontierEvmEvent
           filter:
             topics:
-              - PlanRemoved(address indexed source, uint256 id, bytes32 deploymentId)
+              - PlanRemoved(uint256 indexed planId)
   - <<: *frontier
     processor:
       <<: *frontier-processor
       options:
         abi: serviceAgreementRegistry
-        address: '0x6C7d2D40bB68533bC09534597e044d94Df27c77F'
+        address: '0xc739Da9EaB0704c4131842482429102C2A865363'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -240,7 +242,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: rewardsDistributor
-        address: '0x832143d3297F0150993DE44039889d41fc094494'
+        address: '0x6D2327f4536c34D397D749cF7D494f8aAfC996EF'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -264,7 +266,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: purchaseOfferMarket
-        address: '0x79847328ECE315bb704f7Cb23c703cc89CFcB262'
+        address: '0xEd77C568947dE17B2a1858886734f197141526Bb'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -288,7 +290,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: stateChannel
-        address: '0x6A61C5b6B7bd3df0d093bd38BD195b7A1efD5817'
+        address: '0x2276b04542ebC38f363D0F35fA9BFcD6Ce73C1C1'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -322,3 +324,22 @@ dataSources:
           filter:
             topics:
               - ChannelFinalize(uint256 channelId, uint256 total, uint256 remain)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: disputeManager
+        address: '0x5458Ef4596f6ef833009aeB4A5f99646f451BB7e'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleDisputeOpen
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - DisputeOpen(uint256 indexed disputeId, address fisherman, address indexer, uint8 _type)
+        - handler: handleDisputeFinalized
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)

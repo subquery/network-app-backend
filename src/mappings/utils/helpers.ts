@@ -45,7 +45,7 @@ BigInt.prototype.toJSONType = function () {
 
 BigInt.fromJSONType = function (value: JSONBigInt): bigint {
   if (value?.type !== 'bigint' && !value.value) {
-    throw new Error('Value is not JSOBigInt');
+    throw new Error('Value is not JSONBigInt');
   }
 
   return BigNumber.from(value.value).toBigInt();
