@@ -1687,10 +1687,10 @@
     reflect-metadata "^0.1.13"
     semver "^7.3.5"
 
-"@subql/contract-sdk@^0.11.1-0":
-  version "0.11.1-0"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.11.1-0.tgz#1875f7f4e9de62096352a233b5b309374b51311c"
-  integrity sha512-+YDtU00b0mEoK9ylScvh9nVsG0WnhknpB11ObMAdXWGDaV+CCKL+TQWNBIb7RvtnSYXj1nS8Q8U795JOgRJSCw==
+"@subql/contract-sdk@^0.11.1-1":
+  version "0.11.1-1"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.11.1-1.tgz#3fbac15c537c76616520ed3f93b547e4d34dcebc"
+  integrity sha512-ZgeTlJpFPRJeH6NGiSeyYT2YMyUF9Yjc21Jbc5NJc896ZoYnHu4uIjSVe5+0Q4buQ0LENe6HaF9NpgYGCXmyXg==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.5.2"
 

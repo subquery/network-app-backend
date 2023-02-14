@@ -44,6 +44,8 @@ x-frontier: &frontier
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
+    disputeManager:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
 
 dataSources:
   - <<: *frontier
@@ -51,7 +53,7 @@ dataSources:
       <<: *frontier-processor
       options:
         abi: eraManager
-        address: '0x7a91eF214454a4C26A66B8091AB740B5ec369691'
+        address: '0xD4cd9D8C6CE931a76E0525A7d9643677F1AA1F51'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -322,3 +324,22 @@ dataSources:
           filter:
             topics:
               - ChannelFinalize(uint256 channelId, uint256 total, uint256 remain)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: disputeManager
+        address: '0x5458Ef4596f6ef833009aeB4A5f99646f451BB7e'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleDisputeOpen
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - DisputeOpen(uint256 indexed disputeId, address fisherman, address indexer, uint8 _type)
+        - handler: handleDisputeFinalized
+          kind: substrate/FrontierEvmEvent
+          filter:
+            topics:
+              - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)

@@ -314,3 +314,28 @@ type StateChannel @entity {
 
   lastEvent: String #topicHandler:blockNumber
 }
+
+enum DisputeType {
+  POI
+  QUERY
+}
+
+enum DisputeState {
+  ONGOING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+type Disputes @entity {
+  id: ID! #disputeId
+  disputeType: DisputeType!
+  state: DisputeState!
+  isFinalized: Boolean!
+
+  fisherman: String!  
+  indexer: String!
+  
+  slashAmount: BigInt
+  returnAmount: BigInt
+}
