@@ -10,32 +10,34 @@ import assert from 'assert';
 import { Disputes, DisputeState, DisputeType } from '../types';
 
 function getDisputeType(type: number): DisputeType {
-  switch (type) {
-    case 0:
-      return DisputeType.POI;
-    case 1:
-      return DisputeType.QUERY;
-    default:
-      throw new Error(
-        `Unexpected dispute type "${type}" provided to function getDisputeType`
-      );
+  const typeMap: Record<number, DisputeType> = {
+    0: DisputeType.POI,
+    1: DisputeType.QUERY,
+  };
+
+  if (type in typeMap) {
+    return typeMap[type];
+  } else {
+    throw new Error(
+      `Unexpected dispute type "${type}" provided to function getDisputeType`
+    );
   }
 }
 
 function getDisputeState(state: number): DisputeState {
-  switch (state) {
-    case 0:
-      return DisputeState.ONGOING;
-    case 1:
-      return DisputeState.ACCEPTED;
-    case 2:
-      return DisputeState.REJECTED;
-    case 3:
-      return DisputeState.CANCELLED;
-    default:
-      throw new Error(
-        `Unexpected dispute state "${state}" provided to function getDisputeState`
-      );
+  const stateMap: Record<number, DisputeState> = {
+    0: DisputeState.ONGOING,
+    1: DisputeState.ACCEPTED,
+    2: DisputeState.REJECTED,
+    3: DisputeState.CANCELLED,
+  };
+
+  if (state in stateMap) {
+    return stateMap[state];
+  } else {
+    throw new Error(
+      `Unexpected dispute state "${state}" provided to function getDisputeState`
+    );
   }
 }
 
