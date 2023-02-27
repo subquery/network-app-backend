@@ -8,7 +8,7 @@ import {
   UserRemovedEvent,
 } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { Consumer, ServiceAgreement, User } from '../types';
-import { bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
+import { biToDate, bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 
@@ -30,7 +30,7 @@ export async function handleServiceAgreementCreated(
   );
   const { period, lockedAmount, planTemplateId } = agreement;
 
-  const endTime = new Date(Number(event.block.timestamp));
+  const endTime = biToDate(event.block.timestamp);
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
   const sa = ServiceAgreement.create({
@@ -40,7 +40,7 @@ export async function handleServiceAgreementCreated(
     deploymentId: bytesToIpfsCid(deploymentId),
     planTemplateId: planTemplateId.toHexString(),
     period: period.toBigInt(),
-    startTime: new Date(Number(event.block.timestamp)),
+    startTime: biToDate(event.block.timestamp),
     endTime,
     lockedAmount: lockedAmount.toBigInt(),
     createdBlock: event.blockNumber,

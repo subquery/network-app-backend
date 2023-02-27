@@ -25,6 +25,7 @@ import {
   getWithdrawlId,
   getDelegationId,
   updateMaxUnstakeAmount,
+  biToDate,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
@@ -46,7 +47,7 @@ async function createWithdrawl({
     delegator: delegator,
     indexer: indexer,
     index: index.toBigInt(),
-    startTime: new Date(Number(block.timestamp)),
+    startTime: biToDate(block.timestamp),
     amount: amount.toBigInt(),
     status,
     createdBlock: blockNumber,

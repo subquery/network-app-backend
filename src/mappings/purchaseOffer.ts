@@ -9,7 +9,7 @@ import {
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
 import { EthereumLog } from '@subql/types-ethereum';
 import { Offer, AcceptedOffer } from '../types';
-import { bytesToIpfsCid } from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
   event: EthereumLog<PurchaseOfferCreatedEvent['args']>
@@ -44,7 +44,7 @@ export async function handlePurchaseOfferCancelled(
   const offer = await Offer.get(event.args.offerId.toString());
   assert(offer, `offer not found. offerID="${event.args.offerId.toString()}"`);
 
-  offer.expireDate = new Date(Number(event.block.timestamp));
+  offer.expireDate = biToDate(event.block.timestamp);
   offer.withdrawn = true;
   offer.withdrawPenalty = event.args.penalty.toBigInt();
   offer.lastEvent = `handlePurchaseOfferCancelled:${event.blockNumber}`;

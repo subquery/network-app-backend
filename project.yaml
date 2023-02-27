@@ -15,6 +15,7 @@ schema:
 network:
   chainId: '80001' # Mumbai testnet 
   endpoint: 'https://polygon-mumbai.api.onfinality.io/rpc?apikey=6b43efc3-a13c-4250-9203-e097fb9f239'
+  dictionary: 'https://mumbai-dict-cr.api.onfinality.io'
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime 

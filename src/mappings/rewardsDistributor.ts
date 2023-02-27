@@ -15,7 +15,7 @@ import {
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/RewardsDistributer';
-import { REWARD_DIST_ADDRESS } from './utils';
+import { biToDate, REWARD_DIST_ADDRESS } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 
 import { BigNumber } from '@ethersproject/bignumber';
@@ -102,7 +102,7 @@ export async function handleRewardsClaimed(
       indexerAddress: event.args.indexer,
       delegatorAddress: event.args.delegator,
       amount: event.args.rewards.toBigInt(),
-      claimedTime: new Date(Number(event.block.timestamp)),
+      claimedTime: biToDate(event.block.timestamp),
       createdBlock: event.blockNumber,
     });
 

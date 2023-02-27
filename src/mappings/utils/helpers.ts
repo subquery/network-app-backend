@@ -75,6 +75,10 @@ export function bnToDate(bn: BigNumber): Date {
   return new Date(bn.toNumber() * 1000);
 }
 
+export function biToDate(bi: bigint): Date {
+  return new Date(Number(bi) * 1000);
+}
+
 export function generatePlanId(indexer: string, idx: BigNumber): string {
   return `${indexer}:${idx.toHexString()}`;
 }

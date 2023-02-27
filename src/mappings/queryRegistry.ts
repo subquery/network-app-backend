@@ -14,6 +14,7 @@ import {
   UpdateIndexingStatusToReadyEvent,
 } from '@subql/contract-sdk/typechain/QueryRegistry';
 import {
+  biToDate,
   bnToDate,
   bytesToIpfsCid,
   cidToBytes32,
@@ -85,8 +86,8 @@ export async function handleNewQuery(
     metadata: bytesToIpfsCid(event.args.metadata),
     currentDeployment: deploymentId,
     currentVersion,
-    updatedTimestamp: new Date(Number(event.block.timestamp)),
-    createdTimestamp: new Date(Number(event.block.timestamp)),
+    updatedTimestamp: biToDate(event.block.timestamp),
+    createdTimestamp: biToDate(event.block.timestamp),
     createdBlock: event.blockNumber,
   });
 
@@ -95,7 +96,7 @@ export async function handleNewQuery(
   const deployment = Deployment.create({
     id: deploymentId,
     version: currentVersion,
-    createdTimestamp: new Date(Number(event.block.timestamp)),
+    createdTimestamp: biToDate(event.block.timestamp),
     projectId,
     createdBlock: event.blockNumber,
   });
@@ -114,7 +115,7 @@ export async function handleUpdateQueryMetadata(
   assert(project, `Expected query (${queryId}) to exist`);
 
   project.metadata = bytesToIpfsCid(event.args.metadata);
-  project.updatedTimestamp = new Date(Number(event.block.timestamp));
+  project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleUpdateQueryMetadata:${event.blockNumber}`;
 
   await project.save();
@@ -132,7 +133,7 @@ export async function handleUpdateQueryDeployment(
   const deployment = Deployment.create({
     id: deploymentId,
     version,
-    createdTimestamp: new Date(Number(event.block.timestamp)),
+    createdTimestamp: biToDate(event.block.timestamp),
     projectId,
     createdBlock: event.blockNumber,
   });
@@ -145,7 +146,7 @@ export async function handleUpdateQueryDeployment(
 
   project.currentDeployment = deploymentId;
   project.currentVersion = version;
-  project.updatedTimestamp = new Date(Number(event.block.timestamp));
+  project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleUpdateQueryDeployment:${event.blockNumber}`;
 
   await project.save();
@@ -187,7 +188,7 @@ export async function handleIndexingUpdate(
       deploymentId,
       blockHeight: event.args.blockheight.toBigInt(),
       mmrRoot: event.args.mmrRoot,
-      timestamp: new Date(Number(event.block.timestamp)),
+      timestamp: biToDate(event.block.timestamp),
       status: Status.READY,
       lastEvent: `handleIndexingUpdate:forceUpsert:${event.blockNumber}`,
     });
@@ -218,13 +219,13 @@ export async function handleIndexingReady(
     await createDeploymentIndexer({
       indexerId: event.args.indexer,
       deploymentId,
-      timestamp: new Date(Number(event.block.timestamp)),
+      timestamp: biToDate(event.block.timestamp),
       status: Status.READY,
       lastEvent: `handleIndexingReady:forceUpsert:${event.blockNumber}`,
     });
   } else {
     indexer.status = Status.READY;
-    indexer.timestamp = new Date(Number(event.block.timestamp));
+    indexer.timestamp = biToDate(event.block.timestamp);
     indexer.lastEvent = `handleIndexingReady:${event.blockNumber}`;
 
     await indexer.save();

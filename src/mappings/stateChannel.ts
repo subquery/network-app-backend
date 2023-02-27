@@ -12,7 +12,7 @@ import {
   ChannelFinalizeEvent,
 } from '@subql/contract-sdk/typechain/StateChannel';
 import { StateChannel, ChannelStatus } from '../types';
-import { bytesToIpfsCid } from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 
 export async function handleChannelOpen(
@@ -50,7 +50,7 @@ export async function handleChannelOpen(
     terminatedAt: new Date(expiredAt.toNumber() * 1000),
     deploymentId: bytesToIpfsCid(deploymentId),
     terminateByIndexer: false,
-    startTime: new Date(Number(event.block.timestamp)),
+    startTime: biToDate(event.block.timestamp),
     lastEvent: `handleChannelOpen:${event.transactionHash}`,
   });
 

@@ -6,7 +6,7 @@ import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
 import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
 import { Era } from '../types';
-import { ERA_MANAGER_ADDRESS } from './utils';
+import { biToDate, ERA_MANAGER_ADDRESS } from './utils';
 
 /* Era Handlers */
 export async function handleNewEra(
@@ -20,14 +20,14 @@ export async function handleNewEra(
     const previousId = id.sub(1);
     const previousEra = await Era.get(previousId.toHexString());
     if (previousEra) {
-      previousEra.endTime = new Date(Number(event.block.timestamp));
+      previousEra.endTime = biToDate(event.block.timestamp);
       previousEra.lastEvent = `handleNewEra:${event.blockNumber}`;
       await previousEra.save();
     } else {
       const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
       const eraPeriod = await eraManager.eraPeriod();
 
-      const a = new Date(Number(event.block.timestamp));
+      const a = biToDate(event.block.timestamp);
       const startTime = new Date(
         a.getTime() - eraPeriod.toNumber() * 1000 // eraPeriod: seconds unit
       );
@@ -35,7 +35,7 @@ export async function handleNewEra(
       const previousEra = Era.create({
         id: previousId.toHexString(),
         startTime,
-        endTime: new Date(Number(event.block.timestamp)),
+        endTime: biToDate(event.block.timestamp),
         forceNext: true,
         createdBlock: event.blockNumber,
       });
@@ -45,7 +45,7 @@ export async function handleNewEra(
 
   const era = Era.create({
     id: id.toHexString(),
-    startTime: new Date(Number(event.block.timestamp)),
+    startTime: biToDate(event.block.timestamp),
     forceNext: false,
     createdBlock: event.blockNumber,
   });
