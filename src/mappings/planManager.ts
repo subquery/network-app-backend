@@ -11,21 +11,17 @@ import {
 } from '@subql/contract-sdk/typechain/PlanManager';
 import assert from 'assert';
 import { Plan, PlanTemplate } from '../types';
-import FrontierEthProvider from './ethProvider';
 import { bytesToIpfsCid, generatePlanId, PLAN_MANAGER_ADDRESS } from './utils';
 import { constants } from 'ethers';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 
 export async function handlePlanTemplateCreated(
-  event: FrontierEvmEvent<PlanTemplateCreatedEvent['args']>
+  event: EthereumLog<PlanTemplateCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateCreated');
   assert(event.args, 'No event args');
 
-  const planManager = PlanManager__factory.connect(
-    PLAN_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const planManager = PlanManager__factory.connect(PLAN_MANAGER_ADDRESS, api);
 
   const rawPlanTemplate = await planManager.getPlanTemplate(
     event.args.templateId
@@ -48,7 +44,7 @@ export async function handlePlanTemplateCreated(
 }
 
 export async function handlePlanTemplateMetadataUpdated(
-  event: FrontierEvmEvent<PlanTemplateMetadataChangedEvent['args']>
+  event: EthereumLog<PlanTemplateMetadataChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateMetadataUpdated');
   assert(event.args, 'No event args');
@@ -64,7 +60,7 @@ export async function handlePlanTemplateMetadataUpdated(
 }
 
 export async function handlePlanTemplateStatusUpdated(
-  event: FrontierEvmEvent<PlanTemplateStatusChangedEvent['args']>
+  event: EthereumLog<PlanTemplateStatusChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateStatusUpdated');
   assert(event.args, 'No event args');
@@ -80,7 +76,7 @@ export async function handlePlanTemplateStatusUpdated(
 }
 
 export async function handlePlanCreated(
-  event: FrontierEvmEvent<PlanCreatedEvent['args']>
+  event: EthereumLog<PlanCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanCreated');
   assert(event.args, 'No event args');
@@ -102,7 +98,7 @@ export async function handlePlanCreated(
 }
 
 export async function handlePlanRemoved(
-  event: FrontierEvmEvent<PlanRemovedEvent['args']>
+  event: EthereumLog<PlanRemovedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanRemoved');
   assert(event.args, 'No event args');

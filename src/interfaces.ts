@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 import { Status, WithdrawalStatus } from './types';
 
 export interface CreateWithdrawlParams {
@@ -12,7 +12,7 @@ export interface CreateWithdrawlParams {
   index: BigNumber;
   amount: BigNumber;
   status: WithdrawalStatus;
-  event: FrontierEvmEvent;
+  event: EthereumLog;
 }
 
 export interface CreateIndexerParams {
