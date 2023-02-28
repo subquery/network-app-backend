@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '80001' # Mumbai testnet 
-  endpoint: 'https://polygon-mumbai.g.alchemy.com/v2/-jJRnXiHZy3hYw117rzaA1IRzdTSF2YN'
+  endpoint: 'https://polygon-mumbai.g.alchemy.com/v2/olBcbaUN-00iYo-4VDlJYbkpCmj5rLY0'
   dictionary: 'https://mumbai-dict-cr.api.onfinality.io'
 
 x-ethereum: &ethereum
