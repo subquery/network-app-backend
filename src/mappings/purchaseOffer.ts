@@ -7,12 +7,12 @@ import {
   PurchaseOfferCancelledEvent,
   OfferAcceptedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 import { Offer, AcceptedOffer } from '../types';
-import { bytesToIpfsCid } from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
-  event: FrontierEvmEvent<PurchaseOfferCreatedEvent['args']>
+  event: EthereumLog<PurchaseOfferCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferCreated');
   assert(event.args, 'No event args');
@@ -36,7 +36,7 @@ export async function handlePurchaseOfferCreated(
 }
 
 export async function handlePurchaseOfferCancelled(
-  event: FrontierEvmEvent<PurchaseOfferCancelledEvent['args']>
+  event: EthereumLog<PurchaseOfferCancelledEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferCancelled');
   assert(event.args, 'No event args');
@@ -44,7 +44,7 @@ export async function handlePurchaseOfferCancelled(
   const offer = await Offer.get(event.args.offerId.toString());
   assert(offer, `offer not found. offerID="${event.args.offerId.toString()}"`);
 
-  offer.expireDate = new Date(event.blockTimestamp);
+  offer.expireDate = biToDate(event.block.timestamp);
   offer.withdrawn = true;
   offer.withdrawPenalty = event.args.penalty.toBigInt();
   offer.lastEvent = `handlePurchaseOfferCancelled:${event.blockNumber}`;
@@ -53,7 +53,7 @@ export async function handlePurchaseOfferCancelled(
 }
 
 export async function handlePurchaseOfferAccepted(
-  event: FrontierEvmEvent<OfferAcceptedEvent['args']>
+  event: EthereumLog<OfferAcceptedEvent['args']>
 ): Promise<void> {
   logger.info('handlePurchaseOfferAccepted');
   assert(event.args, 'No event args');

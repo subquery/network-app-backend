@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  FrontierEthProvider,
-  FrontierEvmEvent,
-} from '@subql/frontier-evm-processor';
-import {
   RegisterIndexerEvent,
   RemoveControllerAccountEvent,
   SetCommissionRateEvent,
@@ -26,10 +22,11 @@ import {
   upsertIndexerMetadata,
 } from './utils';
 import { EraManager__factory } from '@subql/contract-sdk';
+import { EthereumLog } from '@subql/types-ethereum';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
-  event: FrontierEvmEvent<RegisterIndexerEvent['args']>
+  event: EthereumLog<RegisterIndexerEvent['args']>
 ): Promise<void> {
   logger.info('handleRegisterIndexer');
   assert(event.args, 'No event args');
@@ -60,7 +57,7 @@ export async function handleRegisterIndexer(
 }
 
 export async function handleUnregisterIndexer(
-  event: FrontierEvmEvent<UnregisterIndexerEvent['args']>
+  event: EthereumLog<UnregisterIndexerEvent['args']>
 ): Promise<void> {
   logger.info('handleUnregisterIndexer');
   assert(event.args, 'No event args');
@@ -82,7 +79,7 @@ export async function handleUnregisterIndexer(
 }
 
 export async function handleUpdateIndexerMetadata(
-  event: FrontierEvmEvent<UpdateMetadataEvent['args']>
+  event: EthereumLog<UpdateMetadataEvent['args']>
 ): Promise<void> {
   logger.info('handleUpdateIndexerMetadata');
   assert(event.args, 'No event args');
@@ -108,7 +105,7 @@ export async function handleUpdateIndexerMetadata(
 }
 
 export async function handleSetControllerAccount(
-  event: FrontierEvmEvent<SetControllerAccountEvent['args']>
+  event: EthereumLog<SetControllerAccountEvent['args']>
 ): Promise<void> {
   logger.info('handleSetControllerAccount');
   assert(event.args, 'No event args');
@@ -137,7 +134,7 @@ export async function handleSetControllerAccount(
 }
 
 export async function handleRemoveControllerAccount(
-  event: FrontierEvmEvent<RemoveControllerAccountEvent['args']>
+  event: EthereumLog<RemoveControllerAccountEvent['args']>
 ): Promise<void> {
   logger.info('handleRemoveControllerAccount');
   assert(event.args, 'No event args');
@@ -171,16 +168,13 @@ export async function handleRemoveControllerAccount(
 }
 
 export async function handleSetCommissionRate(
-  event: FrontierEvmEvent<SetCommissionRateEvent['args']>
+  event: EthereumLog<SetCommissionRateEvent['args']>
 ): Promise<void> {
   logger.info('handleSetCommissionRate');
   assert(event.args, 'No event args');
 
   const address = event.args.indexer;
-  const eraManager = EraManager__factory.connect(
-    ERA_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
 
   const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);

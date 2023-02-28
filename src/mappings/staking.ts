@@ -13,8 +13,7 @@ import {
   UnbondCancelledEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer, WithdrawalStatus } from '../types';
-import FrontierEthProvider from './ethProvider';
+import { Delegation, Withdrawl, WithdrawalStatus } from '../types';
 import {
   ERA_MANAGER_ADDRESS,
   updateTotalStake,
@@ -26,8 +25,9 @@ import {
   getWithdrawlId,
   getDelegationId,
   updateMaxUnstakeAmount,
+  biToDate,
 } from './utils';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
@@ -41,13 +41,13 @@ async function createWithdrawl({
   status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
-  const { blockTimestamp, blockNumber } = event;
+  const { block, blockNumber } = event;
   const withdrawl = Withdrawl.create({
     id,
     delegator: delegator,
     indexer: indexer,
     index: index.toBigInt(),
-    startTime: blockTimestamp,
+    startTime: biToDate(block.timestamp),
     amount: amount.toBigInt(),
     status,
     createdBlock: blockNumber,
@@ -57,17 +57,14 @@ async function createWithdrawl({
 }
 
 export async function handleAddDelegation(
-  event: FrontierEvmEvent<DelegationAddedEvent['args']>
+  event: EthereumLog<DelegationAddedEvent['args']>
 ): Promise<void> {
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
   const { source, indexer, amount } = event.args;
   const id = getDelegationId(source, indexer);
-  const eraManager = EraManager__factory.connect(
-    ERA_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
@@ -120,17 +117,14 @@ export async function handleAddDelegation(
 }
 
 export async function handleRemoveDelegation(
-  event: FrontierEvmEvent<DelegationRemovedEvent['args']>
+  event: EthereumLog<DelegationRemovedEvent['args']>
 ): Promise<void> {
   logger.info('handleRemoveDelegation');
   assert(event.args, 'No event args');
 
   const { source, indexer, amount } = event.args;
   const id = getDelegationId(source, indexer);
-  const eraManager = EraManager__factory.connect(
-    ERA_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
 
   const delegation = await Delegation.get(id);
 
@@ -160,7 +154,7 @@ export async function handleRemoveDelegation(
 }
 
 export async function handleWithdrawRequested(
-  event: FrontierEvmEvent<UnbondRequestedEvent['args']>
+  event: EthereumLog<UnbondRequestedEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawRequested');
   assert(event.args, 'No event args');
@@ -187,7 +181,7 @@ export async function handleWithdrawRequested(
  *
  */
 export async function handleWithdrawClaimed(
-  event: FrontierEvmEvent<UnbondWithdrawnEvent['args']>
+  event: EthereumLog<UnbondWithdrawnEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');
@@ -213,7 +207,7 @@ export async function handleWithdrawClaimed(
 }
 
 export async function handleWithdrawCancelled(
-  event: FrontierEvmEvent<UnbondCancelledEvent['args']>
+  event: EthereumLog<UnbondCancelledEvent['args']>
 ): Promise<void> {
   logger.info('handleWithdrawClaimed');
   assert(event.args, 'No event args');

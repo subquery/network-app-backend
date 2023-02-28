@@ -3,8 +3,8 @@
 
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
-import deploymentFile from '@subql/contract-sdk/publish/moonbase.json';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import deploymentFile from '@subql/contract-sdk/publish/testnet.json';
+import { EthereumLog } from '@subql/types-ethereum';
 import fetch from 'node-fetch';
 
 import { JSONBigInt, Exception } from '../../types';
@@ -75,6 +75,10 @@ export function bnToDate(bn: BigNumber): Date {
   return new Date(bn.toNumber() * 1000);
 }
 
+export function biToDate(bi: bigint): Date {
+  return new Date(Number(bi) * 1000);
+}
+
 export function generatePlanId(indexer: string, idx: BigNumber): string {
   return `${indexer}:${idx.toHexString()}`;
 }
@@ -130,7 +134,7 @@ export async function decodeMetadata(
 export async function reportIndexerNonExistException(
   handler: string,
   indexerAddress: string,
-  event: FrontierEvmEvent<any>
+  event: EthereumLog<any>
 ): Promise<void> {
   logger.error(`${handler}: Expected indexer to exist: ${indexerAddress}`);
 
@@ -144,7 +148,7 @@ export async function reportIndexerNonExistException(
 export async function reportException(
   handler: string,
   error: string,
-  event: FrontierEvmEvent<any>
+  event: EthereumLog<any>
 ): Promise<void> {
   const id = `${event.blockNumber}:${event.transactionHash}`;
 

@@ -14,13 +14,13 @@ import {
   UpdateIndexingStatusToReadyEvent,
 } from '@subql/contract-sdk/typechain/QueryRegistry';
 import {
+  biToDate,
   bnToDate,
   bytesToIpfsCid,
   cidToBytes32,
   QUERY_REGISTRY_ADDRESS,
 } from './utils';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-import FrontierEthProvider from './ethProvider';
+import { EthereumLog } from '@subql/types-ethereum';
 import { ISaveDeploymentIndexer } from '../interfaces';
 
 function getDeploymentIndexerId(indexer: string, deploymentId: string): string {
@@ -42,7 +42,7 @@ async function createDeploymentIndexer({
   if (blockHeight === undefined) {
     const queryRegistryManager = QueryRegistry__factory.connect(
       QUERY_REGISTRY_ADDRESS,
-      new FrontierEthProvider()
+      api
     );
 
     const deploymentStatus =
@@ -71,7 +71,7 @@ async function createDeploymentIndexer({
 }
 
 export async function handleNewQuery(
-  event: FrontierEvmEvent<CreateQueryEvent['args']>
+  event: EthereumLog<CreateQueryEvent['args']>
 ): Promise<void> {
   logger.info('handleNewQuery');
   assert(event.args, 'No event args');
@@ -86,8 +86,8 @@ export async function handleNewQuery(
     metadata: bytesToIpfsCid(event.args.metadata),
     currentDeployment: deploymentId,
     currentVersion,
-    updatedTimestamp: event.blockTimestamp,
-    createdTimestamp: event.blockTimestamp,
+    updatedTimestamp: biToDate(event.block.timestamp),
+    createdTimestamp: biToDate(event.block.timestamp),
     createdBlock: event.blockNumber,
   });
 
@@ -96,7 +96,7 @@ export async function handleNewQuery(
   const deployment = Deployment.create({
     id: deploymentId,
     version: currentVersion,
-    createdTimestamp: event.blockTimestamp,
+    createdTimestamp: biToDate(event.block.timestamp),
     projectId,
     createdBlock: event.blockNumber,
   });
@@ -105,7 +105,7 @@ export async function handleNewQuery(
 }
 
 export async function handleUpdateQueryMetadata(
-  event: FrontierEvmEvent<UpdateQueryMetadataEvent['args']>
+  event: EthereumLog<UpdateQueryMetadataEvent['args']>
 ): Promise<void> {
   logger.info('handleUpdateQueryMetadata');
   assert(event.args, 'No event args');
@@ -115,14 +115,14 @@ export async function handleUpdateQueryMetadata(
   assert(project, `Expected query (${queryId}) to exist`);
 
   project.metadata = bytesToIpfsCid(event.args.metadata);
-  project.updatedTimestamp = event.blockTimestamp;
+  project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleUpdateQueryMetadata:${event.blockNumber}`;
 
   await project.save();
 }
 
 export async function handleUpdateQueryDeployment(
-  event: FrontierEvmEvent<UpdateQueryDeploymentEvent['args']>
+  event: EthereumLog<UpdateQueryDeploymentEvent['args']>
 ): Promise<void> {
   logger.info('handleUpdateQueryDeployment');
   assert(event.args, 'No event args');
@@ -133,7 +133,7 @@ export async function handleUpdateQueryDeployment(
   const deployment = Deployment.create({
     id: deploymentId,
     version,
-    createdTimestamp: event.blockTimestamp,
+    createdTimestamp: biToDate(event.block.timestamp),
     projectId,
     createdBlock: event.blockNumber,
   });
@@ -146,14 +146,14 @@ export async function handleUpdateQueryDeployment(
 
   project.currentDeployment = deploymentId;
   project.currentVersion = version;
-  project.updatedTimestamp = event.blockTimestamp;
+  project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleUpdateQueryDeployment:${event.blockNumber}`;
 
   await project.save();
 }
 
 export async function handleStartIndexing(
-  event: FrontierEvmEvent<StartIndexingEvent['args']>
+  event: EthereumLog<StartIndexingEvent['args']>
 ): Promise<void> {
   logger.info('handleStartIndexing');
   assert(event.args, 'No event args');
@@ -174,7 +174,7 @@ export async function handleStartIndexing(
  * Event order: handleIndexingReady -> handleIndexingUpdate
  */
 export async function handleIndexingUpdate(
-  event: FrontierEvmEvent<UpdateDeploymentStatusEvent['args']>
+  event: EthereumLog<UpdateDeploymentStatusEvent['args']>
 ): Promise<void> {
   logger.info('handleIndexingUpdate');
   assert(event.args, 'No event args');
@@ -188,7 +188,7 @@ export async function handleIndexingUpdate(
       deploymentId,
       blockHeight: event.args.blockheight.toBigInt(),
       mmrRoot: event.args.mmrRoot,
-      timestamp: event.blockTimestamp,
+      timestamp: biToDate(event.block.timestamp),
       status: Status.READY,
       lastEvent: `handleIndexingUpdate:forceUpsert:${event.blockNumber}`,
     });
@@ -207,7 +207,7 @@ export async function handleIndexingUpdate(
  * Event order: handleStartIndexing -> handleIndexingReady
  */
 export async function handleIndexingReady(
-  event: FrontierEvmEvent<UpdateIndexingStatusToReadyEvent['args']>
+  event: EthereumLog<UpdateIndexingStatusToReadyEvent['args']>
 ): Promise<void> {
   logger.info('handleIndexingReady');
   assert(event.args, 'No event args');
@@ -219,13 +219,13 @@ export async function handleIndexingReady(
     await createDeploymentIndexer({
       indexerId: event.args.indexer,
       deploymentId,
-      timestamp: event.blockTimestamp,
+      timestamp: biToDate(event.block.timestamp),
       status: Status.READY,
       lastEvent: `handleIndexingReady:forceUpsert:${event.blockNumber}`,
     });
   } else {
     indexer.status = Status.READY;
-    indexer.timestamp = event.blockTimestamp;
+    indexer.timestamp = biToDate(event.block.timestamp);
     indexer.lastEvent = `handleIndexingReady:${event.blockNumber}`;
 
     await indexer.save();
@@ -233,7 +233,7 @@ export async function handleIndexingReady(
 }
 
 export async function handleStopIndexing(
-  event: FrontierEvmEvent<StopIndexingEvent['args']>
+  event: EthereumLog<StopIndexingEvent['args']>
 ): Promise<void> {
   logger.info('handleStopIndexing');
   assert(event.args, 'No event args');

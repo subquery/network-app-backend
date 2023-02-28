@@ -10,14 +10,13 @@ import {
   UnclaimedReward,
 } from '../types';
 import { RewardsDistributer__factory } from '@subql/contract-sdk';
-import FrontierEthProvider from './ethProvider';
 import {
   ClaimRewardsEvent,
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/RewardsDistributer';
-import { REWARD_DIST_ADDRESS } from './utils';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { biToDate, REWARD_DIST_ADDRESS } from './utils';
+import { EthereumLog } from '@subql/types-ethereum';
 
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -34,7 +33,7 @@ function getPrevIndexerRewardId(indexer: string, eraIdx: BigNumber): string {
 }
 
 export async function handleRewardsDistributed(
-  event: FrontierEvmEvent<DistributeRewardsEvent['args']>
+  event: EthereumLog<DistributeRewardsEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsDistributed');
   assert(event.args, 'No event args');
@@ -45,7 +44,7 @@ export async function handleRewardsDistributed(
 
   const rewardsDistributor = RewardsDistributer__factory.connect(
     REWARD_DIST_ADDRESS,
-    new FrontierEthProvider()
+    api
   );
 
   await Promise.all(
@@ -77,7 +76,7 @@ export async function handleRewardsDistributed(
 }
 
 export async function handleRewardsClaimed(
-  event: FrontierEvmEvent<ClaimRewardsEvent['args']>
+  event: EthereumLog<ClaimRewardsEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsClaimed');
   assert(event.args, 'No event args');
@@ -103,7 +102,7 @@ export async function handleRewardsClaimed(
       indexerAddress: event.args.indexer,
       delegatorAddress: event.args.delegator,
       amount: event.args.rewards.toBigInt(),
-      claimedTime: event.blockTimestamp,
+      claimedTime: biToDate(event.block.timestamp),
       createdBlock: event.blockNumber,
     });
 
@@ -114,7 +113,7 @@ export async function handleRewardsClaimed(
 }
 
 export async function handleRewardsUpdated(
-  event: FrontierEvmEvent<RewardsChangedEvent['args']>
+  event: EthereumLog<RewardsChangedEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsUpdated');
   assert(event.args, 'No event args');

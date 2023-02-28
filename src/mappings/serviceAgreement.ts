@@ -8,13 +8,12 @@ import {
   UserRemovedEvent,
 } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { Consumer, ServiceAgreement, User } from '../types';
-import { bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
+import { biToDate, bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
-import FrontierEthProvider from './ethProvider';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 
 export async function handleServiceAgreementCreated(
-  event: FrontierEvmEvent<ClosedAgreementCreatedEvent['args']>
+  event: EthereumLog<ClosedAgreementCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handleClosedServiceAgreementCreated');
   assert(event.args, 'No event args');
@@ -23,7 +22,7 @@ export async function handleServiceAgreementCreated(
 
   const agreementRegistry = IServiceAgreementRegistry__factory.connect(
     SA_REGISTRY_ADDRESS,
-    new FrontierEthProvider()
+    api
   );
 
   const agreement = await agreementRegistry.getClosedServiceAgreement(
@@ -31,7 +30,7 @@ export async function handleServiceAgreementCreated(
   );
   const { period, lockedAmount, planTemplateId } = agreement;
 
-  const endTime = new Date(event.blockTimestamp);
+  const endTime = biToDate(event.block.timestamp);
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
   const sa = ServiceAgreement.create({
@@ -41,7 +40,7 @@ export async function handleServiceAgreementCreated(
     deploymentId: bytesToIpfsCid(deploymentId),
     planTemplateId: planTemplateId.toHexString(),
     period: period.toBigInt(),
-    startTime: event.blockTimestamp,
+    startTime: biToDate(event.block.timestamp),
     endTime,
     lockedAmount: lockedAmount.toBigInt(),
     createdBlock: event.blockNumber,
@@ -51,7 +50,7 @@ export async function handleServiceAgreementCreated(
 }
 
 export async function handleUserAdded(
-  event: FrontierEvmEvent<UserAddedEvent['args']>
+  event: EthereumLog<UserAddedEvent['args']>
 ): Promise<void> {
   logger.info('handleUserAdded');
   assert(event.args, 'No event args');
@@ -91,7 +90,7 @@ export async function handleUserAdded(
 }
 
 export async function handleUserRemoved(
-  event: FrontierEvmEvent<UserRemovedEvent['args']>
+  event: EthereumLog<UserRemovedEvent['args']>
 ): Promise<void> {
   logger.info('handleUserAdded');
   assert(event.args, 'No event args');

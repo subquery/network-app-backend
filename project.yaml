@@ -3,28 +3,23 @@ name: subquery-network-subql-project
 version: 1.0.0
 runner:
   node:
-    name: '@subql/node'
-    version: '>=1.17.1'
+    name: '@subql/node-ethereum'
+    version: '*'
   query:
     name: '@subql/query'
-    version: '>=1.10.1'
-description: 'Query registry project for SubQuery Testnet'
+    version: '*'
+description: 'Query registry project for SubQuery Kepler Testnet'
 repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527' #moonbase alpha
-  endpoint: 'wss://moonbeam-alpha.api.onfinality.io/ws?apikey=e7acc294-c859-48ed-a742-5aadf0a084b9'
-  dictionary: 'https://api.subquery.network/sq/subquery/go-dict'
+  chainId: '80001' # Mumbai testnet 
+  endpoint: 'https://polygon-mumbai.api.onfinality.io/rpc?apikey=6b43efc3-a13c-4250-9203-e097fb9f239'
+  dictionary: 'https://mumbai-dict-cr.api.onfinality.io'
 
-  chaintypes:
-    file: ./dist/chaintypes.js
-
-x-frontier: &frontier
-  kind: substrate/FrontierEvm
-  startBlock: 3759675
-  processor: &frontier-processor
-    file: './dist/frontierEvm.js'
+x-ethereum: &ethereum
+  kind: ethereum/Runtime 
+  startBlock: 32470803
   assets:
     eraManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
@@ -48,298 +43,278 @@ x-frontier: &frontier
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
 
 dataSources:
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: eraManager
-        address: '0xeCd0B8f26935eA6d91713Ab191C17CF416a5e0C8'
+  - <<: *ethereum
+    options:
+      abi: eraManager
+      address: '0x7762Dea96A4aDdbF85596874ae41B01F7bFc8E3B'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleNewEra
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - NewEraStart(uint256 indexed era, address caller)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: indexerRegistry
-        address: '0xcb0e27631B4c26a3dcE873a7D7fb264B38c31ec5'
+  - <<: *ethereum
+    options:
+      abi: indexerRegistry
+      address: '0x4803E643443eF4aBE37B0035C50Bc4F66a8C54cF'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleRegisterIndexer
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - RegisterIndexer(address indexed indexer, uint256 amount, bytes32 metadata)
         - handler: handleUpdateIndexerMetadata
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UpdateMetadata(address indexed indexer, bytes32 metadata)
         - handler: handleSetControllerAccount
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - SetControllerAccount(address indexed indexer, address indexed controller)
         - handler: handleRemoveControllerAccount
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - RemoveControllerAccount(address indexed indexer, address indexed controller)
         - handler: handleUnregisterIndexer
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UnregisterIndexer(address indexed indexer)
         - handler: handleSetCommissionRate
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - SetCommissionRate(address indexed indexer, uint256 amount)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: staking
-        address: '0x683aCA9Bf1b6674E4b046f9Fb336f66DE7a477A6'
+  - <<: *ethereum
+    options:
+      abi: staking
+      address: '0x45b0cC9ba3FFD3193Fac634Fa3C2F130E5bCB25A'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleAddDelegation
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - DelegationAdded(address indexed source, address indexed indexer, uint256 amount)
         - handler: handleRemoveDelegation
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - DelegationRemoved(address indexed source, address indexed indexer, uint256 amount)
         - handler: handleWithdrawRequested
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index, uint8 _type)
         - handler: handleWithdrawClaimed
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UnbondWithdrawn(address indexed source, uint256 amount, uint256 index)
         - handler: handleWithdrawCancelled
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: queryRegistry
-        address: '0x13c599eb2A96fb34BeAfFa31a428A1D9aEeC1e35'
+  - <<: *ethereum
+    options:
+      abi: queryRegistry
+      address: '0xaD589bb88CcDd58B24e150D31EA0D4366202A92d'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleNewQuery
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - CreateQuery(uint256 queryId, address creator, bytes32 metadata, bytes32 deploymentId, bytes32 version)
         - handler: handleUpdateQueryMetadata
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UpdateQueryMetadata(address owner, uint256 queryId, bytes32 metadata)
         - handler: handleUpdateQueryDeployment
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UpdateQueryDeployment(address owner, uint256 queryId, bytes32 deploymentId, bytes32 version)
         - handler: handleStartIndexing
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - StartIndexing(address indexer, bytes32 deploymentId)
         - handler: handleIndexingUpdate
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UpdateDeploymentStatus(address indexer, bytes32 deploymentId, uint256 blockheight, bytes32 mmrRoot, uint256 timestamp)
         - handler: handleIndexingReady
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UpdateIndexingStatusToReady(address indexer, bytes32 deploymentId)
         - handler: handleStopIndexing
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - StopIndexing(address indexer, bytes32 deploymentId)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: planManager
-        address: '0xc2704b23C88Cac7489d947F6FE84F0F27bfbB42d'
+  - <<: *ethereum
+    options:
+      abi: planManager
+      address: '0x1F9D5beCB1a88aaee80E9F8E33DCF1dE02939149'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handlePlanTemplateCreated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PlanTemplateCreated(uint256 indexed planTemplateId)
         - handler: handlePlanTemplateMetadataUpdated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PlanTemplateMetadataChanged(uint256 indexed planTemplateId, bytes32 metadata)
         - handler: handlePlanTemplateStatusUpdated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PlanTemplateStatusChanged(uint256 indexed planTemplateId, bool active)
         - handler: handlePlanCreated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PlanCreated(uint256 indexed planId, address creator, bytes32 deploymentId, uint256 planTemplateId, uint256 price)
         - handler: handlePlanRemoved
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PlanRemoved(uint256 indexed planId)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: serviceAgreementRegistry
-        address: '0x30975e1822F794Da5A8064A7Ba828eb6F953cE8b'
+  - <<: *ethereum
+    options:
+      abi: serviceAgreementRegistry
+      address: '0x9Ef7a9D8d7d71c06fd58cF8858d78Af62E2732d2'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleServiceAgreementCreated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
         - handler: handleUserAdded
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UserAdded(address indexed consumer, address user)
         - handler: handleUserRemoved
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - UserRemoved(address indexed consumer, address user)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: rewardsDistributor
-        address: '0x2675a2242a3f369208431Fcd677E13ce1178B2E5'
+  - <<: *ethereum
+    options:  
+      abi: rewardsDistributor
+      address: '0x16d677D5533aa0c1307CeB3fd48A86BEF3dE3fB8'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleRewardsDistributed
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - DistributeRewards(address indexed indexer, uint256 indexed eraIdx, uint256 rewards)
         - handler: handleRewardsClaimed
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ClaimRewards(address indexed indexer, address indexed delegator, uint256 rewards)
         - handler: handleRewardsUpdated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: purchaseOfferMarket
-        address: '0xD3493e844FF939d8cA7659dB49577DF7764fF832'
+  - <<: *ethereum
+    options:
+      abi: purchaseOfferMarket
+      address: '0xb00cfCFB028A50A483ab0071a929b3D418a06Ed7'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handlePurchaseOfferCreated
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PurchaseOfferCreated(address consumer, uint256 offerId, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
         - handler: handlePurchaseOfferCancelled
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - PurchaseOfferCancelled(address indexed creator, uint256 offerId, uint256 penalty)
         - handler: handlePurchaseOfferAccepted
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreementId)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: stateChannel
-        address: '0x6fb57b9B6E3CF54a0fC3D3d686F069580b7D5912'
+  - <<: *ethereum
+    options:
+      abi: stateChannel
+      address: '0xdc51e06bEE0e22D668E0ED2198B52049183cE769'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleChannelOpen
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelOpen(uint256 indexed channelId, address indexer, address consumer, uint256 total, uint256 price, uint256 expiredAt, bytes32 deploymentId, bytes callback)
         - handler: handleChannelExtend
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelExtend(uint256 channelId, uint256 expiredAt)
         - handler: handleChannelFund
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelFund(uint256 channelId, uint256 total)
         - handler: handleChannelCheckpoint
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelCheckpoint(uint256 channelId, uint256 spent)
         - handler: handleChannelTerminate
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelTerminate(uint256 channelId, uint256 spent, uint256 terminatedAt, bool terminateByIndexer)
         - handler: handleChannelFinalize
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelFinalize(uint256 channelId, uint256 total, uint256 remain)
-  - <<: *frontier
-    processor:
-      <<: *frontier-processor
-      options:
-        abi: disputeManager
-        address: '0x22E383050d1369200F92276E4A2Fb9f5ab206798'
+  - <<: *ethereum
+    options:
+      abi: disputeManager
+      address: '0x6cfA0433AfeB7D0b2B580a0e9f0D75B2d6aBe449'
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleDisputeOpen
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - DisputeOpen(uint256 indexed disputeId, address fisherman, address indexer, uint8 _type)
         - handler: handleDisputeFinalized
-          kind: substrate/FrontierEvmEvent
+          kind: ethereum/LogHandler
           filter:
             topics:
               - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)

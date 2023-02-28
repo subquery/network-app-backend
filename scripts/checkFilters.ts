@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
- * Checks that substrate/FrontierEvmEvent topics
+ * Checks that ethereum/LogHandler topics
  */
 
 import fs from 'fs';
@@ -62,7 +62,7 @@ function checkFilters() {
 
   project.dataSources.forEach((ds) => {
     ds.mapping.handlers
-      .filter((handler) => handler.kind === 'substrate/FrontierEvmEvent')
+      .filter((handler) => handler.kind === 'ethereum/LogHandler')
       .forEach((handler) => {
         // Check event filters
         const topics: string[] | undefined = handler?.filter?.topics;

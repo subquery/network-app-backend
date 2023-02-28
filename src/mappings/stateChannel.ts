@@ -12,11 +12,11 @@ import {
   ChannelFinalizeEvent,
 } from '@subql/contract-sdk/typechain/StateChannel';
 import { StateChannel, ChannelStatus } from '../types';
-import { bytesToIpfsCid } from './utils';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { biToDate, bytesToIpfsCid } from './utils';
+import { EthereumLog } from '@subql/types-ethereum';
 
 export async function handleChannelOpen(
-  event: FrontierEvmEvent<ChannelOpenEvent['args']>
+  event: EthereumLog<ChannelOpenEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
@@ -50,7 +50,7 @@ export async function handleChannelOpen(
     terminatedAt: new Date(expiredAt.toNumber() * 1000),
     deploymentId: bytesToIpfsCid(deploymentId),
     terminateByIndexer: false,
-    startTime: event.blockTimestamp,
+    startTime: biToDate(event.block.timestamp),
     lastEvent: `handleChannelOpen:${event.transactionHash}`,
   });
 
@@ -58,7 +58,7 @@ export async function handleChannelOpen(
 }
 
 export async function handleChannelExtend(
-  event: FrontierEvmEvent<ChannelExtendEvent['args']>
+  event: EthereumLog<ChannelExtendEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelExtend');
   assert(event.args, 'No event args');
@@ -71,7 +71,7 @@ export async function handleChannelExtend(
 }
 
 export async function handleChannelFund(
-  event: FrontierEvmEvent<ChannelFundEvent['args']>
+  event: EthereumLog<ChannelFundEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelFund');
   assert(event.args, 'No event args');
@@ -84,7 +84,7 @@ export async function handleChannelFund(
 }
 
 export async function handleChannelCheckpoint(
-  event: FrontierEvmEvent<ChannelCheckpointEvent['args']>
+  event: EthereumLog<ChannelCheckpointEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
@@ -97,7 +97,7 @@ export async function handleChannelCheckpoint(
 }
 
 export async function handleChannelTerminate(
-  event: FrontierEvmEvent<ChannelTerminateEvent['args']>
+  event: EthereumLog<ChannelTerminateEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelTerminate');
   assert(event.args, 'No event args');
@@ -113,7 +113,7 @@ export async function handleChannelTerminate(
 }
 
 export async function handleChannelFinalize(
-  event: FrontierEvmEvent<ChannelFinalizeEvent['args']>
+  event: EthereumLog<ChannelFinalizeEvent['args']>
 ): Promise<void> {
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');

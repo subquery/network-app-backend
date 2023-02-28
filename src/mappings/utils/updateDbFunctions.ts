@@ -7,8 +7,7 @@ import {
   IndexerRegistry__factory,
   Staking__factory,
 } from '@subql/contract-sdk';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
-import FrontierEthProvider from '../ethProvider';
+import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from 'ethers';
 import { CreateIndexerParams } from '../../interfaces';
 import {
@@ -98,7 +97,7 @@ export async function upsertIndexerMetadata(
 export async function upsertControllerAccount(
   indexerAddress: string,
   controllerAddress: string,
-  event: FrontierEvmEvent,
+  event: EthereumLog,
   lastEvent: string
 ): Promise<void> {
   let controller = await Controller.get(controllerAddress);
@@ -167,15 +166,12 @@ export async function upsertEraValue(
 
 export async function updateMaxUnstakeAmount(
   indexerAddress: string,
-  event: FrontierEvmEvent
+  event: EthereumLog
 ): Promise<void> {
-  const staking = Staking__factory.connect(
-    STAKING_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const staking = Staking__factory.connect(STAKING_ADDRESS, api);
   const indexerRegistry = IndexerRegistry__factory.connect(
     INDEXER_REGISTRY_ADDRESS,
-    new FrontierEthProvider()
+    api
   );
 
   const leverageLimit = await staking.indexerLeverageLimit();
@@ -225,7 +221,7 @@ export async function updateTotalStake(
   indexerAddress: string,
   amount: bigint,
   operation: keyof typeof operations,
-  event: FrontierEvmEvent,
+  event: EthereumLog,
   applyInstantly?: boolean
 ): Promise<void> {
   const indexer = await Indexer.get(indexerAddress);
@@ -285,19 +281,13 @@ export async function updateTotalDelegation(
 
 export async function updateIndexerCapacity(
   address: string,
-  event: FrontierEvmEvent
+  event: EthereumLog
 ): Promise<void> {
   const indexer = await Indexer.get(address);
   const delegationId = getDelegationId(address, address);
   const delegation = await Delegation.get(delegationId);
-  const staking = Staking__factory.connect(
-    STAKING_ADDRESS,
-    new FrontierEthProvider()
-  );
-  const eraManager = EraManager__factory.connect(
-    ERA_MANAGER_ADDRESS,
-    new FrontierEthProvider()
-  );
+  const staking = Staking__factory.connect(STAKING_ADDRESS, api);
+  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
 
   const leverageLimit = await staking.indexerLeverageLimit();
 
@@ -337,7 +327,7 @@ export async function updateTotalLock(
   amount: bigint,
   operation: keyof typeof operations = 'add',
   isSelf: boolean,
-  event: FrontierEvmEvent<any>
+  event: EthereumLog<any>
 ): Promise<void> {
   const totalLockID = 'TotalLock';
   let totalLock = await TotalLock.get(totalLockID);

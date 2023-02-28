@@ -5,7 +5,7 @@ import {
   DisputeFinalizedEvent,
   DisputeOpenEvent,
 } from '@subql/contract-sdk/typechain/DisputeManager';
-import { FrontierEvmEvent } from '@subql/frontier-evm-processor';
+import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { Disputes, DisputeState, DisputeType } from '../types';
 
@@ -42,7 +42,7 @@ function getDisputeState(state: number): DisputeState {
 }
 
 export async function handleDisputeOpen(
-  event: FrontierEvmEvent<DisputeOpenEvent['args']>
+  event: EthereumLog<DisputeOpenEvent['args']>
 ): Promise<void> {
   logger.info('handleDisputeOpen');
   assert(event.args, 'No event args');
@@ -64,7 +64,7 @@ export async function handleDisputeOpen(
 }
 
 export async function handleDisputeFinalized(
-  event: FrontierEvmEvent<DisputeFinalizedEvent['args']>
+  event: EthereumLog<DisputeFinalizedEvent['args']>
 ): Promise<void> {
   logger.info('handleDisputeFinalized');
   assert(event.args, 'No event args');
