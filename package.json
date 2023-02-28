@@ -7,7 +7,7 @@
     "build": "yarn check-filters && subql build",
     "codegen:abi": "npx typechain --target=ethers-v5 './node_modules/@subql/contract-sdk/artifacts/contracts/**/*.json' --out-dir src/types/ethers-contracts",
     "codegen": "./node_modules/.bin/subql codegen && yarn codegen:abi",
-    "publish": "subql publish",
+    "deploy": "subql publish",
     "validate": "subql validate",
     "prepare": "husky install",
     "postinstall": "sh ./scripts/postinstall.sh",
@@ -47,7 +47,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@subql/contract-sdk": "0.12.1-0",
-    "@subql/types-ethereum": "latest",
+    "@subql/types-ethereum": "dev",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
     "bs58": "^4.0.1",
@@ -58,7 +58,8 @@
   "resolutions": {
     "class-transformer": "0.4.0",
     "ipfs-unixfs": "6.0.6",
-    "@ethersproject/base64": "5.7.0"
+    "@ethersproject/base64": "5.7.0",
+    "@polkadot/util": "10.4.2"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",

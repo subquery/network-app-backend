@@ -30,7 +30,7 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@babel/runtime@^7.17.8", "@babel/runtime@^7.20.13", "@babel/runtime@^7.20.6":
+"@babel/runtime@^7.20.13", "@babel/runtime@^7.20.6":
   version "7.21.0"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.21.0.tgz"
   integrity sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==
@@ -1155,7 +1155,7 @@
     ed2curve "^0.3.0"
     tweetnacl "^1.0.3"
 
-"@polkadot/util@10.4.2", "@polkadot/util@^10", "@polkadot/util@^10.2.3":
+"@polkadot/util@10.4.2", "@polkadot/util@^10", "@polkadot/util@^10.2.3", "@polkadot/util@^8":
   version "10.4.2"
   resolved "https://registry.npmjs.org/@polkadot/util/-/util-10.4.2.tgz"
   integrity sha512-0r5MGICYiaCdWnx+7Axlpvzisy/bi1wZGXgCSw5+ZTyPTOqvsYRqM2X879yxvMsGfibxzWqNzaiVjToz1jvUaA==
@@ -1167,20 +1167,6 @@
     "@polkadot/x-textencoder" "10.4.2"
     "@types/bn.js" "^5.1.1"
     bn.js "^5.2.1"
-
-"@polkadot/util@^8":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@polkadot/util/-/util-8.7.1.tgz"
-  integrity sha512-XjY1bTo7V6OvOCe4yn8H2vifeuBciCy0gq0k5P1tlGUQLI/Yt0hvDmxcA0FEPtqg8CL+rYRG7WXGPVNjkrNvyQ==
-  dependencies:
-    "@babel/runtime" "^7.17.8"
-    "@polkadot/x-bigint" "8.7.1"
-    "@polkadot/x-global" "8.7.1"
-    "@polkadot/x-textdecoder" "8.7.1"
-    "@polkadot/x-textencoder" "8.7.1"
-    "@types/bn.js" "^5.1.0"
-    bn.js "^5.2.0"
-    ip-regex "^4.3.0"
 
 "@polkadot/wasm-bridge@6.4.1":
   version "6.4.1"
@@ -1241,27 +1227,12 @@
     "@babel/runtime" "^7.20.13"
     "@polkadot/x-global" "10.4.2"
 
-"@polkadot/x-bigint@8.7.1":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@polkadot/x-bigint/-/x-bigint-8.7.1.tgz"
-  integrity sha512-ClkhgdB/KqcAKk3zA6Qw8wBL6Wz67pYTPkrAtImpvoPJmR+l4RARauv+MH34JXMUNlNb3aUwqN6lq2Z1zN+mJg==
-  dependencies:
-    "@babel/runtime" "^7.17.8"
-    "@polkadot/x-global" "8.7.1"
-
 "@polkadot/x-global@10.4.2":
   version "10.4.2"
   resolved "https://registry.npmjs.org/@polkadot/x-global/-/x-global-10.4.2.tgz"
   integrity sha512-g6GXHD/ykZvHap3M6wh19dO70Zm43l4jEhlxf5LtTo5/0/UporFCXr2YJYZqfbn9JbQwl1AU+NroYio+vtJdiA==
   dependencies:
     "@babel/runtime" "^7.20.13"
-
-"@polkadot/x-global@8.7.1":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@polkadot/x-global/-/x-global-8.7.1.tgz"
-  integrity sha512-WOgUor16IihgNVdiTVGAWksYLUAlqjmODmIK1cuWrLOZtV1VBomWcb3obkO9sh5P6iWziAvCB/i+L0vnTN9ZCA==
-  dependencies:
-    "@babel/runtime" "^7.17.8"
 
 "@polkadot/x-randomvalues@10.4.2":
   version "10.4.2"
@@ -1279,14 +1250,6 @@
     "@babel/runtime" "^7.20.13"
     "@polkadot/x-global" "10.4.2"
 
-"@polkadot/x-textdecoder@8.7.1":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@polkadot/x-textdecoder/-/x-textdecoder-8.7.1.tgz"
-  integrity sha512-ia0Ie2zi4VdQdNVD2GE2FZzBMfX//hEL4w546RMJfZM2LqDS674LofHmcyrsv5zscLnnRyCxZC1+J2dt+6MDIA==
-  dependencies:
-    "@babel/runtime" "^7.17.8"
-    "@polkadot/x-global" "8.7.1"
-
 "@polkadot/x-textencoder@10.4.2":
   version "10.4.2"
   resolved "https://registry.npmjs.org/@polkadot/x-textencoder/-/x-textencoder-10.4.2.tgz"
@@ -1294,14 +1257,6 @@
   dependencies:
     "@babel/runtime" "^7.20.13"
     "@polkadot/x-global" "10.4.2"
-
-"@polkadot/x-textencoder@8.7.1":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@polkadot/x-textencoder/-/x-textencoder-8.7.1.tgz"
-  integrity sha512-XDO0A27Xy+eJCKSxENroB8Dcnl+UclGG4ZBei+P/BqZ9rsjskUyd2Vsl6peMXAcsxwOE7g0uTvujoGM8jpKOXw==
-  dependencies:
-    "@babel/runtime" "^7.17.8"
-    "@polkadot/x-global" "8.7.1"
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
@@ -1591,10 +1546,17 @@
     "@cosmjs/proto-signing" "^0.29.5"
     "@cosmjs/stargate" "^0.29.5"
 
-"@subql/types-ethereum@0.2.2-4", "@subql/types-ethereum@latest":
+"@subql/types-ethereum@0.2.2-4":
   version "0.2.2-4"
   resolved "https://registry.npmjs.org/@subql/types-ethereum/-/types-ethereum-0.2.2-4.tgz"
   integrity sha512-KH3DJZQPz1wpitOKThuQgJ2rbq1GxZO5DxXp2qJTUo5oRFLjP/mjUbZGMfD9q2+ftI3w0j8QBAoppEEpojJmhQ==
+  dependencies:
+    "@ethersproject/abstract-provider" "^5.6.1"
+
+"@subql/types-ethereum@dev":
+  version "0.2.2-6"
+  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-0.2.2-6.tgz#098515d6d458a0327ff16ee1956db2fbad476de8"
+  integrity sha512-fIATH9J2e+77ySVazMDT+NuzlejgwDoNDYKMKucZc9yOjBhDJdpQ53JCoXgQ+k+cFiAlIBwFPGqfSIU8DFuINQ==
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
 
@@ -1708,7 +1670,7 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@types/bn.js@^5.1.0", "@types/bn.js@^5.1.1":
+"@types/bn.js@^5.1.1":
   version "5.1.1"
   resolved "https://registry.npmjs.org/@types/bn.js/-/bn.js-5.1.1.tgz"
   integrity sha512-qNrYbZqMx0uJAfKnKclPh+dTwK33KfLHYqtyODwd5HnXOjnkhc4qgn3BrK6RWyGZm5+sIFE7Q7Vz6QQtJB7w7g==
@@ -4538,7 +4500,7 @@ interpret@^1.0.0:
   resolved "https://registry.npmjs.org/interpret/-/interpret-1.4.0.tgz"
   integrity sha512-agE4QfB2Lkp9uICn7BAqoscw4SZP9kTE2hxiFI3jBPmXJfdqiahTbUuKGsMoN2GtqL9AxhYioAcVvgsb1HvRbA==
 
-ip-regex@^4.0.0, ip-regex@^4.3.0:
+ip-regex@^4.0.0:
   version "4.3.0"
   resolved "https://registry.npmjs.org/ip-regex/-/ip-regex-4.3.0.tgz"
   integrity sha512-B9ZWJxHHOHUhUjCPrMpLD4xEq35bUTClHM1S6CBU5ixQnkZmwipwgc96vAd7AAGM9TGHvJR+Uss+/Ak6UphK+Q==
