@@ -15,13 +15,17 @@ import {
   bytesToIpfsCid,
   createIndexer,
   ERA_MANAGER_ADDRESS,
+  INDEXER_REGISTRY_ADDRESS,
   reportException,
   reportIndexerNonExistException,
   upsertControllerAccount,
   upsertEraValue,
   upsertIndexerMetadata,
 } from './utils';
-import { EraManager__factory } from '@subql/contract-sdk';
+import {
+  EraManager__factory,
+  IndexerRegistry__factory,
+} from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 
 /* Indexer Registry Handlers */
@@ -65,9 +69,18 @@ export async function handleUnregisterIndexer(
   const indexer = await Indexer.get(event.args.indexer);
   const lastEvent = `handleUnregisterIndexer:${event.blockNumber}`;
 
+  const IndexerRegistry = IndexerRegistry__factory.connect(
+    INDEXER_REGISTRY_ADDRESS,
+    api
+  );
+  const controllerAddress = await IndexerRegistry.getController(
+    event.args.indexer
+  );
+
   if (indexer) {
     indexer.active = false;
     indexer.lastEvent = lastEvent;
+    delete indexer.controller;
     await indexer.save();
   } else {
     await reportIndexerNonExistException(
@@ -75,6 +88,16 @@ export async function handleUnregisterIndexer(
       event.args.indexer,
       event
     );
+  }
+
+  const controller = await Controller.get(
+    `${event.args.indexer}:${controllerAddress}`
+  );
+
+  if (controller) {
+    controller.lastEvent = lastEvent;
+    controller.isActive = false;
+    await controller.save();
   }
 }
 
