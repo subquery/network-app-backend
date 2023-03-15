@@ -13,7 +13,7 @@ import {
   UnbondCancelledEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, Indexer, WithdrawalStatus } from '../types';
+import { Delegation, Withdrawl, UnbondType, WithdrawalStatus } from '../types';
 import FrontierEthProvider from './ethProvider';
 import {
   ERA_MANAGER_ADDRESS,
@@ -38,21 +38,31 @@ async function createWithdrawl({
   indexer,
   index,
   amount,
+  utype,
   status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
   const { blockTimestamp, blockNumber } = event;
-  const withdrawl = Withdrawl.create({
-    id,
-    delegator: delegator,
-    indexer: indexer,
-    index: index.toBigInt(),
-    startTime: blockTimestamp,
-    amount: amount.toBigInt(),
-    status,
-    createdBlock: blockNumber,
-  });
+  const withdrawl = await Withdrawl.get(id);
 
+  if (withdrawl) {
+    withdrawl.amount = amount.toBigInt();
+    withdrawl.utype = utype;
+    withdrawl.startTime = blockTimestamp;
+    withdrawl.createdBlock = blockNumber;
+  } else {
+    withdrawl = Withdrawl.create({
+      id,
+      delegator: delegator,
+      indexer: indexer,
+      index: index.toBigInt(),
+      startTime: blockTimestamp,
+      amount: amount.toBigInt(),
+      utype,
+      status,
+      createdBlock: blockNumber,
+    });
+  }
   await withdrawl.save();
 }
 
@@ -165,7 +175,7 @@ export async function handleWithdrawRequested(
   logger.info('handleWithdrawRequested');
   assert(event.args, 'No event args');
 
-  const { source, indexer, index, amount } = event.args;
+  const { source, indexer, amount, index, _type } = event.args;
   const id = getWithdrawlId(source, index);
 
   await createWithdrawl({
@@ -174,6 +184,7 @@ export async function handleWithdrawRequested(
     indexer,
     index,
     amount,
+    _type,
     status: ONGOING,
     event,
   });
