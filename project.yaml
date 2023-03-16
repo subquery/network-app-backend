@@ -19,7 +19,7 @@ network:
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime 
-  startBlock: 32558017
+  startBlock: 33168664
   assets:
     eraManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
@@ -46,7 +46,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: eraManager
-      address: '0xF0B5D4823d1d9ebE70bF93F91AB884C266f6B873'
+      address: '0xeD5fc5a4AD3e952291FE02B223b137C5d212266f'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -58,7 +58,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: indexerRegistry
-      address: '0x45020B5213EE2bc5525aC08D6793F580F35Aa2D6'
+      address: '0x7c244A53E57aaBEfF7Fb93745AA8993DB307788d'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -95,7 +95,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: staking
-      address: '0x302C05C1458694e9B76ec645Ff0DeCB0f81BC105'
+      address: '0xf36261EbE27198EBAF685671bC55a385ECEA80e9'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -127,7 +127,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: queryRegistry
-      address: '0xFD63C1bEb5E2252400398A2A622AdeA9eB0552F7'
+      address: '0x74C3c2273f47dDF4E435f20A01601a44a519a9c0'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -169,7 +169,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: planManager
-      address: '0x1913aa9f52257BB29B5C2b42fa3834d413605ABd'
+      address: '0x0D5A4266573975222292601686f2C3CF02E2120A'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -201,7 +201,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: serviceAgreementRegistry
-      address: '0xefcbBA622f9A596C15b0d36499A5B447D15ccfAB'
+      address: '0x7c2c254a7Ae5642Af32F17e46601019C089a90ff'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -223,7 +223,7 @@ dataSources:
   - <<: *ethereum
     options:  
       abi: rewardsDistributor
-      address: '0xEB64a541c7b3B79b4fAA8Dc8006AA7D6B400085c'
+      address: '0x0cEBe034a6e6fD06f6E2c1F1BD261e06C9cf2F90'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -245,7 +245,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
-      address: '0x273Ac4cE4f4A2DdA5212dc497D9F4b28adbEAFf8'
+      address: '0x3918087515024B49Aa2c197174ff3d96Ec579B30'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -267,7 +267,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: stateChannel
-      address: '0xd90F5eCEf5921058F091Ab224A966284648921b5'
+      address: '0x7362475182ede957B7a3C0f56791063Ad09bBC77'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -304,7 +304,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: disputeManager
-      address: '0xC01E977196A6C1b38FA55F766Ab2799C1B704DBB'
+      address: '0x9776e2dfFddeaEea5CEdb70C9249F0C58e57cA81'
     mapping:
       file: ./dist/index.js
       handlers:
