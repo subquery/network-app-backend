@@ -136,6 +136,13 @@ type Delegation @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
+enum UnbondType {
+    UNDELEGATION
+    UNSTAKE
+    COMMISSION
+    MERGE
+}
+
 type Withdrawl @entity {
   id: ID! # nominator + index
   index: BigInt! # Index of the withdrawl
@@ -143,6 +150,7 @@ type Withdrawl @entity {
   indexer: String! # nominator address
   startTime: Date!
   amount: BigInt!
+  utype: UnbondType!
 
   status: WithdrawalStatus!
 
