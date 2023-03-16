@@ -38,21 +38,31 @@ async function createWithdrawl({
   indexer,
   index,
   amount,
+  utype,
   status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
   const { block, blockNumber } = event;
-  const withdrawl = Withdrawl.create({
-    id,
-    delegator: delegator,
-    indexer: indexer,
-    index: index.toBigInt(),
-    startTime: biToDate(block.timestamp),
-    amount: amount.toBigInt(),
-    status,
-    createdBlock: blockNumber,
-  });
+  const withdrawl = await Withdrawl.get(id);
 
+  if (withdrawl) {
+    withdrawl.amount = amount.toBigInt();
+    withdrawl.utype = utype;
+    withdrawl.startTime = biToDate(block.timestamp);
+    withdrawl.createdBlock = blockNumber;
+  } else {
+    withdrawl = Withdrawl.create({
+      id,
+      delegator: delegator,
+      indexer: indexer,
+      index: index.toBigInt(),
+      startTime: biToDate(block.timestamp),
+      amount: amount.toBigInt(),
+      utype,
+      status,
+      createdBlock: blockNumber,
+    });
+  }
   await withdrawl.save();
 }
 
@@ -159,7 +169,7 @@ export async function handleWithdrawRequested(
   logger.info('handleWithdrawRequested');
   assert(event.args, 'No event args');
 
-  const { source, indexer, index, amount } = event.args;
+  const { source, indexer, amount, index, _type } = event.args;
   const id = getWithdrawlId(source, index);
 
   await createWithdrawl({
@@ -168,6 +178,7 @@ export async function handleWithdrawRequested(
     indexer,
     index,
     amount,
+    _type,
     status: ONGOING,
     event,
   });
