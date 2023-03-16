@@ -7,39 +7,8 @@ import {
 } from '@subql/contract-sdk/typechain/DisputeManager';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { Disputes, DisputeState, DisputeType } from '../types';
-
-function getDisputeType(type: number): DisputeType {
-  const typeMap: Record<number, DisputeType> = {
-    0: DisputeType.POI,
-    1: DisputeType.QUERY,
-  };
-
-  if (type in typeMap) {
-    return typeMap[type];
-  } else {
-    throw new Error(
-      `Unexpected dispute type "${type}" provided to function getDisputeType`
-    );
-  }
-}
-
-function getDisputeState(state: number): DisputeState {
-  const stateMap: Record<number, DisputeState> = {
-    0: DisputeState.ONGOING,
-    1: DisputeState.ACCEPTED,
-    2: DisputeState.REJECTED,
-    3: DisputeState.CANCELLED,
-  };
-
-  if (state in stateMap) {
-    return stateMap[state];
-  } else {
-    throw new Error(
-      `Unexpected dispute state "${state}" provided to function getDisputeState`
-    );
-  }
-}
+import { Disputes, DisputeState } from '../types';
+import { getDisputeState, getDisputeType } from './utils/enumToTypes';
 
 export async function handleDisputeOpen(
   event: EthereumLog<DisputeOpenEvent['args']>

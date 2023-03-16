@@ -29,6 +29,7 @@ import {
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
+import { getWithdrawalType } from './utils/enumToTypes';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
@@ -38,16 +39,16 @@ async function createWithdrawl({
   indexer,
   index,
   amount,
-  utype,
+  type,
   status,
   event,
 }: CreateWithdrawlParams): Promise<void> {
   const { block, blockNumber } = event;
-  const withdrawl = await Withdrawl.get(id);
+  let withdrawl = await Withdrawl.get(id);
 
   if (withdrawl) {
     withdrawl.amount = amount.toBigInt();
-    withdrawl.utype = utype;
+    withdrawl.type = type;
     withdrawl.startTime = biToDate(block.timestamp);
     withdrawl.createdBlock = blockNumber;
   } else {
@@ -58,7 +59,7 @@ async function createWithdrawl({
       index: index.toBigInt(),
       startTime: biToDate(block.timestamp),
       amount: amount.toBigInt(),
-      utype,
+      type,
       status,
       createdBlock: blockNumber,
     });
@@ -178,7 +179,7 @@ export async function handleWithdrawRequested(
     indexer,
     index,
     amount,
-    _type,
+    type: getWithdrawalType(_type),
     status: ONGOING,
     event,
   });
