@@ -13,9 +13,8 @@ repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '80001' # Mumbai testnet 
-  endpoint: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78'
-  dictionary: 'https://mumbai-dict-cr.api.onfinality.io'
+  chainId: '137' # Mumbai testnet 
+  endpoint: 'https://polygon.api.onfinality.io/rpc?apikey=6b43efc3-a13c-4250-9203-e097fb9f2396'
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime 
