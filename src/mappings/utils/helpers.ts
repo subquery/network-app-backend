@@ -3,7 +3,7 @@
 
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
-import deploymentFile from '@subql/contract-sdk/publish/testnet.json';
+import deploymentFile from '@subql/contract-sdk/publish/kepler.json';
 import { EthereumLog } from '@subql/types-ethereum';
 import fetch from 'node-fetch';
 

@@ -73,7 +73,7 @@ export async function handleUnregisterIndexer(
     INDEXER_REGISTRY_ADDRESS,
     api
   );
-  const controllerAddress = await IndexerRegistry.getController(
+  const controllerAddress = await IndexerRegistry.indexerToController(
     event.args.indexer
   );
 
