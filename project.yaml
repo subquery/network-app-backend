@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '137' # Mumbai testnet 
-  endpoint: 'https://polygon.api.onfinality.io/rpc?apikey=6b43efc3-a13c-4250-9203-e097fb9f2396'
+  endpoint: 'wss://rpc-mainnet.matic.network'
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime 
