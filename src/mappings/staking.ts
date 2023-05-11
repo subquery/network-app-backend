@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { EraManager__factory } from '@subql/contract-sdk';
+import { EraManager__factory, Staking__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
@@ -13,7 +13,12 @@ import {
   UnbondCancelledEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
-import { Delegation, Withdrawl, WithdrawalStatus } from '../types';
+import {
+  Delegation,
+  Withdrawl,
+  WithdrawalStatus,
+  WithdrawalType,
+} from '../types';
 import {
   ERA_MANAGER_ADDRESS,
   updateTotalStake,
@@ -26,6 +31,7 @@ import {
   getDelegationId,
   updateMaxUnstakeAmount,
   biToDate,
+  STAKING_ADDRESS,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
@@ -173,12 +179,28 @@ export async function handleWithdrawRequested(
   const { source, indexer, amount, index, _type } = event.args;
   const id = getWithdrawlId(source, index);
 
+  let updatedAmount = amount;
+
+  if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
+    const staking = Staking__factory.connect(STAKING_ADDRESS, api);
+    const length = (await staking.unbondingLength(indexer)).toNumber();
+
+    // Iterate through unbonding amounts and sum them up
+    for (let i = 0; i < length; i++) {
+      const { amount: unbondingAmount } = await staking.unbondingAmount(
+        indexer,
+        i
+      );
+      updatedAmount = updatedAmount.add(unbondingAmount);
+    }
+  }
+
   await createWithdrawl({
     id,
     delegator: source,
     indexer,
     index,
-    amount,
+    amount: updatedAmount,
     type: getWithdrawalType(_type),
     status: ONGOING,
     event,
