@@ -118,7 +118,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UnbondWithdrawn(address indexed source, uint256 amount, uint256 index)
+              - UnbondWithdrawn(address indexed source, uint256 amount, uint256 fee, uint256 index)
         - handler: handleWithdrawCancelled
           kind: ethereum/LogHandler
           filter:
