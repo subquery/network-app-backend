@@ -183,16 +183,11 @@ export async function handleWithdrawRequested(
 
   if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
     const staking = Staking__factory.connect(STAKING_ADDRESS, api);
-    const length = (await staking.unbondingLength(indexer)).toNumber();
-
-    // Iterate through unbonding amounts and sum them up
-    for (let i = 0; i < length; i++) {
-      const { amount: unbondingAmount } = await staking.unbondingAmount(
-        indexer,
-        i
-      );
-      updatedAmount = updatedAmount.add(unbondingAmount);
-    }
+    const { amount: unbondingAmount } = await staking.unbondingAmount(
+      indexer,
+      index
+    );
+    updatedAmount = updatedAmount.add(unbondingAmount);
   }
 
   await createWithdrawl({
