@@ -1518,10 +1518,10 @@
     reflect-metadata "^0.1.13"
     semver "^7.3.5"
 
-"@subql/contract-sdk@0.13.1-2":
-  version "0.13.1-2"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.13.1-2.tgz#34cfc66dd2b8079c70ec480ed9ba2b37afdc422b"
-  integrity sha512-FRvAlLUtH9AFoqUESUOwtraKjiDPaZT5FW1FJUUxQcJMy3j231EqOWTZJBtCP33swzTa2Uzb442YbzLPheCw+A==
+"@subql/contract-sdk@^0.13.1-4":
+  version "0.13.1-4"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.13.1-4.tgz#e5406ad105a1662b15842127dd09069e417dacca"
+  integrity sha512-aJQFgssWvzrtRHKoVcO+zSnhC79YsRPpvtLwJgWeZMrd6IHtt/QyimBQJdpTxidzgtqCYBN+JrvXMw5hYuqWtw==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.5.2"
 
