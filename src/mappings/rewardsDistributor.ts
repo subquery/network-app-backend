@@ -119,13 +119,24 @@ export async function handleRewardsUpdated(
   assert(event.args, 'No event args');
 
   const { indexer, eraIdx, additions, removals } = event.args;
-  const id = getIndexerRewardId(indexer, eraIdx);
+
+  // Hook for `additions` equal to zero
+  let additionValue = additions;
+  if (additionValue.eq(0)) {
+    const rewardsDistributor = RewardsDistributer__factory.connect(
+      REWARD_DIST_ADDRESS,
+      api
+    );
+
+    additionValue = await rewardsDistributor.getRewardAddTable(indexer, eraIdx);
+  }
 
   const prevEraRewards = await IndexerReward.get(
     getPrevIndexerRewardId(indexer, eraIdx)
   );
   const prevAmount = prevEraRewards?.amount ?? BigInt(0);
 
+  const id = getIndexerRewardId(indexer, eraIdx);
   let eraRewards = await IndexerReward.get(id);
 
   if (!eraRewards) {
@@ -133,18 +144,19 @@ export async function handleRewardsUpdated(
       id,
       indexerId: indexer,
       eraIdx: eraIdx.toHexString(),
-      additions: additions.toBigInt(),
+      additions: additionValue.toBigInt(),
       removals: removals.toBigInt(),
       amount: BigInt(0), // Updated below
       createdBlock: event.blockNumber,
     });
   } else {
-    eraRewards.additions = additions.toBigInt();
+    eraRewards.additions = additionValue.toBigInt();
     eraRewards.removals = removals.toBigInt();
     eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
   }
 
-  eraRewards.amount = prevAmount + additions.toBigInt() - removals.toBigInt();
+  eraRewards.amount =
+    prevAmount + additionValue.toBigInt() - removals.toBigInt();
 
   await eraRewards.save();
 
