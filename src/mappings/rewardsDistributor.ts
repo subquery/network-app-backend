@@ -128,7 +128,7 @@ export async function handleRewardsUpdated(
   const id = getIndexerRewardId(indexer, eraIdx);
   let eraRewards = await IndexerReward.get(id);
   // Hook for `additions` equal to zero
-  let additionValue = additions;
+  const additionValue = additionValue.eq(0) ? BigNumber.from(eraRewards?.additions ?? 0) : additions;
   if (additionValue.eq(0)) {
     additionValue = BigNumber.from(eraRewards?.additions ?? 0);
   }
