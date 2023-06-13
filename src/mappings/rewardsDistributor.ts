@@ -120,17 +120,6 @@ export async function handleRewardsUpdated(
 
   const { indexer, eraIdx, additions, removals } = event.args;
 
-  // Hook for `additions` equal to zero
-  let additionValue = additions;
-  if (additionValue.eq(0)) {
-    const rewardsDistributor = RewardsDistributer__factory.connect(
-      REWARD_DIST_ADDRESS,
-      api
-    );
-
-    additionValue = await rewardsDistributor.getRewardAddTable(indexer, eraIdx);
-  }
-
   const prevEraRewards = await IndexerReward.get(
     getPrevIndexerRewardId(indexer, eraIdx)
   );
@@ -138,6 +127,11 @@ export async function handleRewardsUpdated(
 
   const id = getIndexerRewardId(indexer, eraIdx);
   let eraRewards = await IndexerReward.get(id);
+  // Hook for `additions` equal to zero
+  let additionValue = additions;
+  if (additionValue.eq(0)) {
+    additionValue = BigNumber.from(eraRewards?.additions ?? 0);
+  }
 
   if (!eraRewards) {
     eraRewards = IndexerReward.create({
