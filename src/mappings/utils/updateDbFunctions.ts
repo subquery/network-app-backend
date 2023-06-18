@@ -11,7 +11,6 @@ import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from 'ethers';
 import { CreateIndexerParams } from '../../interfaces';
 import {
-  IndexerMetadata,
   Indexer,
   EraValue,
   JSONBigInt,
@@ -23,7 +22,6 @@ import {
 import {
   bigNumberFrom,
   bigNumbertoJSONType,
-  decodeMetadata,
   ERA_MANAGER_ADDRESS,
   getDelegationId,
   INDEXER_REGISTRY_ADDRESS,
@@ -35,7 +33,6 @@ import {
 
 export async function createIndexer({
   address,
-  metadata = '',
   active = true,
   createdBlock,
   lastEvent,
@@ -43,7 +40,6 @@ export async function createIndexer({
 }: CreateIndexerParams): Promise<Indexer> {
   const indexer = Indexer.create({
     id: address,
-    metadataId: metadata ? address : undefined,
     capacity: {
       era: -1,
       value: BigInt(0).toJSONType(),
@@ -68,30 +64,6 @@ export async function createIndexer({
 
   await indexer.save();
   return indexer;
-}
-
-export async function upsertIndexerMetadata(
-  address: string,
-  metadataCID: string
-): Promise<void> {
-  const metadataRes = await decodeMetadata(metadataCID);
-  const { name, url } = metadataRes || {};
-
-  let metadata = await IndexerMetadata.get(metadataCID);
-  if (!metadata) {
-    metadata = IndexerMetadata.create({
-      id: address,
-      metadataCID,
-      name,
-      url,
-    });
-  } else {
-    metadata.metadataCID = metadataCID;
-    metadata.name = name;
-    metadata.url = url;
-  }
-
-  await metadata.save();
 }
 
 export async function upsertControllerAccount(
