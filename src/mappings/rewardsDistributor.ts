@@ -136,6 +136,7 @@ export async function handleRewardsUpdated(
       id,
       indexerId: indexer,
       eraIdx: eraIdx.toHexString(),
+      eraId: eraIdx.toBigInt(),
       additions: additionValue.toBigInt(),
       removals: removals.toBigInt(),
       amount: BigInt(0), // Updated below
