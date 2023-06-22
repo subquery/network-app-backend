@@ -211,7 +211,7 @@ async function updateFutureRewards(
       eraReward = IndexerReward.create({
         id,
         indexerId: indexer,
-        // eraId: eraId.toHexString(),
+        eraId: eraId.toBigInt(),
         eraIdx: eraId.toHexString(),
         additions: BigInt(0),
         removals: BigInt(0),

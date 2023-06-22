@@ -66,8 +66,8 @@ type Deployment @entity {
 
 type DeploymentIndexer @entity {
   id: ID! # indexer address + deployment id
-  indexer: Indexer! @index
-  deployment: Deployment! @index
+  indexer: Indexer! @index(unique:false) 
+  deployment: Deployment! @index(unique:false) 
 
   blockHeight: BigInt!
   mmrRoot: String
@@ -118,7 +118,7 @@ type Indexer @entity {
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 
   lastRewardedEra: String # hex encoding
-  active: Boolean! @index
+  active: Boolean! @index(unique: false)
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -145,8 +145,8 @@ type Delegator @entity {
 
 type Delegation @entity {
   id: ID! # nominator + indexer addresses
-  delegator: Delegator! @index
-  indexer: Indexer! @index
+  delegator: Delegator! @index(unique: false)
+  indexer: Indexer! @index(unique: false)
 
   amount: EraValue!
 
@@ -157,7 +157,7 @@ type Delegation @entity {
 type Withdrawl @entity {
   id: ID! # nominator + index
   index: BigInt! # Index of the withdrawl
-  delegator: String! @index # nominator address
+  delegator: String! @index(unique: false) # nominator address
   indexer: String! # nominator address
   startTime: Date!
   amount: BigInt!
@@ -191,7 +191,7 @@ type PlanTemplate @entity {
   dailyReqCap: BigInt!
   rateLimit: BigInt!
   metadata: String
-  active: Boolean! @index
+  active: Boolean! @index(unique: false)
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -200,11 +200,11 @@ type PlanTemplate @entity {
 type Plan @entity {
   id: ID! # Index, hex encoded
   price: BigInt!
-  creator: String! @index # Address
+  creator: String! @index(unique: false) # Address
   planTemplate: PlanTemplate!
-  active: Boolean! @index
+  active: Boolean! @index(unique: false)
 
-  deployment: Deployment @index
+  deployment: Deployment @index(unique: false)
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -212,9 +212,9 @@ type Plan @entity {
 
 type ServiceAgreement @entity {
   id: ID! # contract address
-  indexerAddress: String! @index
-  consumerAddress: String! @index
-  deployment: Deployment! @index
+  indexerAddress: String! @index(unique: false)
+  consumerAddress: String! @index(unique: false)
+  deployment: Deployment! @index(unique: false)
   planTemplate: PlanTemplate!
 
   period: BigInt!
@@ -229,7 +229,7 @@ type ServiceAgreement @entity {
 type UnclaimedReward @entity {
   id: ID! # indexer + delegator
   indexerAddress: String!
-  delegatorAddress: String! @index
+  delegatorAddress: String! @index(unique: false)
 
   amount: BigInt!
 
@@ -240,7 +240,7 @@ type UnclaimedReward @entity {
 type Reward @entity {
   id: ID! # indexer + delegator + tx hash
   indexerAddress: String!
-  delegatorAddress: String! @index
+  delegatorAddress: String! @index(unique: false)
 
   amount: BigInt!
   claimedTime: Date!
@@ -252,11 +252,11 @@ type Reward @entity {
 # Expected total reward an indexer will get each epoch
 type IndexerReward @entity {
   id: ID! # indexer + era
-  indexer: Indexer! @index
+  indexer: Indexer! @index(unique: false)
 
   # era: Era
-  eraIdx: String! @index
-  eraId: BigInt
+  eraIdx: String! #TODO: depreciate 
+  eraId: BigInt!
 
   amount: BigInt!
   additions: BigInt!
@@ -268,15 +268,15 @@ type IndexerReward @entity {
 
 type Offer @entity {
   id: ID! # offerID
-  consumer: String! @index
-  deployment: Deployment! @index
+  consumer: String! @index(unique: false)
+  deployment: Deployment! @index(unique: false)
   planTemplate: PlanTemplate!
   deposit: BigInt!
   minimumAcceptHeight: BigInt!
-  expireDate: Date! @index
+  expireDate: Date! @index(unique: false)
   limit: Int! # indexer cap
   accepted: Int! # accepted indexer amount
-  reachLimit: Boolean! @index # whether reach limit
+  reachLimit: Boolean! @index(unique: false) # whether reach limit
   withdrawn: Boolean! # withdraw by cancel event
   withdrawPenalty: BigInt
 
@@ -286,8 +286,8 @@ type Offer @entity {
 
 type AcceptedOffer @entity {
   id: ID! # offerID:indexer
-  indexer: Indexer! @index
-  offer: Offer! @index
+  indexer: Indexer! @index(unique: false)
+  offer: Offer! @index(unique: false)
   serviceAgreement: ServiceAgreement!
 
   createdBlock: Int
@@ -312,16 +312,16 @@ type Exception @entity {
 type StateChannel @entity {
   id: ID!
 
-  indexer: String! @index
-  consumer: String! @index
+  indexer: String! @index(unique: false)
+  consumer: String! @index(unique: false)
   agent: String
   status: ChannelStatus! 
-  deployment: Deployment! @index
+  deployment: Deployment! @index(unique: false)
   total: BigInt!
   price: BigInt!
   spent: BigInt!
   isFinal: Boolean!
-  expiredAt: Date! @index
+  expiredAt: Date! @index(unique: false)
   terminatedAt: Date!
   terminateByIndexer: Boolean!
   startTime: Date!
