@@ -104,6 +104,7 @@ type EraValue @jsonField {
 
 type Indexer @entity {
   id: ID! # Indexers address
+  metadata: String! # IPFS cid
   controller: String # Controller address for the indexer
 
   commission: EraValue!
@@ -230,7 +231,7 @@ type UnclaimedReward @entity {
   indexerAddress: String!
   delegatorAddress: String! @index
 
-  amount: BigInt! @index
+  amount: BigInt!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber

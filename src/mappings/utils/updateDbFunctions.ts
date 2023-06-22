@@ -33,6 +33,7 @@ import {
 
 export async function createIndexer({
   address,
+  metadata = '',
   active = true,
   createdBlock,
   lastEvent,
@@ -40,6 +41,7 @@ export async function createIndexer({
 }: CreateIndexerParams): Promise<Indexer> {
   const indexer = Indexer.create({
     id: address,
+    metadata,
     capacity: {
       era: -1,
       value: BigInt(0).toJSONType(),

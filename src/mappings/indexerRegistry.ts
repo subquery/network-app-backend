@@ -36,15 +36,17 @@ export async function handleRegisterIndexer(
   const { indexer: indexerAddress, metadata } = event.args;
 
   const indexer = await Indexer.get(indexerAddress);
+  const cid = bytesToIpfsCid(metadata);
 
   if (indexer) {
+    indexer.metadata = cid;
     indexer.active = true;
     indexer.lastEvent = `handleRegisterIndexer:${event.blockNumber}`;
     await indexer.save();
   } else {
     await createIndexer({
       address: indexerAddress,
-      metadata,
+      metadata: cid,
       createdBlock: event.blockNumber,
       lastEvent: `handleRegisterIndexer:${event.blockNumber}`,
     });
@@ -196,7 +198,6 @@ export async function handleSetCommissionRate(
   if (!indexer) {
     indexer = await createIndexer({
       address,
-      active: true,
       lastEvent,
       createdBlock: event.blockNumber,
     });
