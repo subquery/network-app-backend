@@ -118,7 +118,7 @@ type Indexer @entity {
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 
   lastRewardedEra: String # hex encoding
-  active: Boolean! @index(unique: false)
+  active: Boolean! # @index(unique: false)
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -191,7 +191,7 @@ type PlanTemplate @entity {
   dailyReqCap: BigInt!
   rateLimit: BigInt!
   metadata: String
-  active: Boolean! @index(unique: false)
+  active: Boolean!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -202,7 +202,7 @@ type Plan @entity {
   price: BigInt!
   creator: String! @index(unique: false) # Address
   planTemplate: PlanTemplate!
-  active: Boolean! @index(unique: false)
+  active: Boolean!
 
   deployment: Deployment 
 
@@ -276,7 +276,7 @@ type Offer @entity {
   expireDate: Date! @index(unique: false)
   limit: Int! # indexer cap
   accepted: Int! # accepted indexer amount
-  reachLimit: Boolean! @index(unique: false) # whether reach limit
+  reachLimit: Boolean!
   withdrawn: Boolean! # withdraw by cancel event
   withdrawPenalty: BigInt
 
