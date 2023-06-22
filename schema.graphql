@@ -66,8 +66,8 @@ type Deployment @entity {
 
 type DeploymentIndexer @entity {
   id: ID! # indexer address + deployment id
-  indexer: Indexer! @index(unique:false) 
-  deployment: Deployment! @index(unique:false) 
+  indexer: Indexer!
+  deployment: Deployment!
 
   blockHeight: BigInt!
   mmrRoot: String
@@ -145,8 +145,8 @@ type Delegator @entity {
 
 type Delegation @entity {
   id: ID! # nominator + indexer addresses
-  delegator: Delegator! @index(unique: false)
-  indexer: Indexer! @index(unique: false)
+  delegator: Delegator!
+  indexer: Indexer! 
 
   amount: EraValue!
 
@@ -204,7 +204,7 @@ type Plan @entity {
   planTemplate: PlanTemplate!
   active: Boolean! @index(unique: false)
 
-  deployment: Deployment @index(unique: false)
+  deployment: Deployment 
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -214,7 +214,7 @@ type ServiceAgreement @entity {
   id: ID! # contract address
   indexerAddress: String! @index(unique: false)
   consumerAddress: String! @index(unique: false)
-  deployment: Deployment! @index(unique: false)
+  deployment: Deployment! 
   planTemplate: PlanTemplate!
 
   period: BigInt!
@@ -252,7 +252,7 @@ type Reward @entity {
 # Expected total reward an indexer will get each epoch
 type IndexerReward @entity {
   id: ID! # indexer + era
-  indexer: Indexer! @index(unique: false)
+  indexer: Indexer!
 
   # era: Era
   eraIdx: String! #TODO: depreciate 
@@ -269,7 +269,7 @@ type IndexerReward @entity {
 type Offer @entity {
   id: ID! # offerID
   consumer: String! @index(unique: false)
-  deployment: Deployment! @index(unique: false)
+  deployment: Deployment! 
   planTemplate: PlanTemplate!
   deposit: BigInt!
   minimumAcceptHeight: BigInt!
@@ -286,8 +286,8 @@ type Offer @entity {
 
 type AcceptedOffer @entity {
   id: ID! # offerID:indexer
-  indexer: Indexer! @index(unique: false)
-  offer: Offer! @index(unique: false)
+  indexer: Indexer! 
+  offer: Offer! 
   serviceAgreement: ServiceAgreement!
 
   createdBlock: Int
@@ -316,7 +316,7 @@ type StateChannel @entity {
   consumer: String! @index(unique: false)
   agent: String
   status: ChannelStatus! 
-  deployment: Deployment! @index(unique: false)
+  deployment: Deployment! 
   total: BigInt!
   price: BigInt!
   spent: BigInt!
