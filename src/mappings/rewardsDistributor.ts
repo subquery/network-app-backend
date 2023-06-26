@@ -136,6 +136,7 @@ export async function handleRewardsUpdated(
       id,
       indexerId: indexer,
       eraIdx: eraIdx.toHexString(),
+      eraId: eraIdx.toBigInt(),
       additions: additionValue.toBigInt(),
       removals: removals.toBigInt(),
       amount: BigInt(0), // Updated below
@@ -210,7 +211,7 @@ async function updateFutureRewards(
       eraReward = IndexerReward.create({
         id,
         indexerId: indexer,
-        // eraId: eraId.toHexString(),
+        eraId: eraId.toBigInt(),
         eraIdx: eraId.toHexString(),
         additions: BigInt(0),
         removals: BigInt(0),
