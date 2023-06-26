@@ -5,6 +5,8 @@ runner:
   node:
     name: '@subql/node-ethereum'
     version: '*'
+    options:
+      unfinalizedBlocks: true
   query:
     name: '@subql/query'
     version: '*'
