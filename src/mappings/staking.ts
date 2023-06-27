@@ -127,6 +127,10 @@ export async function handleAddDelegation(
       amountBn
     );
   }
+
+  if (BigInt.fromJSONType(delegation.amount.valueAfter) > BigInt(0)) {
+    delegation.exitEra = undefined;
+  }
   await updateTotalLock(eraManager, amountBn, 'add', indexer === source, event);
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
@@ -154,6 +158,10 @@ export async function handleRemoveDelegation(
     amount.toBigInt(),
     'sub'
   );
+
+  if (BigInt.fromJSONType(delegation.amount.valueAfter) === BigInt(0)) {
+    delegation.exitEra = delegation.amount.era + 1;
+  }
 
   await updateTotalDelegation(eraManager, source, amount.toBigInt(), 'sub');
   await updateTotalStake(eraManager, indexer, amount.toBigInt(), 'sub', event);

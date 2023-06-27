@@ -38,7 +38,7 @@ export async function handleRewardsDistributed(
   logger.info('handleRewardsDistributed');
   assert(event.args, 'No event args');
 
-  const { indexer } = event.args;
+  const { indexer, eraIdx } = event.args;
   const delegators = await Delegation.getByIndexerId(indexer);
   if (!delegators) return;
 
@@ -57,21 +57,30 @@ export async function handleRewardsDistributed(
     const id = buildRewardId(indexer, delegator.delegatorId);
 
     let reward = await UnclaimedReward.get(id);
-
+    let rewardChanged = true;
     if (!reward) {
       reward = UnclaimedReward.create({
         id,
         delegatorAddress: delegator.delegatorId,
+        delegatorId: delegator.delegatorId,
         indexerAddress: indexer,
         amount: rewards.toBigInt(),
         createdBlock: event.blockNumber,
       });
     } else {
-      reward.amount = rewards.toBigInt();
-      reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
+      rewardChanged = reward.amount === rewards.toBigInt();
+      if (rewardChanged) {
+        reward.amount = rewards.toBigInt();
+        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
+      }
     }
 
     await reward.save();
+
+    if (delegator.exitEra && delegator.exitEra <= eraIdx.toNumber()) {
+      assert(!rewardChanged, 'exited delegator should not have reward changed');
+      await Delegation.remove(delegator.id);
+    }
   }
 }
 
@@ -101,6 +110,7 @@ export async function handleRewardsClaimed(
       id: `${id}:${event.transactionHash}`,
       indexerAddress: event.args.indexer,
       delegatorAddress: event.args.delegator,
+      delegatorId: event.args.delegator,
       amount: event.args.rewards.toBigInt(),
       claimedTime: biToDate(event.block.timestamp),
       createdBlock: event.blockNumber,

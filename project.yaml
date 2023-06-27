@@ -15,11 +15,12 @@ repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '137' # Mumbai testnet 
-  endpoint: 'wss://rpc-mainnet.matic.network'
+  chainId: '137' # Mumbai testnet
+  endpoint:
+  dictionary: "https://gx.api.subquery.network/sq/subquery/polygon-dictionary"
 
 x-ethereum: &ethereum
-  kind: ethereum/Runtime 
+  kind: ethereum/Runtime
   startBlock: 41192135
   assets:
     eraManager:
@@ -222,7 +223,7 @@ dataSources:
             topics:
               - UserRemoved(address indexed consumer, address user)
   - <<: *ethereum
-    options:  
+    options:
       abi: rewardsDistributor
       address: '0x9e96592cd510da1EBC6bB94448F6043980Bf3c51'
     mapping:
