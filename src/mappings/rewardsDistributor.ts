@@ -47,32 +47,32 @@ export async function handleRewardsDistributed(
     api
   );
 
-  await Promise.all(
-    delegators.map(async (delegator) => {
-      const rewards = await rewardsDistributor.userRewards(
-        indexer,
-        delegator.delegatorId
-      );
-      const id = buildRewardId(indexer, delegator.delegatorId);
+  for (const delegator of delegators.sort((a, b) =>
+    a.delegatorId.localeCompare(b.delegatorId)
+  )) {
+    const rewards = await rewardsDistributor.userRewards(
+      indexer,
+      delegator.delegatorId
+    );
+    const id = buildRewardId(indexer, delegator.delegatorId);
 
-      let reward = await UnclaimedReward.get(id);
+    let reward = await UnclaimedReward.get(id);
 
-      if (!reward) {
-        reward = UnclaimedReward.create({
-          id,
-          delegatorAddress: delegator.delegatorId,
-          indexerAddress: indexer,
-          amount: rewards.toBigInt(),
-          createdBlock: event.blockNumber,
-        });
-      } else {
-        reward.amount = rewards.toBigInt();
-        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
-      }
+    if (!reward) {
+      reward = UnclaimedReward.create({
+        id,
+        delegatorAddress: delegator.delegatorId,
+        indexerAddress: indexer,
+        amount: rewards.toBigInt(),
+        createdBlock: event.blockNumber,
+      });
+    } else {
+      reward.amount = rewards.toBigInt();
+      reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
+    }
 
-      await reward.save();
-    })
-  );
+    await reward.save();
+  }
 }
 
 export async function handleRewardsClaimed(
