@@ -50,7 +50,6 @@ export async function handleChannelOpen(
     spent: BigInt(0),
     isFinal: false,
     expiredAt: new Date(expiredAt.toNumber() * 1000),
-    terminatedAt: new Date(expiredAt.toNumber() * 1000),
     deploymentId: bytesToIpfsCid(deploymentId),
     terminateByIndexer: false,
     startTime: biToDate(event.block.timestamp),
