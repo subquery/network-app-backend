@@ -79,7 +79,7 @@ export async function handleChannelFund(
   const { channelId, total } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
-  sc.total = total.toBigInt();
+  sc.total = sc.total + total.toBigInt();
   await sc.save();
 }
 
