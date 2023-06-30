@@ -15,9 +15,8 @@ repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '137' # Mumbai testnet
-  endpoint: https://polygon.api.onfinality.io/rpc?apikey=7b527a42-c4aa-44b3-b4ad-ae643e1a1c46
-  dictionary: https://gx.api.subquery.network/sq/subquery/polygon-dictionary
+  chainId: '80001' # Mumbai testnet
+  endpoint: https://polygon-mumbai.api.onfinality.io/rpc?apikey=7b527a42-c4aa-44b3-b4ad-ae643e1a1c46
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime

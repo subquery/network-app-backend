@@ -34,7 +34,9 @@ export async function handleChannelOpen(
 
   const abi = ethers.utils.defaultAbiCoder;
   const consumer = abi.decode(['address'], callback)[0] as string;
-  const agent = creator === consumer ? consumer : undefined;
+  const agent = consumer ? creator : undefined;
+
+  ethers.constants.AddressZero;
 
   const sc = StateChannel.create({
     id: channelId.toHexString(),

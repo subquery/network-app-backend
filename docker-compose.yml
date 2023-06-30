@@ -34,7 +34,6 @@ services:
     command:
       - -f=/app
       - --db-schema=app
-      - --unsafe
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3001/ready"]
       interval: 3s

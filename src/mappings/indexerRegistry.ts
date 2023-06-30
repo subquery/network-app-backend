@@ -13,9 +13,9 @@ import assert from 'assert';
 import { Controller, Indexer } from '../types';
 import {
   bytesToIpfsCid,
+  Contracts,
   createIndexer,
-  ERA_MANAGER_ADDRESS,
-  INDEXER_REGISTRY_ADDRESS,
+  getContractAddress,
   reportException,
   reportIndexerNonExistException,
   upsertControllerAccount,
@@ -66,8 +66,9 @@ export async function handleUnregisterIndexer(
   const indexer = await Indexer.get(event.args.indexer);
   const lastEvent = `handleUnregisterIndexer:${event.blockNumber}`;
 
+  const network = await api.getNetwork();
   const IndexerRegistry = IndexerRegistry__factory.connect(
-    INDEXER_REGISTRY_ADDRESS,
+    getContractAddress(network.chainId, Contracts.INDEXER_REGISTRY_ADDRESS),
     api
   );
   const controllerAddress = await IndexerRegistry.getController(
@@ -190,7 +191,11 @@ export async function handleSetCommissionRate(
   assert(event.args, 'No event args');
 
   const address = event.args.indexer;
-  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
+  const network = await api.getNetwork();
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
 
   const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);
