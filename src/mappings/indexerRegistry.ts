@@ -20,7 +20,6 @@ import {
   reportIndexerNonExistException,
   upsertControllerAccount,
   upsertEraValue,
-  upsertIndexerMetadata,
 } from './utils';
 import {
   EraManager__factory,
@@ -36,20 +35,18 @@ export async function handleRegisterIndexer(
   assert(event.args, 'No event args');
   const { indexer: indexerAddress, metadata } = event.args;
 
-  const cid = bytesToIpfsCid(metadata);
-  await upsertIndexerMetadata(indexerAddress, cid);
-
   const indexer = await Indexer.get(indexerAddress);
+  const cid = bytesToIpfsCid(metadata);
 
   if (indexer) {
-    indexer.metadataId = indexerAddress;
+    indexer.metadata = cid;
     indexer.active = true;
     indexer.lastEvent = `handleRegisterIndexer:${event.blockNumber}`;
     await indexer.save();
   } else {
     await createIndexer({
       address: indexerAddress,
-      metadata,
+      metadata: cid,
       createdBlock: event.blockNumber,
       lastEvent: `handleRegisterIndexer:${event.blockNumber}`,
     });
@@ -112,10 +109,6 @@ export async function handleUpdateIndexerMetadata(
   const lastEvent = `handleUpdateIndexerMetadata: ${event.blockNumber}`;
 
   if (indexer) {
-    const cid = bytesToIpfsCid(event.args.metadata);
-    await upsertIndexerMetadata(address, cid);
-
-    indexer.metadataId = address;
     indexer.lastEvent = lastEvent;
     await indexer.save();
   } else {
@@ -205,7 +198,6 @@ export async function handleSetCommissionRate(
   if (!indexer) {
     indexer = await createIndexer({
       address,
-      active: true,
       lastEvent,
       createdBlock: event.blockNumber,
     });

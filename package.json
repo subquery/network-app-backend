@@ -29,7 +29,6 @@
     "@typechain/ethers-v5": "^10.2.0",
     "@types/bs58": "^4.0.1",
     "@types/js-yaml": "^4.0.5",
-    "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "4",
     "@typescript-eslint/parser": "4",
     "eslint": "7",
@@ -46,13 +45,12 @@
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
-    "@subql/contract-sdk": "^0.13.1-4",
+    "@subql/contract-sdk": "^0.13.1-5",
     "@subql/types-ethereum": "dev",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
     "bs58": "^4.0.1",
     "ethers": "^5.7.2",
-    "node-fetch": "^2.6.7",
     "pino": "^7.8.0"
   },
   "resolutions": {

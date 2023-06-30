@@ -3,9 +3,8 @@
 
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
-import deploymentFile from '@subql/contract-sdk/publish/testnet.json';
+import deploymentFile from '@subql/contract-sdk/publish/kepler.json';
 import { EthereumLog } from '@subql/types-ethereum';
-import fetch from 'node-fetch';
 
 import { JSONBigInt, Exception } from '../../types';
 import assert from 'assert';
@@ -18,8 +17,6 @@ export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
 export const SA_REGISTRY_ADDRESS =
   deploymentFile.ServiceAgreementRegistry.address;
 export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
-
-type Metadata = { name: string; url: string };
 
 declare global {
   interface BigIntConstructor {
@@ -102,28 +99,6 @@ export function bigNumberFrom(value: unknown): BigNumber {
     return BigNumber.from(value);
   } catch (e) {
     return BigNumber.from(0);
-  }
-}
-
-const metadataHost = 'https://unauthipfs.subquery.network/ipfs/api/v0/cat?arg=';
-
-export async function decodeMetadata(
-  metadataCID: string
-): Promise<Metadata | undefined> {
-  try {
-    const url = `${metadataHost}${metadataCID}`;
-    const response = await fetch(url, {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const metadata = response.json() as unknown as Metadata;
-    logger.info(`Fetched metadata from cid: ${metadataCID}`);
-    return metadata;
-  } catch (error) {
-    logger.error(`Cannot decode metadata from cid: ${metadataCID}`);
-    logger.error(error);
-    return undefined;
   }
 }
 
