@@ -46,7 +46,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@subql/contract-sdk": "^0.13.5",
-    "@subql/types-ethereum": "dev",
+    "@subql/types-ethereum": "^2.2.2",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
     "bs58": "^4.0.1",

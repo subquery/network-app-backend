@@ -74,7 +74,7 @@ async function createDeploymentIndexer({
 export async function handleNewQuery(
   event: EthereumLog<CreateQueryEvent['args']>
 ): Promise<void> {
-  logger.info('handleNewQuery');
+  logger.info('handleNewQueryProject');
   assert(event.args, 'No event args');
 
   const projectId = event.args.queryId.toHexString();
