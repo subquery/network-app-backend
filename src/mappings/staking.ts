@@ -20,7 +20,6 @@ import {
   WithdrawalType,
 } from '../types';
 import {
-  ERA_MANAGER_ADDRESS,
   updateTotalStake,
   upsertEraValue,
   updateTotalDelegation,
@@ -31,7 +30,8 @@ import {
   getDelegationId,
   updateMaxUnstakeAmount,
   biToDate,
-  STAKING_ADDRESS,
+  getContractAddress,
+  Contracts,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
@@ -81,7 +81,11 @@ export async function handleAddDelegation(
 
   const { source, indexer, amount } = event.args;
   const id = getDelegationId(source, indexer);
-  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
+  const network = await api.getNetwork();
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
@@ -145,7 +149,11 @@ export async function handleRemoveDelegation(
 
   const { source, indexer, amount } = event.args;
   const id = getDelegationId(source, indexer);
-  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
+  const network = await api.getNetwork();
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
 
   const delegation = await Delegation.get(id);
 
@@ -189,8 +197,12 @@ export async function handleWithdrawRequested(
 
   let updatedAmount = amount;
 
+  const network = await api.getNetwork();
   if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
-    const staking = Staking__factory.connect(STAKING_ADDRESS, api);
+    const staking = Staking__factory.connect(
+      getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
+      api
+    );
     const { amount: unbondingAmount } = await staking.unbondingAmount(
       indexer,
       index

@@ -3,20 +3,36 @@
 
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
-import deploymentFile from '@subql/contract-sdk/publish/kepler.json';
+import keplerDeploymentFile from '@subql/contract-sdk/publish/kepler.json';
+import testnetDeploymentFile from '@subql/contract-sdk/publish/kepler.json';
 import { EthereumLog } from '@subql/types-ethereum';
 
 import { JSONBigInt, Exception } from '../../types';
 import assert from 'assert';
 
-export const QUERY_REGISTRY_ADDRESS = deploymentFile.QueryRegistry.address;
-export const ERA_MANAGER_ADDRESS = deploymentFile.EraManager.address;
-export const STAKING_ADDRESS = deploymentFile.Staking.address;
-export const INDEXER_REGISTRY_ADDRESS = deploymentFile.IndexerRegistry.address;
-export const PLAN_MANAGER_ADDRESS = deploymentFile.PlanManager.address;
-export const SA_REGISTRY_ADDRESS =
-  deploymentFile.ServiceAgreementRegistry.address;
-export const REWARD_DIST_ADDRESS = deploymentFile.RewardsDistributer.address;
+export enum Contracts {
+  QUERY_REGISTRY_ADDRESS = 'QueryRegistry',
+  ERA_MANAGER_ADDRESS = 'EraManager',
+  STAKING_ADDRESS = 'Staking',
+  INDEXER_REGISTRY_ADDRESS = 'IndexerRegistry',
+  PLAN_MANAGER_ADDRESS = 'PlanManager',
+  SA_REGISTRY_ADDRESS = 'ServiceAgreementRegistry',
+  REWARD_DIST_ADDRESS = 'RewardsDistributer',
+}
+
+export function getContractAddress(
+  networkId: number,
+  contract: Contracts
+): string {
+  const deploymentFile =
+    networkId === 80001 ? testnetDeploymentFile : keplerDeploymentFile;
+  // logger.info(
+  //   `${networkId}: ${contract} ${
+  //     deploymentFile[contract as keyof typeof deploymentFile].address
+  //   }`
+  // );
+  return deploymentFile[contract as keyof typeof deploymentFile].address;
+}
 
 declare global {
   interface BigIntConstructor {

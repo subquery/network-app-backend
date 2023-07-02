@@ -15,7 +15,7 @@ import {
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/RewardsDistributer';
-import { biToDate, REWARD_DIST_ADDRESS } from './utils';
+import { biToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 
 import { BigNumber } from '@ethersproject/bignumber';
@@ -42,8 +42,9 @@ export async function handleRewardsDistributed(
   const delegators = await Delegation.getByIndexerId(indexer);
   if (!delegators) return;
 
+  const network = await api.getNetwork();
   const rewardsDistributor = RewardsDistributer__factory.connect(
-    REWARD_DIST_ADDRESS,
+    getContractAddress(network.chainId, Contracts.REWARD_DIST_ADDRESS),
     api
   );
 

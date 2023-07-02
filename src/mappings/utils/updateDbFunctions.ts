@@ -22,13 +22,12 @@ import {
 import {
   bigNumberFrom,
   bigNumbertoJSONType,
-  ERA_MANAGER_ADDRESS,
+  Contracts,
+  getContractAddress,
   getDelegationId,
-  INDEXER_REGISTRY_ADDRESS,
   min,
   operations,
   reportIndexerNonExistException,
-  STAKING_ADDRESS,
 } from './helpers';
 
 export async function createIndexer({
@@ -142,9 +141,13 @@ export async function updateMaxUnstakeAmount(
   indexerAddress: string,
   event: EthereumLog
 ): Promise<void> {
-  const staking = Staking__factory.connect(STAKING_ADDRESS, api);
+  const network = await api.getNetwork();
+  const staking = Staking__factory.connect(
+    getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
+    api
+  );
   const indexerRegistry = IndexerRegistry__factory.connect(
-    INDEXER_REGISTRY_ADDRESS,
+    getContractAddress(network.chainId, Contracts.INDEXER_REGISTRY_ADDRESS),
     api
   );
 
@@ -260,8 +263,15 @@ export async function updateIndexerCapacity(
   const indexer = await Indexer.get(address);
   const delegationId = getDelegationId(address, address);
   const delegation = await Delegation.get(delegationId);
-  const staking = Staking__factory.connect(STAKING_ADDRESS, api);
-  const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
+  const network = await api.getNetwork();
+  const staking = Staking__factory.connect(
+    getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
+    api
+  );
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
 
   const leverageLimit = await staking.indexerLeverageLimit();
 
