@@ -11,7 +11,7 @@ import {
 } from '@subql/contract-sdk/typechain/PlanManager';
 import assert from 'assert';
 import { Plan, PlanTemplate } from '../types';
-import { bytesToIpfsCid, PLAN_MANAGER_ADDRESS } from './utils';
+import { bytesToIpfsCid, Contracts, getContractAddress } from './utils';
 import { constants } from 'ethers';
 import { EthereumLog } from '@subql/types-ethereum';
 
@@ -21,7 +21,11 @@ export async function handlePlanTemplateCreated(
   logger.info('handlePlanTemplateCreated');
   assert(event.args, 'No event args');
 
-  const planManager = PlanManager__factory.connect(PLAN_MANAGER_ADDRESS, api);
+  const network = await api.getNetwork();
+  const planManager = PlanManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.PLAN_MANAGER_ADDRESS),
+    api
+  );
 
   const rawPlanTemplate = await planManager.getPlanTemplate(
     event.args.templateId

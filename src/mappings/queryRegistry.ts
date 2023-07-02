@@ -2,23 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { DeploymentIndexer, Deployment, Project, Status } from '../types';
+import { Deployment, DeploymentIndexer, Project, Status } from '../types';
 import { QueryRegistry__factory } from '@subql/contract-sdk';
 import {
   CreateQueryEvent,
   StartIndexingEvent,
-  UpdateDeploymentStatusEvent,
   StopIndexingEvent,
-  UpdateQueryMetadataEvent,
-  UpdateQueryDeploymentEvent,
+  UpdateDeploymentStatusEvent,
   UpdateIndexingStatusToReadyEvent,
+  UpdateQueryDeploymentEvent,
+  UpdateQueryMetadataEvent,
 } from '@subql/contract-sdk/typechain/QueryRegistry';
 import {
   biToDate,
   bnToDate,
   bytesToIpfsCid,
   cidToBytes32,
-  QUERY_REGISTRY_ADDRESS,
+  Contracts,
+  getContractAddress,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { ISaveDeploymentIndexer } from '../interfaces';
@@ -38,10 +39,10 @@ async function createDeploymentIndexer({
 }: ISaveDeploymentIndexer) {
   logger.info(`createDeploymentIndexer: ${deploymentId}`);
   let sortedBlockHeight = blockHeight || BigInt(0);
-
+  const network = await api.getNetwork();
   if (blockHeight === undefined) {
     const queryRegistryManager = QueryRegistry__factory.connect(
-      QUERY_REGISTRY_ADDRESS,
+      getContractAddress(network.chainId, Contracts.QUERY_REGISTRY_ADDRESS),
       api
     );
 
