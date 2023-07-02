@@ -69,7 +69,7 @@ export async function handleRewardsDistributed(
         createdBlock: event.blockNumber,
       });
     } else {
-      rewardChanged = reward.amount === rewards.toBigInt();
+      rewardChanged = reward.amount !== rewards.toBigInt();
       if (rewardChanged) {
         reward.amount = rewards.toBigInt();
         reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
