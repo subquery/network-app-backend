@@ -32,8 +32,8 @@ services:
     volumes:
       - ./:/app
     command:
-      - -f=/app
-      - --db-schema=app
+      - -f=/app/project_testnet.yaml
+      - --db-schema=testnet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3001/ready"]
       interval: 3s
@@ -57,6 +57,6 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
     command:
-      - --name=app
+      - --name=testnet
       - --playground
       - --indexer=http://subquery-node:3001

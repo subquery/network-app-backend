@@ -26,11 +26,11 @@ export function getContractAddress(
 ): string {
   const deploymentFile =
     networkId === 80001 ? testnetDeploymentFile : keplerDeploymentFile;
-  console.log(
-    `${networkId}: ${contract} ${
-      deploymentFile[contract as keyof typeof deploymentFile].address
-    }`
-  );
+  // logger.info(
+  //   `${networkId}: ${contract} ${
+  //     deploymentFile[contract as keyof typeof deploymentFile].address
+  //   }`
+  // );
   return deploymentFile[contract as keyof typeof deploymentFile].address;
 }
 
