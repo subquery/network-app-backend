@@ -35,7 +35,9 @@ function getPrevIndexerRewardId(indexer: string, eraIdx: BigNumber): string {
 export async function handleRewardsDistributed(
   event: EthereumLog<DistributeRewardsEvent['args']>
 ): Promise<void> {
-  logger.info('handleRewardsDistributed');
+  logger.info(
+    `handleRewardsDistributed: ${event.blockNumber}-${event.transactionHash}-${event.logIndex}`
+  );
   assert(event.args, 'No event args');
 
   const { indexer } = event.args;
