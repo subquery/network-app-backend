@@ -6,7 +6,7 @@ import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
 import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
 import { Era } from '../types';
-import { biToDate, ERA_MANAGER_ADDRESS } from './utils';
+import { biToDate, Contracts, getContractAddress } from './utils';
 
 /* Era Handlers */
 export async function handleNewEra(
@@ -24,7 +24,11 @@ export async function handleNewEra(
       previousEra.lastEvent = `handleNewEra:${event.blockNumber}`;
       await previousEra.save();
     } else {
-      const eraManager = EraManager__factory.connect(ERA_MANAGER_ADDRESS, api);
+      const network = await api.getNetwork();
+      const eraManager = EraManager__factory.connect(
+        getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+        api
+      );
       const eraPeriod = await eraManager.eraPeriod();
 
       const a = biToDate(event.block.timestamp);

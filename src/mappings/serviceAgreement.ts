@@ -8,7 +8,12 @@ import {
   UserRemovedEvent,
 } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { Consumer, ServiceAgreement, User } from '../types';
-import { biToDate, bytesToIpfsCid, SA_REGISTRY_ADDRESS } from './utils';
+import {
+  biToDate,
+  bytesToIpfsCid,
+  Contracts,
+  getContractAddress,
+} from './utils';
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 
@@ -20,8 +25,9 @@ export async function handleServiceAgreementCreated(
 
   const { indexer, consumer, deploymentId, serviceAgreementId } = event.args;
 
+  const network = await api.getNetwork();
   const agreementRegistry = IServiceAgreementRegistry__factory.connect(
-    SA_REGISTRY_ADDRESS,
+    getContractAddress(network.chainId, Contracts.SA_REGISTRY_ADDRESS),
     api
   );
 

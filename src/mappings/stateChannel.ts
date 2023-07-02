@@ -35,8 +35,8 @@ export async function handleChannelOpen(
   let agent: string | undefined = undefined;
   try {
     consumer = utils.defaultAbiCoder.decode(['address'], callback)[0] as string;
-  } catch (e) {
     agent = _consumer;
+  } catch (e) {
   }
 
   const sc = StateChannel.create({
