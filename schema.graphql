@@ -327,7 +327,7 @@ type StateChannel @entity {
   spent: BigInt!
   isFinal: Boolean!
   expiredAt: Date! @index
-  terminatedAt: Date!
+  terminatedAt: Date
   terminateByIndexer: Boolean!
   startTime: Date!
 
