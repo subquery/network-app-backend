@@ -4,7 +4,7 @@
 import bs58 from 'bs58';
 import { BigNumber } from '@ethersproject/bignumber';
 import keplerDeploymentFile from '@subql/contract-sdk/publish/kepler.json';
-import testnetDeploymentFile from '@subql/contract-sdk/publish/kepler.json';
+import testnetDeploymentFile from '@subql/contract-sdk/publish/testnet.json';
 import { EthereumLog } from '@subql/types-ethereum';
 
 import { JSONBigInt, Exception } from '../../types';
@@ -26,11 +26,6 @@ export function getContractAddress(
 ): string {
   const deploymentFile =
     networkId === 80001 ? testnetDeploymentFile : keplerDeploymentFile;
-  // logger.info(
-  //   `${networkId}: ${contract} ${
-  //     deploymentFile[contract as keyof typeof deploymentFile].address
-  //   }`
-  // );
   return deploymentFile[contract as keyof typeof deploymentFile].address;
 }
 

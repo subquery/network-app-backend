@@ -4,9 +4,11 @@
   "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
-    "build": "yarn check-filters && subql build",
+    "build:kepler": "yarn check-filters kepler && ./node_modules/.bin/subql build -f ./project-kepler.yaml",
+    "build:testnet": "yarn check-filters testnet && ./node_modules/.bin/subql build -f ./project-testnet.yaml",
     "codegen:abi": "npx typechain --target=ethers-v5 './node_modules/@subql/contract-sdk/artifacts/contracts/**/*.json' --out-dir src/types/ethers-contracts",
-    "codegen": "./node_modules/.bin/subql codegen && yarn codegen:abi",
+    "codegen:kepler": "./node_modules/.bin/subql -f ./project-kepler.yaml codegen && yarn codegen:abi",
+    "codegen:testnet": "./node_modules/.bin/subql codegen -f ./project-testnet.yaml && yarn codegen:abi",
     "deploy": "subql publish",
     "validate": "subql validate",
     "prepare": "husky install",
@@ -24,7 +26,7 @@
   "author": "SubQuery Pty. Limited",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@subql/cli": "^2.1.0",
+    "@subql/cli": "^3.3.0",
     "@subql/types-ethereum": "^2.2.2",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/bs58": "^4.0.1",
