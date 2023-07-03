@@ -13,7 +13,17 @@ import {
   EventFragment /*, FunctionFragment*/,
 } from '@ethersproject/abi';
 
-const file = path.resolve(__dirname, '../project.yaml');
+function getProjectFile() {
+  const network = process.argv[2];
+  switch (network) {
+    case 'testnet':
+      return path.resolve(__dirname, '../project-testnet.yaml');
+    case 'kepler':
+      return path.resolve(__dirname, '../project-kepler.yaml');
+    default:
+      throw new Error('Unknown network');
+  }
+}
 
 function buildInterface(abiPath: string): Interface {
   const abi = fs.readFileSync(abiPath, 'utf8');
@@ -56,6 +66,7 @@ type Project = {
 function checkFilters() {
   console.log('Checking filters exist in ABIs');
 
+  const file = getProjectFile();
   const project = yaml.load(fs.readFileSync(file, 'utf-8')) as Project;
 
   const issues: string[] = [];
