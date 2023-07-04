@@ -21,7 +21,7 @@ network:
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime
-  startBlock: 33168672
+  startBlock: 37528625
   assets:
     eraManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
