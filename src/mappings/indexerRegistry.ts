@@ -104,13 +104,14 @@ export async function handleUpdateIndexerMetadata(
 ): Promise<void> {
   logger.info('handleUpdateIndexerMetadata');
   assert(event.args, 'No event args');
-  const address = event.args.indexer;
+  const { indexer: address, metadata } = event.args;
 
   const indexer = await Indexer.get(address);
   const lastEvent = `handleUpdateIndexerMetadata: ${event.blockNumber}`;
 
   if (indexer) {
     indexer.lastEvent = lastEvent;
+    indexer.metadata = metadata;
     await indexer.save();
   } else {
     await reportIndexerNonExistException(
