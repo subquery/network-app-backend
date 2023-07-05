@@ -111,7 +111,7 @@ export async function handleUpdateIndexerMetadata(
 
   if (indexer) {
     indexer.lastEvent = lastEvent;
-    indexer.metadata = metadata;
+    indexer.metadata = bytesToIpfsCid(metadata);
     await indexer.save();
   } else {
     await reportIndexerNonExistException(
