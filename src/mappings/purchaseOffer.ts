@@ -69,6 +69,9 @@ export async function handlePurchaseOfferAccepted(
       const acceptedAmount = offer.accepted + 1;
       offer.accepted = acceptedAmount;
       offer.reachLimit = acceptedAmount === offer.limit;
+      if (offer.reachLimit) {
+        offer.expireDate = biToDate(event.block.timestamp);
+      }
       offer.lastEvent = `handlePurchaseOfferAccepted:${event.blockNumber}`;
 
       await offer.save();
