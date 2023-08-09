@@ -8,6 +8,8 @@ import {
   Indexer,
   Reward,
   UnclaimedReward,
+  EraReward,
+  EraRewardClaimed,
 } from '../types';
 import { RewardsDistributer__factory } from '@subql/contract-sdk';
 import {
@@ -40,7 +42,7 @@ export async function handleRewardsDistributed(
   );
   assert(event.args, 'No event args');
 
-  const { indexer, eraIdx } = event.args;
+  const { indexer, eraIdx, rewards: eventRewards } = event.args;
   const delegators = await Delegation.getByIndexerId(indexer);
   if (!delegators) return;
 
@@ -49,6 +51,8 @@ export async function handleRewardsDistributed(
     getContractAddress(network.chainId, Contracts.REWARD_DIST_ADDRESS),
     api
   );
+
+  let accumulatedEraRewards = BigInt(0);
 
   for (const delegator of delegators.sort((a, b) =>
     a.delegatorId.localeCompare(b.delegatorId)
@@ -90,7 +94,33 @@ export async function handleRewardsDistributed(
       );
       await Delegation.remove(delegator.id);
     }
+
+    if (rewards.gt(0)) {
+      const eraReward = await updateEraReward({
+        indexerId: indexer,
+        delegatorId: delegator.delegatorId,
+        eraId: eraIdx.toHexString(),
+        isCommission: false,
+        claimed: false,
+        amount: rewards.toBigInt() - rewardOld,
+        createdBlock: event.blockNumber,
+        createdTimestamp: biToDate(event.block.timestamp),
+      });
+      accumulatedEraRewards += eraReward.amount;
+    }
   }
+
+  await updateEraReward({
+    indexerId: indexer,
+    delegatorId: indexer,
+    eraId: eraIdx.toHexString(),
+    isCommission: true,
+    claimed: true, // commission rewards already in indexer's account
+    // amount: rewards.mul(commission).div(100).toBigInt(),
+    amount: eventRewards.toBigInt() - accumulatedEraRewards,
+    createdBlock: event.blockNumber,
+    createdTimestamp: biToDate(event.block.timestamp),
+  });
 }
 
 export async function handleRewardsClaimed(
@@ -128,6 +158,89 @@ export async function handleRewardsClaimed(
     await reward.save();
   } catch {
     logger.error(`ERROR: handleRewardsClaimed`);
+  }
+
+  await updateEraRewardClaimed(event);
+}
+
+interface EraRewardData {
+  indexerId: string;
+  delegatorId: string;
+  eraId: string;
+  isCommission: boolean;
+  claimed: boolean;
+  amount?: bigint;
+  createdBlock?: number;
+  createdTimestamp?: Date;
+}
+
+async function updateEraReward(data: EraRewardData): Promise<EraReward> {
+  console.log('updateEraReward', data);
+
+  const id = `${data.indexerId}_${data.delegatorId}_${data.eraId}${
+    data.isCommission ? '_commission' : ''
+  }`;
+
+  let eraReward = await EraReward.get(id);
+
+  if (!eraReward) {
+    eraReward = EraReward.create({
+      id,
+      indexerId: data.indexerId,
+      delegatorId: data.delegatorId,
+      eraId: data.eraId,
+      claimed: data.claimed,
+      amount: data.amount ?? BigInt(0),
+      createdBlock: data.createdBlock,
+      createdTimestamp: data.createdTimestamp ?? new Date(),
+    });
+  } else {
+    eraReward.claimed = data.claimed;
+
+    eraReward.amount = data.amount ?? eraReward.amount;
+    eraReward.createdBlock = data.createdBlock ?? eraReward.createdBlock;
+    eraReward.createdTimestamp =
+      data.createdTimestamp ?? eraReward.createdTimestamp;
+  }
+
+  await eraReward.save();
+  return eraReward;
+}
+
+async function updateEraRewardClaimed(
+  event: EthereumLog<ClaimRewardsEvent['args']>
+): Promise<void> {
+  logger.info('updateEraRewardClaimed');
+  assert(event.args, 'No event args');
+
+  const { indexer, delegator } = event.args;
+  const id = `${indexer}_${delegator}`;
+
+  let eraRewardClaimed = await EraRewardClaimed.get(id);
+  if (!eraRewardClaimed) {
+    eraRewardClaimed = EraRewardClaimed.create({
+      id,
+      lastClaimedEra: 0,
+    });
+  }
+
+  let lastClaimedEra = eraRewardClaimed.lastClaimedEra;
+  const hasNextEraReward = true;
+
+  while (hasNextEraReward) {
+    const eraReward = await EraReward.get(`${id}_${lastClaimedEra + 1}`);
+    if (!eraReward) break;
+
+    lastClaimedEra++;
+    if (!eraReward.claimed) continue;
+
+    eraReward.claimed = true;
+    await eraReward.save();
+  }
+
+  if (lastClaimedEra > eraRewardClaimed.lastClaimedEra) {
+    eraRewardClaimed.lastClaimedEra = lastClaimedEra;
+    await eraRewardClaimed.save();
   }
 }
 

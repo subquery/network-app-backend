@@ -106,7 +106,6 @@ type Indexer @entity {
   id: ID! # Indexers address
   metadata: String! # IPFS cid
   controller: String # Controller address for the indexer
-
   commission: EraValue!
   totalStake: EraValue!
   capacity: EraValue!
@@ -119,7 +118,6 @@ type Indexer @entity {
 
   lastRewardedEra: String # hex encoding
   active: Boolean! # @index
-
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
@@ -138,8 +136,8 @@ type Delegator @entity {
   id: ID! # Address
   totalDelegations: EraValue!
   delegations: [Delegation] @derivedFrom(field: "delegator")
-  claimedRewards: [Reward] @derivedFrom(field:"delegator")
-  unclaimedRewards: [UnclaimedReward] @derivedFrom(field:"delegator")
+  claimedRewards: [Reward] @derivedFrom(field: "delegator")
+  unclaimedRewards: [UnclaimedReward] @derivedFrom(field: "delegator")
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -269,6 +267,24 @@ type IndexerReward @entity {
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
+}
+
+type EraReward @entity {
+  id: ID! # indexer! + delegator! + era! + commission?
+  indexer: Indexer!
+  delegator: Delegator!
+  era: Era!
+
+  amount: BigInt!
+  claimed: Boolean!
+
+  createdBlock: Int
+  createdTimestamp: Date!
+}
+
+type EraRewardClaimed @entity {
+  id: ID! # indexer + delegator
+  lastClaimedEra: Int!
 }
 
 type Offer @entity {
