@@ -189,6 +189,7 @@ async function updateEraReward(data: EraRewardData): Promise<EraReward> {
       indexerId: data.indexerId,
       delegatorId: data.delegatorId,
       eraId: data.eraId,
+      isIndexer: data.indexerId === data.delegatorId,
       claimed: data.claimed,
       amount: data.amount ?? BigInt(0),
       createdBlock: data.createdBlock,

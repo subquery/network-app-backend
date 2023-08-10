@@ -275,6 +275,8 @@ type EraReward @entity {
   delegator: Delegator!
   era: Era!
 
+  isIndexer: Boolean!
+
   amount: BigInt!
   claimed: Boolean!
 
