@@ -357,3 +357,17 @@ export async function updateTotalLock(
 
   await totalLock.save();
 }
+
+export async function getCurrentEra(
+  eraManager: EraManager | null
+): Promise<number> {
+  if (!eraManager) {
+    const network = await api.getNetwork();
+    eraManager = EraManager__factory.connect(
+      getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+      api
+    );
+  }
+  const currentEra = await eraManager.eraNumber().then((r) => r.toNumber());
+  return currentEra;
+}

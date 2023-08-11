@@ -289,6 +289,35 @@ type EraRewardClaimed @entity {
   lastClaimedEra: Int!
 }
 
+type StakeSummary @entity {
+  id: ID! # era id
+  totalStake: BigInt!
+  indexerStake: BigInt!
+  delegatorStake: BigInt!
+}
+
+type Sqtoken @entity {
+  id: ID! # token address
+  totalSupply: BigInt! # total supply
+  circulatingSupply: BigInt! # totalSupply - airdrop locked - staking locked - treasury holdings
+  tokenHolders: [TokenHolder] @derivedFrom(field: "token")
+}
+
+type TokenHolder @entity {
+  id: ID! # holder address
+  balance: BigInt!
+  token: Sqtoken!
+}
+
+type Transfer @entity {
+  id: ID! # holder address
+  amount: BigInt!
+  from: String!
+  to: String!
+  timestamp: Date!
+  blockheight: BigInt!
+}
+
 type Offer @entity {
   id: ID! # offerID
   consumer: String! @index

@@ -4,7 +4,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { EraManager__factory, Staking__factory } from '@subql/contract-sdk';
+import {
+  EraManager,
+  EraManager__factory,
+  Staking__factory,
+} from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
@@ -18,6 +22,8 @@ import {
   Withdrawl,
   WithdrawalStatus,
   WithdrawalType,
+  Indexer,
+  StakeSummary,
 } from '../types';
 import {
   updateTotalStake,
@@ -32,6 +38,7 @@ import {
   biToDate,
   getContractAddress,
   Contracts,
+  getCurrentEra,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
@@ -139,6 +146,7 @@ export async function handleAddDelegation(
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
   await updateMaxUnstakeAmount(indexer, event);
+  await updateStakeSummary(event, eraManager);
 }
 
 export async function handleRemoveDelegation(
@@ -277,4 +285,79 @@ export async function handleWithdrawCancelled(
 
     await reportException('handleWithdrawCancelled', exception, event);
   }
+}
+
+async function updateStakeSummary(
+  event: EthereumLog<DelegationAddedEvent['args']>,
+  eraManager: EraManager | null
+): Promise<void> {
+  assert(event.args, 'No event args');
+  const { source, indexer, amount } = event.args;
+  const amountBn = amount.toBigInt();
+
+  const indexerEntity = await Indexer.get(indexer);
+  assert(indexerEntity, `Indexer ${indexer} does not exist`);
+  // const isFirstStake =
+  //   BigInt.fromJSONType(indexerEntity.totalStake.value) === BigInt(0);
+
+  let indexerStake = BigInt(0);
+  let delegatorStake = BigInt(0);
+
+  if (source === indexer) {
+    indexerStake += amountBn;
+  } else {
+    delegatorStake += amountBn;
+  }
+
+  const eraIdx = await getCurrentEra(eraManager);
+  const eraId = eraIdx.toString();
+  // const prevEraIdx = eraIdx - 1;
+  const prevEraId = (eraIdx - 1).toString();
+  const nextEraIdx = eraIdx + 1;
+  const nextEraId = nextEraIdx.toString();
+
+  const isFirstStake = !!(await StakeSummary.get(prevEraId));
+
+  if (isFirstStake) {
+    let currentStakeSummary = await StakeSummary.get(eraId);
+    if (!currentStakeSummary) {
+      currentStakeSummary = StakeSummary.create({
+        id: eraId,
+        totalStake: amountBn,
+        indexerStake,
+        delegatorStake,
+      });
+    } else {
+      currentStakeSummary.totalStake += amountBn;
+      currentStakeSummary.indexerStake += indexerStake;
+      currentStakeSummary.delegatorStake += delegatorStake;
+    }
+    await currentStakeSummary.save();
+  }
+
+  // let currentStakeSummary = await StakeSummary.get(eraId);
+  // if (!currentStakeSummary) {
+  //   currentStakeSummary = StakeSummary.create({
+  //     id: eraId,
+  //     totalStake: BigInt(0),
+  //     indexerStake: BigInt(0),
+  //     delegatorStake: BigInt(0),
+  //   });
+  // }
+  // await currentStakeSummary.save();
+
+  let nextStakeSummary = await StakeSummary.get(nextEraId);
+  if (!nextStakeSummary) {
+    nextStakeSummary = StakeSummary.create({
+      id: nextEraId,
+      totalStake: amountBn,
+      indexerStake,
+      delegatorStake,
+    });
+  } else {
+    nextStakeSummary.totalStake += amountBn;
+    nextStakeSummary.indexerStake += indexerStake;
+    nextStakeSummary.delegatorStake += delegatorStake;
+  }
+  await nextStakeSummary.save();
 }
