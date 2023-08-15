@@ -289,8 +289,20 @@ type EraRewardClaimed @entity {
   lastClaimedEra: Int!
 }
 
-type StakeSummary @entity {
-  id: ID! # era id
+type IndexerStakeSummary @entity {
+  id: ID! # indexer address or 0x00 for global
+  era: Era!
+  totalStake: BigInt!
+  indexerStake: BigInt!
+  delegatorStake: BigInt!
+  nextTotalStake: BigInt!
+  nextIndexerStake: BigInt!
+  nextDelegatorStake: BigInt!
+}
+
+type IndexerStake @entity {
+  id: ID! # indexer address + era id
+  era: Era!
   totalStake: BigInt!
   indexerStake: BigInt!
   delegatorStake: BigInt!

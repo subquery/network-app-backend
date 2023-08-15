@@ -19,7 +19,8 @@ import {
   WithdrawalStatus,
   WithdrawalType,
   Indexer,
-  StakeSummary,
+  IndexerStakeSummary,
+  IndexerStake,
 } from '../types';
 import {
   updateTotalStake,
@@ -39,6 +40,7 @@ import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
 import { getWithdrawalType } from './utils/enumToTypes';
 import { getCurrentEra } from './eraManager';
+import { BigNumber } from 'ethers';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
@@ -130,7 +132,7 @@ export async function handleAddDelegation(
   await delegation.save();
   await updateIndexerCapacity(indexer, event);
   await updateMaxUnstakeAmount(indexer, event);
-  await updateStakeSummary(event);
+  await updateIndexerStakeSummaryAdded(event);
 }
 
 export async function handleRemoveDelegation(
@@ -258,7 +260,7 @@ export async function handleWithdrawCancelled(
   }
 }
 
-async function updateStakeSummary(
+async function updateIndexerStakeSummaryAdded(
   event: EthereumLog<DelegationAddedEvent['args']>
 ): Promise<void> {
   assert(event.args, 'No event args');
@@ -278,42 +280,93 @@ async function updateStakeSummary(
       newDelegatorStake = amountBn;
     }
     const currEraIdx = await getCurrentEra();
-    const currEraId = currEraIdx.toString(16);
-    const prevEraIdx = currEraIdx - 1;
-    const prevEraId = prevEraIdx.toString(16);
+    const currEraId = BigNumber.from(currEraIdx).toHexString();
     const nextEraIdx = currEraIdx + 1;
-    const nextEraId = nextEraIdx.toString(16);
+    const nextEraId = BigNumber.from(nextEraIdx).toHexString();
 
-    // FIXME - there is possibility that the indexer would quit and join stake at the same era (or at the next era), which would make some mistake in the current era and the next era
-    const isFirstStake =
-      !(await StakeSummary.get(prevEraId)) &&
-      !(await StakeSummary.get(currEraId));
+    // update IndexerStakeSummary
+
+    let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
+    let isFirstStake = false;
+
+    if (!indexerStakeSummary) {
+      isFirstStake = true;
+    } else if (
+      indexerStakeSummary.eraId === currEraId &&
+      indexerStakeSummary.totalStake === BigInt(0)
+    ) {
+      isFirstStake = true;
+    } else if (
+      indexerStakeSummary.eraId !== currEraId &&
+      indexerStakeSummary.nextTotalStake === BigInt(0)
+    ) {
+      isFirstStake = true;
+    }
+
+    if (!indexerStakeSummary) {
+      indexerStakeSummary = IndexerStakeSummary.create({
+        id: indexer,
+        eraId: currEraId,
+        totalStake: amountBn,
+        indexerStake: newIndexerStake,
+        delegatorStake: newDelegatorStake,
+        nextTotalStake: BigInt(0),
+        nextIndexerStake: BigInt(0),
+        nextDelegatorStake: BigInt(0),
+      });
+    } else if (isFirstStake) {
+      indexerStakeSummary.totalStake = amountBn;
+      indexerStakeSummary.indexerStake = newIndexerStake;
+      indexerStakeSummary.delegatorStake = newDelegatorStake;
+    } else if (indexerStakeSummary.eraId !== currEraId) {
+      indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
+      indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
+      indexerStakeSummary.delegatorStake =
+        indexerStakeSummary.nextDelegatorStake;
+    }
+
+    indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.nextTotalStake += amountBn;
+    indexerStakeSummary.nextIndexerStake += newIndexerStake;
+    indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
+    await indexerStakeSummary.save();
+
+    // update IndexerState
+
+    const currIndexerStakeId = `${indexer}_${currEraId}`;
+    const nextIndexerStakeId = `${indexer}_${nextEraId}`;
 
     if (isFirstStake) {
-      const currentStakeSummary = StakeSummary.create({
-        id: currEraId,
+      const currIndexerStake = IndexerStake.create({
+        id: currIndexerStakeId,
+        eraId: currEraId,
         totalStake: amountBn,
         indexerStake: newIndexerStake,
         delegatorStake: newDelegatorStake,
       });
-      await currentStakeSummary.save();
+      await currIndexerStake.save();
     }
 
-    let nextStakeSummary = await StakeSummary.get(nextEraId);
-    if (!nextStakeSummary) {
-      nextStakeSummary = StakeSummary.create({
-        id: nextEraId,
-        totalStake: amountBn,
-        indexerStake: newIndexerStake,
-        delegatorStake: newDelegatorStake,
+    let nextIndexerStake = await IndexerStake.get(nextIndexerStakeId);
+    if (!nextIndexerStake) {
+      nextIndexerStake = IndexerStake.create({
+        id: nextIndexerStakeId,
+        eraId: nextEraId,
+        totalStake: indexerStakeSummary.nextTotalStake,
+        indexerStake: indexerStakeSummary.nextIndexerStake,
+        delegatorStake: indexerStakeSummary.nextDelegatorStake,
       });
     } else {
-      nextStakeSummary.totalStake += amountBn;
-      nextStakeSummary.indexerStake += newIndexerStake;
-      nextStakeSummary.delegatorStake += newDelegatorStake;
+      nextIndexerStake.totalStake = indexerStakeSummary.nextTotalStake;
+      nextIndexerStake.indexerStake = indexerStakeSummary.nextIndexerStake;
+      nextIndexerStake.delegatorStake = indexerStakeSummary.nextDelegatorStake;
     }
-    await nextStakeSummary.save();
+    await nextIndexerStake.save();
   } catch (e) {
     logger.error('Error: updateStakeSummary', e);
   }
 }
+
+// async function updateIndexerStakeSummaryRemoved(
+//   event: EthereumLog<DelegationRemovedEvent['args']>
+// ): Promise<void> {}
