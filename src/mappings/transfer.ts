@@ -7,7 +7,13 @@ import { ethers } from 'ethers';
 import { Sqtoken, TokenHolder, Transfer } from '../types';
 import assert from 'assert';
 
-const TreasuryAddr = '0x34c35136ECe9CBD6DfDf2F896C6e29be01587c0C';
+const TreasuryAddr = '0x34c35136ECe9CBD6DfDf2F896C6e29be01587c0C'.toLowerCase();
+const AirdropperAddr =
+  '0x22Ab0be7a2eC82a983883839f7d5b4B12F5EbddC'.toLowerCase();
+
+function isReservedContract(address: string): boolean {
+  return [TreasuryAddr, AirdropperAddr].includes(address.toLowerCase());
+}
 
 export async function handleTransfer(
   event: EthereumLog<TransferEvent['args']>
@@ -48,32 +54,30 @@ export async function handleTransfer(
   logger.info(`found transfer from ${from} to ${to}`);
   let token = await Sqtoken.get(tokenAddr);
   if (!token) {
-    const circulatingSupply =
-      to.toLowerCase() !== TreasuryAddr.toLowerCase()
-        ? event.args.value.toBigInt()
-        : BigInt(0);
+    const circulatingSupply = !isReservedContract(to)
+      ? event.args.value.toBigInt()
+      : BigInt(0);
     token = new Sqtoken(
       tokenAddr,
       event.args.value.toBigInt(),
       circulatingSupply
     );
-    if (to.toLowerCase() !== TreasuryAddr.toLowerCase()) {
+    if (!isReservedContract(to)) {
       logger.info(`circulatingSupply increase ${event.args.value.toBigInt()}`);
     }
   }
   if (from === ethers.constants.AddressZero) {
     logger.info(`Mint at block ${event.blockNumber} from ${from}`);
     if (!token) {
-      const circulatingSupply =
-        to.toLowerCase() !== TreasuryAddr.toLowerCase()
-          ? event.args.value.toBigInt()
-          : BigInt(0);
+      const circulatingSupply = !isReservedContract(to)
+        ? event.args.value.toBigInt()
+        : BigInt(0);
       token = new Sqtoken(
         tokenAddr,
         event.args.value.toBigInt(),
         circulatingSupply
       );
-      if (to.toLowerCase() !== TreasuryAddr.toLowerCase()) {
+      if (!isReservedContract(to)) {
         logger.info(
           `circulatingSupply increase ${event.args.value.toBigInt()}`
         );
@@ -104,7 +108,7 @@ export async function handleTransfer(
     await token.save();
   }
   // treasury out: add circulatingSupply
-  if (from.toLowerCase() === TreasuryAddr.toLowerCase()) {
+  if (isReservedContract(from)) {
     token.circulatingSupply =
       token.circulatingSupply + event.args.value.toBigInt();
     logger.info(
@@ -115,7 +119,7 @@ export async function handleTransfer(
     await token.save();
   }
   // treasury in: remove circulatingSupply
-  if (to.toLowerCase() === TreasuryAddr.toLowerCase()) {
+  if (isReservedContract(to)) {
     token.circulatingSupply =
       token.circulatingSupply - event.args.value.toBigInt();
     logger.info(
