@@ -21,10 +21,7 @@ import {
   upsertControllerAccount,
   upsertEraValue,
 } from './utils';
-import {
-  EraManager__factory,
-  IndexerRegistry__factory,
-} from '@subql/contract-sdk';
+import { IndexerRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 
 /* Indexer Registry Handlers */
@@ -192,11 +189,6 @@ export async function handleSetCommissionRate(
   assert(event.args, 'No event args');
 
   const address = event.args.indexer;
-  const network = await api.getNetwork();
-  const eraManager = EraManager__factory.connect(
-    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
-    api
-  );
 
   const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);
@@ -210,7 +202,6 @@ export async function handleSetCommissionRate(
   }
 
   indexer.commission = await upsertEraValue(
-    eraManager,
     indexer.commission,
     event.args.amount.toBigInt(),
     'replace',

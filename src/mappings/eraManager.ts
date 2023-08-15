@@ -8,6 +8,8 @@ import assert from 'assert';
 import { Era } from '../types';
 import { biToDate, Contracts, getContractAddress } from './utils';
 
+let globalCurrentEra = -1;
+
 /* Era Handlers */
 export async function handleNewEra(
   event: EthereumLog<NewEraStartEvent['args']>
@@ -15,6 +17,8 @@ export async function handleNewEra(
   logger.info('handleNewEra');
   assert(event.args, 'No event args');
   const { era: id } = event.args;
+
+  updateGlobalCurrentEra(id.toNumber());
 
   if (id.gt(1)) {
     const previousId = id.sub(1);
@@ -55,4 +59,22 @@ export async function handleNewEra(
   });
 
   await era.save();
+}
+
+function updateGlobalCurrentEra(era: number): void {
+  globalCurrentEra = era;
+}
+
+export async function getCurrentEra(): Promise<number> {
+  if (globalCurrentEra === -1) {
+    const network = await api.getNetwork();
+    const eraManager = EraManager__factory.connect(
+      getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+      api
+    );
+    updateGlobalCurrentEra(
+      await eraManager.eraNumber().then((r) => r.toNumber())
+    );
+  }
+  return globalCurrentEra;
 }
