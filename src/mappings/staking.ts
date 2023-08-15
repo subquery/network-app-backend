@@ -8,33 +8,32 @@ import { Staking__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
   DelegationRemovedEvent,
+  UnbondCancelledEvent,
   UnbondRequestedEvent,
   UnbondWithdrawnEvent,
-  UnbondCancelledEvent,
 } from '@subql/contract-sdk/typechain/Staking';
 import assert from 'assert';
 import {
   Delegation,
-  Withdrawl,
+  IndexerStake,
+  IndexerStakeSummary,
   WithdrawalStatus,
   WithdrawalType,
-  Indexer,
-  IndexerStakeSummary,
-  IndexerStake,
+  Withdrawl,
 } from '../types';
 import {
+  biToDate,
+  Contracts,
+  getContractAddress,
+  getDelegationId,
+  getWithdrawlId,
+  reportException,
+  updateIndexerCapacity,
+  updateMaxUnstakeAmount,
+  updateTotalDelegation,
+  updateTotalLock,
   updateTotalStake,
   upsertEraValue,
-  updateTotalDelegation,
-  reportException,
-  updateTotalLock,
-  updateIndexerCapacity,
-  getWithdrawlId,
-  getDelegationId,
-  updateMaxUnstakeAmount,
-  biToDate,
-  getContractAddress,
-  Contracts,
 } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { CreateWithdrawlParams } from '../interfaces';
@@ -268,24 +267,11 @@ async function updateIndexerStakeSummaryAdded(
   const { source, indexer, amount } = event.args;
   const amountBn = amount.toBigInt();
 
-  const indexerEntity = await Indexer.get(indexer);
-  assert(indexerEntity, `Indexer ${indexer} does not exist`);
-
-  let newIndexerStake = BigInt(0);
-  let newDelegatorStake = BigInt(0);
-
-  if (source === indexer) {
-    newIndexerStake = amountBn;
-  } else {
-    newDelegatorStake = amountBn;
-  }
   const currEraIdx = await getCurrentEra();
   const currEraId = BigNumber.from(currEraIdx).toHexString();
-  const nextEraIdx = currEraIdx + 1;
-  const nextEraId = BigNumber.from(nextEraIdx).toHexString();
+  const nextEraId = BigNumber.from(currEraIdx + 1).toHexString();
 
   // update IndexerStakeSummary
-
   let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
 
   let isFirstStake = false;
@@ -296,54 +282,45 @@ async function updateIndexerStakeSummaryAdded(
     isFirstStake = true;
   }
 
-  indexerStakeSummary = await updateIndexerStakeSummary({
+  indexerStakeSummary = await updateIndexerStakeSummary(
     indexerStakeSummary,
     indexer,
     currEraId,
     isFirstStake,
     amountBn,
-    newIndexerStake,
-    newDelegatorStake,
-  });
+    source === indexer
+  );
 
   // update IndexerStakeSummary for all indexers
+  const allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
 
-  let allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
-
-  allIndexerStakeSummary = await updateIndexerStakeSummary({
-    indexerStakeSummary: allIndexerStakeSummary,
-    indexer: '0x00',
+  await updateIndexerStakeSummary(
+    allIndexerStakeSummary,
+    '0x00',
     currEraId,
     isFirstStake,
     amountBn,
-    newIndexerStake,
-    newDelegatorStake,
-  });
+    source === indexer
+  );
 
   // update IndexerState
-
-  const currIndexerStakeId = `${indexer}_${currEraId}`;
-  const nextIndexerStakeId = `${indexer}_${nextEraId}`;
-
   if (isFirstStake) {
-    const currIndexerStake = IndexerStake.create({
-      id: currIndexerStakeId,
+    await IndexerStake.create({
+      id: `${indexer}_${currEraId}`,
       eraId: currEraId,
       totalStake: amountBn,
-      indexerStake: newIndexerStake,
-      delegatorStake: newDelegatorStake,
-    });
-    await currIndexerStake.save();
+      indexerStake: amountBn,
+      delegatorStake: BigInt(0),
+    }).save();
+  } else {
+    await IndexerStake.create({
+      id: `${indexer}_${nextEraId}`,
+      eraId: nextEraId,
+      totalStake: indexerStakeSummary.nextTotalStake,
+      indexerStake: indexerStakeSummary.nextIndexerStake,
+      delegatorStake: indexerStakeSummary.nextDelegatorStake,
+    }).save();
   }
-
-  const nextIndexerStake = IndexerStake.create({
-    id: nextIndexerStakeId,
-    eraId: nextEraId,
-    totalStake: indexerStakeSummary.nextTotalStake,
-    indexerStake: indexerStakeSummary.nextIndexerStake,
-    delegatorStake: indexerStakeSummary.nextDelegatorStake,
-  });
-  await nextIndexerStake.save();
 }
 
 function getTotalStake(
@@ -357,25 +334,16 @@ function getTotalStake(
   }
 }
 
-interface IndexerStakeSummaryData {
-  indexerStakeSummary: IndexerStakeSummary | undefined;
-  indexer: string;
-  currEraId: string;
-  isFirstStake: boolean;
-  amountBn: bigint;
-  newIndexerStake: bigint;
-  newDelegatorStake: bigint;
-}
-
-async function updateIndexerStakeSummary({
-  indexerStakeSummary,
-  indexer,
-  currEraId,
-  isFirstStake,
-  amountBn,
-  newIndexerStake,
-  newDelegatorStake,
-}: IndexerStakeSummaryData) {
+async function updateIndexerStakeSummary(
+  indexerStakeSummary: IndexerStakeSummary | undefined,
+  indexer: string,
+  currEraId: string,
+  isFirstStake: boolean,
+  amountBn: bigint,
+  isIndexer: boolean
+) {
+  const newIndexerStake = isIndexer ? amountBn : BigInt(0);
+  const newDelegatorStake = !isIndexer ? amountBn : BigInt(0);
   if (!indexerStakeSummary) {
     indexerStakeSummary = IndexerStakeSummary.create({
       id: indexer,
@@ -397,9 +365,7 @@ async function updateIndexerStakeSummary({
     indexerStakeSummary.nextTotalStake = amountBn;
     indexerStakeSummary.nextIndexerStake = newIndexerStake;
     indexerStakeSummary.nextDelegatorStake = newDelegatorStake;
-  }
-
-  if (!isFirstStake && indexerStakeSummary.eraId !== currEraId) {
+  } else if (indexerStakeSummary.eraId !== currEraId) {
     indexerStakeSummary.eraId = currEraId;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
@@ -407,13 +373,45 @@ async function updateIndexerStakeSummary({
     indexerStakeSummary.nextTotalStake += amountBn;
     indexerStakeSummary.nextIndexerStake += newIndexerStake;
     indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
-  }
-
-  if (!isFirstStake && indexerStakeSummary.eraId === currEraId) {
+  } else {
     indexerStakeSummary.nextTotalStake += amountBn;
     indexerStakeSummary.nextIndexerStake += newIndexerStake;
     indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
   }
+
+  await indexerStakeSummary.save();
+  return indexerStakeSummary;
+}
+
+async function removeFromIndexerStakeSummary(
+  indexerStakeSummary: IndexerStakeSummary | undefined,
+  indexer: string,
+  currEraId: string,
+  amountBn: bigint,
+  isIndexer: boolean
+) {
+  if (!indexerStakeSummary) {
+    indexerStakeSummary = IndexerStakeSummary.create({
+      id: indexer,
+      eraId: currEraId,
+      totalStake: BigInt(0),
+      indexerStake: BigInt(0),
+      delegatorStake: BigInt(0),
+      nextTotalStake: BigInt(0),
+      nextIndexerStake: BigInt(0),
+      nextDelegatorStake: BigInt(0),
+    });
+  }
+
+  if (indexerStakeSummary.eraId !== currEraId) {
+    indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
+    indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
+    indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
+  }
+  indexerStakeSummary.nextTotalStake -= amountBn;
+  indexerStakeSummary.nextIndexerStake -= isIndexer ? amountBn : BigInt(0);
+  indexerStakeSummary.nextDelegatorStake -= !isIndexer ? amountBn : BigInt(0);
 
   await indexerStakeSummary.save();
   return indexerStakeSummary;
@@ -426,17 +424,6 @@ async function updateIndexerStakeSummaryRemoved(
   const { source, indexer, amount } = event.args;
   const amountBn = -amount.toBigInt();
 
-  const indexerEntity = await Indexer.get(indexer);
-  assert(indexerEntity, `Indexer ${indexer} does not exist`);
-
-  let newIndexerStake = BigInt(0);
-  let newDelegatorStake = BigInt(0);
-
-  if (source === indexer) {
-    newIndexerStake = amountBn;
-  } else {
-    newDelegatorStake = amountBn;
-  }
   const currEraIdx = await getCurrentEra();
   const currEraId = BigNumber.from(currEraIdx).toHexString();
   const nextEraIdx = currEraIdx + 1;
@@ -447,44 +434,36 @@ async function updateIndexerStakeSummaryRemoved(
   let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
   assert(indexerStakeSummary, `IndexerStakeSummary ${indexer} does not exist`);
 
-  indexerStakeSummary = await updateIndexerStakeSummary({
+  indexerStakeSummary = await removeFromIndexerStakeSummary(
     indexerStakeSummary,
     indexer,
     currEraId,
-    isFirstStake: false,
     amountBn,
-    newIndexerStake,
-    newDelegatorStake,
-  });
+    source === indexer
+  );
 
   // update IndexerStakeSummary for all indexers
 
-  let allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
+  const allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
   assert(
     allIndexerStakeSummary,
     `IndexerStakeSummary 0x00 for all indexers does not exist`
   );
 
-  allIndexerStakeSummary = await updateIndexerStakeSummary({
-    indexerStakeSummary: allIndexerStakeSummary,
-    indexer: '0x00',
+  await removeFromIndexerStakeSummary(
+    allIndexerStakeSummary,
+    '0x00',
     currEraId,
-    isFirstStake: false,
     amountBn,
-    newIndexerStake,
-    newDelegatorStake,
-  });
+    source === indexer
+  );
 
   // update IndexerState
-
-  const nextIndexerStakeId = `${indexer}_${nextEraId}`;
-
-  const nextIndexerStake = IndexerStake.create({
-    id: nextIndexerStakeId,
+  await IndexerStake.create({
+    id: `${indexer}_${nextEraId}`,
     eraId: nextEraId,
     totalStake: indexerStakeSummary.nextTotalStake,
     indexerStake: indexerStakeSummary.nextIndexerStake,
     delegatorStake: indexerStakeSummary.nextDelegatorStake,
-  });
-  await nextIndexerStake.save();
+  }).save();
 }
