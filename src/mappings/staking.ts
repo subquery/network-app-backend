@@ -302,32 +302,50 @@ async function updateIndexerStakeSummaryAdded(
     isFirstStake = true;
   }
 
+  let createdNew = false;
   if (!indexerStakeSummary) {
+    createdNew = true;
     indexerStakeSummary = IndexerStakeSummary.create({
       id: indexer,
       eraId: currEraId,
       totalStake: amountBn,
       indexerStake: newIndexerStake,
       delegatorStake: newDelegatorStake,
-      nextTotalStake: BigInt(0),
-      nextIndexerStake: BigInt(0),
-      nextDelegatorStake: BigInt(0),
+      nextTotalStake: amountBn,
+      nextIndexerStake: newIndexerStake,
+      nextDelegatorStake: newDelegatorStake,
     });
-  } else if (isFirstStake) {
+  }
+
+  if (isFirstStake && !createdNew) {
+    indexerStakeSummary.eraId = currEraId;
     indexerStakeSummary.totalStake = amountBn;
     indexerStakeSummary.indexerStake = newIndexerStake;
     indexerStakeSummary.delegatorStake = newDelegatorStake;
-  } else if (indexerStakeSummary.eraId !== currEraId) {
+    indexerStakeSummary.nextTotalStake = amountBn;
+    indexerStakeSummary.nextIndexerStake = newIndexerStake;
+    indexerStakeSummary.nextDelegatorStake = newDelegatorStake;
+  }
+
+  if (!isFirstStake && indexerStakeSummary.eraId !== currEraId) {
+    indexerStakeSummary.eraId = currEraId;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
     indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
+    indexerStakeSummary.nextTotalStake += amountBn;
+    indexerStakeSummary.nextIndexerStake += newIndexerStake;
+    indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
   }
 
-  indexerStakeSummary.eraId = currEraId;
-  indexerStakeSummary.nextTotalStake += amountBn;
-  indexerStakeSummary.nextIndexerStake += newIndexerStake;
-  indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
+  if (!isFirstStake && indexerStakeSummary.eraId === currEraId) {
+    indexerStakeSummary.nextTotalStake += amountBn;
+    indexerStakeSummary.nextIndexerStake += newIndexerStake;
+    indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
+  }
+
   await indexerStakeSummary.save();
+
+  // update IndexerStakeSummary for all indexers
 
   // update IndexerState
 
@@ -345,20 +363,13 @@ async function updateIndexerStakeSummaryAdded(
     await currIndexerStake.save();
   }
 
-  let nextIndexerStake = await IndexerStake.get(nextIndexerStakeId);
-  if (!nextIndexerStake) {
-    nextIndexerStake = IndexerStake.create({
-      id: nextIndexerStakeId,
-      eraId: nextEraId,
-      totalStake: indexerStakeSummary.nextTotalStake,
-      indexerStake: indexerStakeSummary.nextIndexerStake,
-      delegatorStake: indexerStakeSummary.nextDelegatorStake,
-    });
-  } else {
-    nextIndexerStake.totalStake = indexerStakeSummary.nextTotalStake;
-    nextIndexerStake.indexerStake = indexerStakeSummary.nextIndexerStake;
-    nextIndexerStake.delegatorStake = indexerStakeSummary.nextDelegatorStake;
-  }
+  const nextIndexerStake = IndexerStake.create({
+    id: nextIndexerStakeId,
+    eraId: nextEraId,
+    totalStake: indexerStakeSummary.nextTotalStake,
+    indexerStake: indexerStakeSummary.nextIndexerStake,
+    delegatorStake: indexerStakeSummary.nextDelegatorStake,
+  });
   await nextIndexerStake.save();
 }
 
