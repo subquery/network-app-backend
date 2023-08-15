@@ -180,25 +180,20 @@ async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
     data.isCommission ? '_commission' : ''
   }`;
 
-  try {
-    const eraReward = EraReward.create({
-      id,
-      indexerId: data.indexerId,
-      delegatorId: data.delegatorId,
-      eraId: data.eraId,
-      isIndexer: data.indexerId === data.delegatorId,
-      claimed: data.claimed,
-      amount: data.amount ?? BigInt(0),
-      createdBlock: data.createdBlock,
-      createdTimestamp: data.createdTimestamp ?? new Date(),
-    });
+  const eraReward = EraReward.create({
+    id,
+    indexerId: data.indexerId,
+    delegatorId: data.delegatorId,
+    eraId: data.eraId,
+    isIndexer: data.indexerId === data.delegatorId,
+    claimed: data.claimed,
+    amount: data.amount ?? BigInt(0),
+    createdBlock: data.createdBlock,
+    createdTimestamp: data.createdTimestamp ?? new Date(),
+  });
 
-    await eraReward.save();
-    return eraReward;
-  } catch (e) {
-    logger.error('ERROR: createEraReward', e);
-    throw e;
-  }
+  await eraReward.save();
+  return eraReward;
 }
 
 async function updateEraRewardClaimed(
@@ -210,36 +205,31 @@ async function updateEraRewardClaimed(
   const { indexer, delegator } = event.args;
   const id = `${indexer}_${delegator}`;
 
-  try {
-    let eraRewardClaimed = await EraRewardClaimed.get(id);
-    if (!eraRewardClaimed) {
-      eraRewardClaimed = EraRewardClaimed.create({
-        id,
-        lastClaimedEra: 0,
-      });
-    }
+  let eraRewardClaimed = await EraRewardClaimed.get(id);
+  if (!eraRewardClaimed) {
+    eraRewardClaimed = EraRewardClaimed.create({
+      id,
+      lastClaimedEra: 0,
+    });
+  }
 
-    const currentEra = await getCurrentEra();
-    let lastClaimedEra = eraRewardClaimed.lastClaimedEra;
+  const currentEra = await getCurrentEra();
+  let lastClaimedEra = eraRewardClaimed.lastClaimedEra;
 
-    while (lastClaimedEra + 1 < currentEra) {
-      const eraReward = await EraReward.get(`${id}_${lastClaimedEra + 1}`);
-      if (!eraReward) continue;
+  while (lastClaimedEra + 1 < currentEra) {
+    const eraReward = await EraReward.get(`${id}_${lastClaimedEra + 1}`);
+    if (!eraReward) continue;
 
-      lastClaimedEra++;
-      if (eraReward.claimed) continue;
+    lastClaimedEra++;
+    if (eraReward.claimed) continue;
 
-      eraReward.claimed = true;
-      await eraReward.save();
-    }
+    eraReward.claimed = true;
+    await eraReward.save();
+  }
 
-    if (lastClaimedEra > eraRewardClaimed.lastClaimedEra) {
-      eraRewardClaimed.lastClaimedEra = lastClaimedEra;
-      await eraRewardClaimed.save();
-    }
-  } catch (e) {
-    logger.error('ERROR: updateEraRewardClaimed', e);
-    throw e;
+  if (lastClaimedEra > eraRewardClaimed.lastClaimedEra) {
+    eraRewardClaimed.lastClaimedEra = lastClaimedEra;
+    await eraRewardClaimed.save();
   }
 }
 

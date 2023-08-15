@@ -267,105 +267,99 @@ async function updateIndexerStakeSummaryAdded(
   const { source, indexer, amount } = event.args;
   const amountBn = amount.toBigInt();
 
-  try {
-    const indexerEntity = await Indexer.get(indexer);
-    assert(indexerEntity, `Indexer ${indexer} does not exist`);
+  const indexerEntity = await Indexer.get(indexer);
+  assert(indexerEntity, `Indexer ${indexer} does not exist`);
 
-    let newIndexerStake = BigInt(0);
-    let newDelegatorStake = BigInt(0);
+  let newIndexerStake = BigInt(0);
+  let newDelegatorStake = BigInt(0);
 
-    if (source === indexer) {
-      newIndexerStake = amountBn;
-    } else {
-      newDelegatorStake = amountBn;
-    }
-    const currEraIdx = await getCurrentEra();
-    const currEraId = BigNumber.from(currEraIdx).toHexString();
-    const nextEraIdx = currEraIdx + 1;
-    const nextEraId = BigNumber.from(nextEraIdx).toHexString();
-
-    // update IndexerStakeSummary
-
-    let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
-    let isFirstStake = false;
-
-    if (!indexerStakeSummary) {
-      isFirstStake = true;
-    } else if (
-      indexerStakeSummary.eraId === currEraId &&
-      indexerStakeSummary.totalStake === BigInt(0)
-    ) {
-      isFirstStake = true;
-    } else if (
-      indexerStakeSummary.eraId !== currEraId &&
-      indexerStakeSummary.nextTotalStake === BigInt(0)
-    ) {
-      isFirstStake = true;
-    }
-
-    if (!indexerStakeSummary) {
-      indexerStakeSummary = IndexerStakeSummary.create({
-        id: indexer,
-        eraId: currEraId,
-        totalStake: amountBn,
-        indexerStake: newIndexerStake,
-        delegatorStake: newDelegatorStake,
-        nextTotalStake: BigInt(0),
-        nextIndexerStake: BigInt(0),
-        nextDelegatorStake: BigInt(0),
-      });
-    } else if (isFirstStake) {
-      indexerStakeSummary.totalStake = amountBn;
-      indexerStakeSummary.indexerStake = newIndexerStake;
-      indexerStakeSummary.delegatorStake = newDelegatorStake;
-    } else if (indexerStakeSummary.eraId !== currEraId) {
-      indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
-      indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
-      indexerStakeSummary.delegatorStake =
-        indexerStakeSummary.nextDelegatorStake;
-    }
-
-    indexerStakeSummary.eraId = currEraId;
-    indexerStakeSummary.nextTotalStake += amountBn;
-    indexerStakeSummary.nextIndexerStake += newIndexerStake;
-    indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
-    await indexerStakeSummary.save();
-
-    // update IndexerState
-
-    const currIndexerStakeId = `${indexer}_${currEraId}`;
-    const nextIndexerStakeId = `${indexer}_${nextEraId}`;
-
-    if (isFirstStake) {
-      const currIndexerStake = IndexerStake.create({
-        id: currIndexerStakeId,
-        eraId: currEraId,
-        totalStake: amountBn,
-        indexerStake: newIndexerStake,
-        delegatorStake: newDelegatorStake,
-      });
-      await currIndexerStake.save();
-    }
-
-    let nextIndexerStake = await IndexerStake.get(nextIndexerStakeId);
-    if (!nextIndexerStake) {
-      nextIndexerStake = IndexerStake.create({
-        id: nextIndexerStakeId,
-        eraId: nextEraId,
-        totalStake: indexerStakeSummary.nextTotalStake,
-        indexerStake: indexerStakeSummary.nextIndexerStake,
-        delegatorStake: indexerStakeSummary.nextDelegatorStake,
-      });
-    } else {
-      nextIndexerStake.totalStake = indexerStakeSummary.nextTotalStake;
-      nextIndexerStake.indexerStake = indexerStakeSummary.nextIndexerStake;
-      nextIndexerStake.delegatorStake = indexerStakeSummary.nextDelegatorStake;
-    }
-    await nextIndexerStake.save();
-  } catch (e) {
-    logger.error('Error: updateStakeSummary', e);
-    throw e;
+  if (source === indexer) {
+    newIndexerStake = amountBn;
+  } else {
+    newDelegatorStake = amountBn;
   }
+  const currEraIdx = await getCurrentEra();
+  const currEraId = BigNumber.from(currEraIdx).toHexString();
+  const nextEraIdx = currEraIdx + 1;
+  const nextEraId = BigNumber.from(nextEraIdx).toHexString();
+
+  // update IndexerStakeSummary
+
+  let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
+  let isFirstStake = false;
+
+  if (!indexerStakeSummary) {
+    isFirstStake = true;
+  } else if (
+    indexerStakeSummary.eraId === currEraId &&
+    indexerStakeSummary.totalStake === BigInt(0)
+  ) {
+    isFirstStake = true;
+  } else if (
+    indexerStakeSummary.eraId !== currEraId &&
+    indexerStakeSummary.nextTotalStake === BigInt(0)
+  ) {
+    isFirstStake = true;
+  }
+
+  if (!indexerStakeSummary) {
+    indexerStakeSummary = IndexerStakeSummary.create({
+      id: indexer,
+      eraId: currEraId,
+      totalStake: amountBn,
+      indexerStake: newIndexerStake,
+      delegatorStake: newDelegatorStake,
+      nextTotalStake: BigInt(0),
+      nextIndexerStake: BigInt(0),
+      nextDelegatorStake: BigInt(0),
+    });
+  } else if (isFirstStake) {
+    indexerStakeSummary.totalStake = amountBn;
+    indexerStakeSummary.indexerStake = newIndexerStake;
+    indexerStakeSummary.delegatorStake = newDelegatorStake;
+  } else if (indexerStakeSummary.eraId !== currEraId) {
+    indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
+    indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
+    indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
+  }
+
+  indexerStakeSummary.eraId = currEraId;
+  indexerStakeSummary.nextTotalStake += amountBn;
+  indexerStakeSummary.nextIndexerStake += newIndexerStake;
+  indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
+  await indexerStakeSummary.save();
+
+  // update IndexerState
+
+  const currIndexerStakeId = `${indexer}_${currEraId}`;
+  const nextIndexerStakeId = `${indexer}_${nextEraId}`;
+
+  if (isFirstStake) {
+    const currIndexerStake = IndexerStake.create({
+      id: currIndexerStakeId,
+      eraId: currEraId,
+      totalStake: amountBn,
+      indexerStake: newIndexerStake,
+      delegatorStake: newDelegatorStake,
+    });
+    await currIndexerStake.save();
+  }
+
+  let nextIndexerStake = await IndexerStake.get(nextIndexerStakeId);
+  if (!nextIndexerStake) {
+    nextIndexerStake = IndexerStake.create({
+      id: nextIndexerStakeId,
+      eraId: nextEraId,
+      totalStake: indexerStakeSummary.nextTotalStake,
+      indexerStake: indexerStakeSummary.nextIndexerStake,
+      delegatorStake: indexerStakeSummary.nextDelegatorStake,
+    });
+  } else {
+    nextIndexerStake.totalStake = indexerStakeSummary.nextTotalStake;
+    nextIndexerStake.indexerStake = indexerStakeSummary.nextIndexerStake;
+    nextIndexerStake.delegatorStake = indexerStakeSummary.nextDelegatorStake;
+  }
+  await nextIndexerStake.save();
 }
 
 // async function updateIndexerStakeSummaryRemoved(
