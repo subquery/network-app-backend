@@ -364,6 +364,7 @@ async function updateIndexerStakeSummaryAdded(
     await nextIndexerStake.save();
   } catch (e) {
     logger.error('Error: updateStakeSummary', e);
+    throw e;
   }
 }
 

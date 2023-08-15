@@ -197,8 +197,8 @@ async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
     return eraReward;
   } catch (e) {
     logger.error('ERROR: createEraReward', e);
+    throw e;
   }
-  return null;
 }
 
 async function updateEraRewardClaimed(
@@ -224,7 +224,7 @@ async function updateEraRewardClaimed(
 
     while (lastClaimedEra + 1 < currentEra) {
       const eraReward = await EraReward.get(`${id}_${lastClaimedEra + 1}`);
-      if (!eraReward) break;
+      if (!eraReward) continue;
 
       lastClaimedEra++;
       if (eraReward.claimed) continue;
@@ -239,6 +239,7 @@ async function updateEraRewardClaimed(
     }
   } catch (e) {
     logger.error('ERROR: updateEraRewardClaimed', e);
+    throw e;
   }
 }
 
