@@ -422,7 +422,7 @@ async function updateIndexerStakeSummaryRemoved(
 ): Promise<void> {
   assert(event.args, 'No event args');
   const { source, indexer, amount } = event.args;
-  const amountBn = -amount.toBigInt();
+  const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();
   const currEraId = BigNumber.from(currEraIdx).toHexString();
