@@ -218,12 +218,10 @@ async function updateEraRewardClaimed(
 
   while (lastClaimedEra + 1 < currentEra) {
     lastClaimedEra++;
-
     const eraRewardId = `${id}_${BigNumber.from(lastClaimedEra).toHexString()}`;
     const eraReward = await EraReward.get(eraRewardId);
-    if (!eraReward) continue;
 
-    if (eraReward.claimed) continue;
+    if (!eraReward || eraReward.claimed) continue;
 
     eraReward.claimed = true;
     await eraReward.save();
