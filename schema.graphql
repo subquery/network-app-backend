@@ -126,6 +126,7 @@ type IndexerCommission @entity {
   id: ID! # indexer address + era id
   indexer: Indexer!
   era: Era!
+  eraIdx: Int!
   commission: Int!
 }
 

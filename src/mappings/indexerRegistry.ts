@@ -23,6 +23,7 @@ import {
 } from './utils';
 import { IndexerRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
+import { BigNumber } from 'ethers';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -214,7 +215,8 @@ export async function handleSetCommissionRate(
 
   await updateIndexerCommission(
     indexer.id,
-    indexer.commission.era.toString(),
+    BigNumber.from(indexer.commission.era).toHexString(),
+    indexer.commission.era,
     Number(BigInt.fromJSONType(indexer.commission.value))
   );
 }
@@ -222,12 +224,14 @@ export async function handleSetCommissionRate(
 async function updateIndexerCommission(
   indexerId: string,
   eraId: string,
+  eraIdx: number,
   commission: number
 ): Promise<void> {
   await IndexerCommission.create({
     id: `${indexerId}:${eraId}`,
     indexerId,
     eraId,
+    eraIdx: eraIdx,
     commission,
   }).save();
 }
