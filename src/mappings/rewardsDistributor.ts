@@ -99,6 +99,7 @@ export async function handleRewardsDistributed(
         indexerId: indexer,
         delegatorId: delegator.delegatorId,
         eraId: eraIdx.toHexString(),
+        eraIdx: eraIdx.toNumber(),
         isCommission: false,
         claimed: false,
         amount: rewards.toBigInt(),
@@ -113,6 +114,7 @@ export async function handleRewardsDistributed(
       indexerId: indexer,
       delegatorId: indexer,
       eraId: eraIdx.toHexString(),
+      eraIdx: eraIdx.toNumber(),
       isCommission: true,
       claimed: true, // commission rewards already in indexer's account
       amount: commission.toBigInt(),
@@ -166,6 +168,7 @@ interface EraRewardData {
   indexerId: string;
   delegatorId: string;
   eraId: string;
+  eraIdx: number;
   isCommission: boolean;
   claimed: boolean;
   amount?: bigint;
@@ -185,6 +188,7 @@ async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
     indexerId: data.indexerId,
     delegatorId: data.delegatorId,
     eraId: data.eraId,
+    eraIdx: data.eraIdx,
     isIndexer: data.indexerId === data.delegatorId,
     isCommission: data.isCommission,
     claimed: data.claimed,

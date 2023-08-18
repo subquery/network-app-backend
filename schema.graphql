@@ -274,6 +274,7 @@ type EraReward @entity {
   indexer: Indexer!
   delegator: Delegator!
   era: Era!
+  eraIdx: Int!
 
   isIndexer: Boolean! @index
   isCommission: Boolean! @index
