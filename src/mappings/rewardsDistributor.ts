@@ -186,6 +186,7 @@ async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
     delegatorId: data.delegatorId,
     eraId: data.eraId,
     isIndexer: data.indexerId === data.delegatorId,
+    isCommission: data.isCommission,
     claimed: data.claimed,
     amount: data.amount ?? BigInt(0),
     createdBlock: data.createdBlock,
