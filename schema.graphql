@@ -122,6 +122,13 @@ type Indexer @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
+type IndexerCommission @entity {
+  id: ID! # indexer address + era id
+  indexer: Indexer!
+  era: Era!
+  commission: Int!
+}
+
 type Controller @entity {
   id: ID! # indexer Address + controller Address
   controller: String!

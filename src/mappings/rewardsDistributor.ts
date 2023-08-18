@@ -179,7 +179,7 @@ interface EraRewardData {
 async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
   logger.info('updateEraReward', data);
 
-  const id = `${data.indexerId}_${data.delegatorId}_${data.eraId}${
+  const id = `${data.indexerId}:${data.delegatorId}:${data.eraId}${
     data.isCommission ? '_commission' : ''
   }`;
 
@@ -208,7 +208,7 @@ async function updateEraRewardClaimed(
   assert(event.args, 'No event args');
 
   const { indexer, delegator } = event.args;
-  const id = `${indexer}_${delegator}`;
+  const id = `${indexer}:${delegator}`;
 
   let eraRewardClaimed = await EraRewardClaimed.get(id);
   if (!eraRewardClaimed) {
@@ -223,7 +223,7 @@ async function updateEraRewardClaimed(
 
   while (lastClaimedEra + 1 < currentEra) {
     lastClaimedEra++;
-    const eraRewardId = `${id}_${BigNumber.from(lastClaimedEra).toHexString()}`;
+    const eraRewardId = `${id}:${BigNumber.from(lastClaimedEra).toHexString()}`;
     const eraReward = await EraReward.get(eraRewardId);
 
     if (!eraReward || eraReward.claimed) continue;

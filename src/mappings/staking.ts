@@ -333,7 +333,7 @@ async function updateIndexerStakeAdded(
 ) {
   if (isFirstStake) {
     await IndexerStake.create({
-      id: `${indexer}_${currEraId}`,
+      id: `${indexer}:${currEraId}`,
       eraId: currEraId,
       totalStake: amountBn,
       indexerStake: amountBn,
@@ -341,7 +341,7 @@ async function updateIndexerStakeAdded(
     }).save();
   } else {
     await IndexerStake.create({
-      id: `${indexer}_${nextEraId}`,
+      id: `${indexer}:${nextEraId}`,
       eraId: nextEraId,
       totalStake: indexerStakeSummary.nextTotalStake,
       indexerStake: indexerStakeSummary.nextIndexerStake,
@@ -524,7 +524,7 @@ async function updateIndexerStakeRemoved(
   indexerStakeSummary: IndexerStakeSummary
 ) {
   await IndexerStake.create({
-    id: `${indexer}_${nextEraId}`,
+    id: `${indexer}:${nextEraId}`,
     eraId: nextEraId,
     totalStake: indexerStakeSummary.nextTotalStake,
     indexerStake: indexerStakeSummary.nextIndexerStake,

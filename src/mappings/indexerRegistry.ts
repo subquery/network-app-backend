@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { Controller, Indexer } from '../types';
+import { Controller, Indexer, IndexerCommission } from '../types';
 import {
   bytesToIpfsCid,
   Contracts,
@@ -211,4 +211,23 @@ export async function handleSetCommissionRate(
   indexer.lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
 
   await indexer.save();
+
+  await updateIndexerCommission(
+    indexer.id,
+    indexer.commission.era.toString(),
+    Number(BigInt.fromJSONType(indexer.commission.value))
+  );
+}
+
+async function updateIndexerCommission(
+  indexerId: string,
+  eraId: string,
+  commission: number
+): Promise<void> {
+  await IndexerCommission.create({
+    id: `${indexerId}:${eraId}`,
+    indexerId,
+    eraId,
+    commission,
+  }).save();
 }
