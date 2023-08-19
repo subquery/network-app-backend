@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { Controller, Indexer, IndexerCommission } from '../types';
+import { Controller, Indexer, IndexerCommissionRate } from '../types';
 import {
   bytesToIpfsCid,
   Contracts,
@@ -213,7 +213,7 @@ export async function handleSetCommissionRate(
 
   await indexer.save();
 
-  await updateIndexerCommission(
+  await updateIndexerCommissionRate(
     indexer.id,
     BigNumber.from(indexer.commission.era).toHexString(),
     indexer.commission.era,
@@ -221,17 +221,17 @@ export async function handleSetCommissionRate(
   );
 }
 
-async function updateIndexerCommission(
+async function updateIndexerCommissionRate(
   indexerId: string,
   eraId: string,
   eraIdx: number,
-  commission: number
+  commissionRate: number
 ): Promise<void> {
-  await IndexerCommission.create({
+  await IndexerCommissionRate.create({
     id: `${indexerId}:${eraId}`,
     indexerId,
     eraId,
     eraIdx: eraIdx,
-    commission,
+    commissionRate,
   }).save();
 }
