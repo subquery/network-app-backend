@@ -1451,10 +1451,10 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@subql/cli@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/cli/-/cli-3.5.0.tgz#1dbfd60b6f148158acf538aa522668b19ec9dfe9"
-  integrity sha512-ivNoaJlMTOfno8NS68czJ3b0sNAENxLOEDbLL64J/KhVEHYvLW97oYcB2rGIGiDVOUh7X95JHxmN8cYUPaoztg==
+"@subql/cli@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@subql/cli/-/cli-3.5.1.tgz#86c451b8572482580dbc9a869fb204ce1e6ac7fe"
+  integrity sha512-q6uywAxJTWWj2mi3M6rBtR+z91cc0aHoahxaIZu62NO3vnVSffA8E39ICxRN9eLAF5Xr0jUpFLyzbRrkuznB5A==
   dependencies:
     "@oclif/command" "^1.8.16"
     "@oclif/config" "^1.18.3"
@@ -1467,7 +1467,7 @@
     "@subql/common-flare" latest
     "@subql/common-near" latest
     "@subql/common-stellar" "^2.2.1-1"
-    "@subql/common-substrate" "2.3.0"
+    "@subql/common-substrate" "2.4.0"
     "@subql/utils" "2.4.3"
     "@subql/validator" "2.2.0"
     "@typechain/ethers-v5" "10.2.0"
@@ -1564,6 +1564,8 @@
     js-yaml "^4.1.0"
     pino "^6.13.3"
     reflect-metadata "^0.1.13"
+    semver "^7.5.2"
+    update-notifier "5.1.0"
 
 "@subql/common-substrate@2.3.0":
   version "2.3.0"
@@ -1572,6 +1574,16 @@
   dependencies:
     "@subql/common" "2.5.0"
     "@subql/types" "2.1.3"
+    js-yaml "^4.1.0"
+    reflect-metadata "^0.1.13"
+
+"@subql/common-substrate@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-substrate/-/common-substrate-2.4.0.tgz#9dc71b1501dceab1d84ce9e8f30a899444770376"
+  integrity sha512-03ANhHg+jRdYLB9aZ2C2b72RThvk37fUxXHAnoaJIaYQzCuJ/H42gpgosiXXkq9MZiBttN/j/IATaaPJJkZNFw==
+  dependencies:
+    "@subql/common" "2.5.0"
+    "@subql/types" "2.2.0"
     js-yaml "^4.1.0"
     reflect-metadata "^0.1.13"
 
@@ -1604,10 +1616,10 @@
     reflect-metadata "^0.1.13"
     semver "^7.5.2"
 
-"@subql/contract-sdk@^0.13.7":
-  version "0.13.7"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.13.7.tgz#c05bfb33a4b340943cdebc6050e1ed18e2beaded"
-  integrity sha512-Af6Jobsr7hxUIiijwlnS2WmLA6G4NQO1FNJsfItqHwZvmeajZMPllu7DTojYNpYjSbSB5w5I3OfN6YRNCefaMA==
+"@subql/contract-sdk@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.15.0.tgz#a864c0f8adbb549ffc9a889521d6698196c2dc15"
+  integrity sha512-IMgWCocxlseNZoSDMJoWkDTjpBBy/uGYP8c2RATFYwkMI3AFGUKlkjBDCHd57Lq3RqOlPzWzR4gEz2xPJtsbQg==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.5.2"
 
@@ -1632,10 +1644,10 @@
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
 
-"@subql/types-ethereum@^2.2.2":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-2.2.2.tgz#55f256456fa7e042e66a977125e9382dd60819c6"
-  integrity sha512-DdcxxHvhJTLEgFkshERxpYDA+jGeQV3FfRZctqZTTQyruc4iE54gh77c7vnizIdF9rU2w16R3cAVzdgh2E6jXg==
+"@subql/types-ethereum@^2.2.4":
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-2.2.4.tgz#0e5333b1073d8ba302d3bd0cf8181664485c3a50"
+  integrity sha512-fXIa8/rRRfO53+0AdkiqjBBtu1f9ahrSOH6Dx5Gp306GXTCLIJJsJKEXj6Bu7g9WxTCOF78fiT9oyU364ohalA==
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
 
@@ -1665,6 +1677,11 @@
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@subql/types/-/types-2.1.3.tgz#10886d7bb9d2773e87a983e51efd05375eae1e5f"
   integrity sha512-YNnH3npZwogTe3zM/ET6CXX4ouY1fTxR8uMl2x7fdGLIhWRbxNCbZwRvQ8pHupreYxRREghSZwQ4gQmImTKNlw==
+
+"@subql/types@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@subql/types/-/types-2.2.0.tgz#0aa63a5c764e4dec07a60e1d7c71823129c4262f"
+  integrity sha512-M+10vuKUQecRM65T4ip22BniqZpirDn9SYQpiOk88oUI3gCsSyPKb+dKmbHbZPaQE6KeDB3gP5nyBulTzMxcYA==
 
 "@subql/utils@2.4.3":
   version "2.4.3"
