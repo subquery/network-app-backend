@@ -284,8 +284,8 @@ type EraReward @entity {
   era: Era!
   eraIdx: Int!
 
-  isIndexer: Boolean! @index
-  isCommission: Boolean! @index
+  isIndexer: Boolean! # @index
+  isCommission: Boolean! # @index
 
   amount: BigInt!
   claimed: Boolean!
