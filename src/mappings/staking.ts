@@ -424,6 +424,7 @@ async function updateIndexerStakeSummary(
 
   if (isFirstStake) {
     indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake += amountBn;
     indexerStakeSummary.indexerStake += newIndexerStake;
     indexerStakeSummary.delegatorStake += newDelegatorStake;
@@ -432,6 +433,7 @@ async function updateIndexerStakeSummary(
     indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
   } else if (indexerStakeSummary.eraId !== currEraId) {
     indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
     indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
@@ -472,6 +474,7 @@ async function removeFromIndexerStakeSummary(
 
   if (indexerStakeSummary.eraId !== currEraId) {
     indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
     indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
