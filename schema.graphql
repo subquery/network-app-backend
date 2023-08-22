@@ -106,7 +106,6 @@ type Indexer @entity {
   id: ID! # Indexers address
   metadata: String! # IPFS cid
   controller: String # Controller address for the indexer
-
   commission: EraValue!
   totalStake: EraValue!
   capacity: EraValue!
@@ -119,9 +118,16 @@ type Indexer @entity {
 
   lastRewardedEra: String # hex encoding
   active: Boolean! # @index
-
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
+}
+
+type IndexerCommissionRate @entity {
+  id: ID! # indexer address + era id
+  indexer: Indexer!
+  era: Era!
+  eraIdx: Int!
+  commissionRate: Int!
 }
 
 type Controller @entity {
@@ -138,8 +144,8 @@ type Delegator @entity {
   id: ID! # Address
   totalDelegations: EraValue!
   delegations: [Delegation] @derivedFrom(field: "delegator")
-  claimedRewards: [Reward] @derivedFrom(field:"delegator")
-  unclaimedRewards: [UnclaimedReward] @derivedFrom(field:"delegator")
+  claimedRewards: [Reward] @derivedFrom(field: "delegator")
+  unclaimedRewards: [UnclaimedReward] @derivedFrom(field: "delegator")
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -269,6 +275,69 @@ type IndexerReward @entity {
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
+}
+
+type EraReward @entity {
+  id: ID! # indexer! + delegator! + era! + commission?
+  indexer: Indexer!
+  delegator: Delegator!
+  era: Era!
+  eraIdx: Int!
+
+  isIndexer: Boolean! # @index
+  isCommission: Boolean! # @index
+
+  amount: BigInt!
+  claimed: Boolean!
+
+  createdBlock: Int
+  createdTimestamp: Date!
+}
+
+type EraRewardClaimed @entity {
+  id: ID! # indexer + delegator
+  lastClaimedEra: Int!
+}
+
+type IndexerStakeSummary @entity {
+  id: ID! # indexer address or 0x00 for global
+  era: Era!
+  totalStake: BigInt!
+  indexerStake: BigInt!
+  delegatorStake: BigInt!
+  nextTotalStake: BigInt!
+  nextIndexerStake: BigInt!
+  nextDelegatorStake: BigInt!
+}
+
+type IndexerStake @entity {
+  id: ID! # indexer address + era id
+  era: Era!
+  totalStake: BigInt!
+  indexerStake: BigInt!
+  delegatorStake: BigInt!
+}
+
+type Sqtoken @entity {
+  id: ID! # token address
+  totalSupply: BigInt! # total supply
+  circulatingSupply: BigInt! # totalSupply - airdrop locked - staking locked - treasury holdings
+  tokenHolders: [TokenHolder] @derivedFrom(field: "token")
+}
+
+type TokenHolder @entity {
+  id: ID! # holder address
+  balance: BigInt!
+  token: Sqtoken!
+}
+
+type Transfer @entity {
+  id: ID! # holder address
+  amount: BigInt!
+  from: String!
+  to: String!
+  timestamp: Date!
+  blockheight: BigInt!
 }
 
 type Offer @entity {

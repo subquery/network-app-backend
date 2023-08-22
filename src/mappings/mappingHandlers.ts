@@ -10,3 +10,4 @@ export * from './rewardsDistributor';
 export * from './serviceAgreement';
 export * from './purchaseOffer';
 export * from './stateChannel';
+export * from './transfer';

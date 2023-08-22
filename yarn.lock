@@ -1564,6 +1564,8 @@
     js-yaml "^4.1.0"
     pino "^6.13.3"
     reflect-metadata "^0.1.13"
+    semver "^7.5.2"
+    update-notifier "5.1.0"
 
 "@subql/common-substrate@2.3.0":
   version "2.3.0"

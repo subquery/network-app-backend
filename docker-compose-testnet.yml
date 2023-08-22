@@ -18,7 +18,7 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node-ethereum:v2.8.1-0
+    image: onfinality/subql-node-ethereum:v2.11.0
     depends_on:
       "postgres":
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
     volumes:
       - ./:/app
     command:
-      - -f=/app/project_testnet.yaml
+      - -f=/app/project-testnet.yaml
       - --db-schema=testnet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3001/ready"]

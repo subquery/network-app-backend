@@ -27,6 +27,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
     staking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
+    sqtoken:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
     queryRegistry:
@@ -126,6 +128,18 @@ dataSources:
           filter:
             topics:
               - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+  - <<: *ethereum
+    options:
+      abi: sqtoken
+      address: "0xed3bb617dbC128095f8b0A00B9498C2Ef5c3D04a"
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleTransfer
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address indexed from, address indexed to, uint256 amount)
   - <<: *ethereum
     options:
       abi: queryRegistry

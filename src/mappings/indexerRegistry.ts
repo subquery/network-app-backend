@@ -10,7 +10,7 @@ import {
   UpdateMetadataEvent,
 } from '@subql/contract-sdk/typechain/IndexerRegistry';
 import assert from 'assert';
-import { Controller, Indexer } from '../types';
+import { Controller, Indexer, IndexerCommissionRate } from '../types';
 import {
   bytesToIpfsCid,
   Contracts,
@@ -21,11 +21,9 @@ import {
   upsertControllerAccount,
   upsertEraValue,
 } from './utils';
-import {
-  EraManager__factory,
-  IndexerRegistry__factory,
-} from '@subql/contract-sdk';
+import { IndexerRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
+import { BigNumber } from 'ethers';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -192,11 +190,6 @@ export async function handleSetCommissionRate(
   assert(event.args, 'No event args');
 
   const address = event.args.indexer;
-  const network = await api.getNetwork();
-  const eraManager = EraManager__factory.connect(
-    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
-    api
-  );
 
   const lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
   let indexer = await Indexer.get(address);
@@ -210,7 +203,6 @@ export async function handleSetCommissionRate(
   }
 
   indexer.commission = await upsertEraValue(
-    eraManager,
     indexer.commission,
     event.args.amount.toBigInt(),
     'replace',
@@ -220,4 +212,26 @@ export async function handleSetCommissionRate(
   indexer.lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
 
   await indexer.save();
+
+  await updateIndexerCommissionRate(
+    indexer.id,
+    BigNumber.from(indexer.commission.era).toHexString(),
+    indexer.commission.era,
+    Number(BigInt.fromJSONType(indexer.commission.value))
+  );
+}
+
+async function updateIndexerCommissionRate(
+  indexerId: string,
+  eraId: string,
+  eraIdx: number,
+  commissionRate: number
+): Promise<void> {
+  await IndexerCommissionRate.create({
+    id: `${indexerId}:${eraId}`,
+    indexerId,
+    eraId,
+    eraIdx: eraIdx,
+    commissionRate,
+  }).save();
 }

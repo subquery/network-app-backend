@@ -4,12 +4,12 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '> 2.8.0'
+    version: '>= 2.11.0'
     options:
       unfinalizedBlocks: true
   query:
     name: '@subql/query'
-    version: '*'
+    version: '>= 2.5.0'
 description: 'Query registry project for SubQuery Kepler Testnet'
 repository: ''
 schema:
@@ -27,6 +27,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
     staking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
+    sqtoken:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
     queryRegistry:
@@ -126,6 +128,18 @@ dataSources:
           filter:
             topics:
               - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+  - <<: *ethereum
+    options:
+      abi: sqtoken
+      address: '0xcEE50Ee839a2ab3914cF4c3cbAc78f6F11E0c937'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleTransfer
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address indexed from, address indexed to, uint256 amount)
   - <<: *ethereum
     options:
       abi: queryRegistry
