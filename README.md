@@ -38,8 +38,6 @@ You can observe the three services start, and once all are running (it may take 
 
 For `Testnet`:
 
-For `Testnet`:
-
 - `yarn`
 - `yarn codegen:testnet`
 - `yarn build:testnet`
