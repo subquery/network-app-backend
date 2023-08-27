@@ -54,3 +54,6 @@ Thumbs.db
 
 .data
 .eslintcache
+
+.env
+.env.test

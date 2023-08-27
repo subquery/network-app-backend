@@ -3,3 +3,4 @@ dist
 src/types
 node_modules
 .eslintrc.js
+tests
