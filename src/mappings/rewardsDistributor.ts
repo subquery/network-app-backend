@@ -94,7 +94,7 @@ export async function handleRewardsDistributed(
       await Delegation.remove(delegator.id);
     }
 
-    if (rewards.gt(0)) {
+    if (rewards.gt(0) && rewardChanged) {
       await createEraReward({
         indexerId: indexer,
         delegatorId: delegator.delegatorId,
@@ -102,7 +102,7 @@ export async function handleRewardsDistributed(
         eraIdx: eraIdx.toNumber(),
         isCommission: false,
         claimed: false,
-        amount: rewards.toBigInt(),
+        amount: rewards.toBigInt() - rewardOld,
         createdBlock: event.blockNumber,
         createdTimestamp: biToDate(event.block.timestamp),
       });
@@ -176,6 +176,7 @@ interface EraRewardData {
   createdTimestamp?: Date;
 }
 
+// once each era
 async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
   logger.info('updateEraReward', data);
 

@@ -269,7 +269,8 @@ async function updateIndexerStakeSummaryAdded(
 
   const currEraIdx = await getCurrentEra();
   const currEraId = BigNumber.from(currEraIdx).toHexString();
-  const nextEraId = BigNumber.from(currEraIdx + 1).toHexString();
+  const nextEraIdx = currEraIdx + 1;
+  const nextEraId = BigNumber.from(nextEraIdx).toHexString();
 
   // update IndexerStakeSummary
   let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
@@ -286,18 +287,20 @@ async function updateIndexerStakeSummaryAdded(
     indexerStakeSummary,
     indexer,
     currEraId,
+    currEraIdx,
     isFirstStake,
     amountBn,
     source === indexer
   );
 
   // update IndexerStakeSummary for all indexers
-  const allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
+  let allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
 
-  await updateIndexerStakeSummary(
+  allIndexerStakeSummary = await updateIndexerStakeSummary(
     allIndexerStakeSummary,
     '0x00',
     currEraId,
+    currEraIdx,
     isFirstStake,
     amountBn,
     source === indexer
@@ -308,8 +311,9 @@ async function updateIndexerStakeSummaryAdded(
     isFirstStake,
     indexer,
     currEraId,
-    amountBn,
+    currEraIdx,
     nextEraId,
+    nextEraIdx,
     indexerStakeSummary
   );
 
@@ -317,9 +321,10 @@ async function updateIndexerStakeSummaryAdded(
   await updateIndexerStakeAddedSumByEra(
     isFirstStake,
     currEraId,
-    amountBn,
+    currEraIdx,
     nextEraId,
-    indexerStakeSummary
+    nextEraIdx,
+    allIndexerStakeSummary
   );
 }
 
@@ -327,53 +332,58 @@ async function updateIndexerStakeAdded(
   isFirstStake: boolean,
   indexer: string,
   currEraId: string,
-  amountBn: bigint,
+  currEraIdx: number,
   nextEraId: string,
+  nextEraIdx: number,
   indexerStakeSummary: IndexerStakeSummary
 ) {
   if (isFirstStake) {
     await IndexerStake.create({
       id: `${indexer}:${currEraId}`,
       eraId: currEraId,
-      totalStake: amountBn,
-      indexerStake: amountBn,
-      delegatorStake: BigInt(0),
-    }).save();
-  } else {
-    await IndexerStake.create({
-      id: `${indexer}:${nextEraId}`,
-      eraId: nextEraId,
-      totalStake: indexerStakeSummary.nextTotalStake,
-      indexerStake: indexerStakeSummary.nextIndexerStake,
-      delegatorStake: indexerStakeSummary.nextDelegatorStake,
+      eraIdx: currEraIdx,
+      totalStake: indexerStakeSummary.totalStake,
+      indexerStake: indexerStakeSummary.indexerStake,
+      delegatorStake: indexerStakeSummary.delegatorStake,
     }).save();
   }
+  await IndexerStake.create({
+    id: `${indexer}:${nextEraId}`,
+    eraId: nextEraId,
+    eraIdx: nextEraIdx,
+    totalStake: indexerStakeSummary.nextTotalStake,
+    indexerStake: indexerStakeSummary.nextIndexerStake,
+    delegatorStake: indexerStakeSummary.nextDelegatorStake,
+  }).save();
 }
 
 async function updateIndexerStakeAddedSumByEra(
   isFirstStake: boolean,
   currEraId: string,
-  amountBn: bigint,
+  currEraIdx: number,
   nextEraId: string,
-  indexerStakeSummary: IndexerStakeSummary
+  nextEraIdx: number,
+  allIndexerStakeSummary: IndexerStakeSummary
 ) {
   if (isFirstStake) {
     await IndexerStake.create({
-      id: `${currEraId}`,
+      id: currEraId,
       eraId: currEraId,
-      totalStake: amountBn,
-      indexerStake: amountBn,
-      delegatorStake: BigInt(0),
-    }).save();
-  } else {
-    await IndexerStake.create({
-      id: `${nextEraId}`,
-      eraId: nextEraId,
-      totalStake: indexerStakeSummary.nextTotalStake,
-      indexerStake: indexerStakeSummary.nextIndexerStake,
-      delegatorStake: indexerStakeSummary.nextDelegatorStake,
+      eraIdx: currEraIdx,
+      totalStake: allIndexerStakeSummary.totalStake,
+      indexerStake: allIndexerStakeSummary.indexerStake,
+      delegatorStake: allIndexerStakeSummary.delegatorStake,
     }).save();
   }
+
+  await IndexerStake.create({
+    id: nextEraId,
+    eraId: nextEraId,
+    eraIdx: nextEraIdx,
+    totalStake: allIndexerStakeSummary.nextTotalStake,
+    indexerStake: allIndexerStakeSummary.nextIndexerStake,
+    delegatorStake: allIndexerStakeSummary.nextDelegatorStake,
+  }).save();
 }
 
 function getTotalStake(
@@ -391,6 +401,7 @@ async function updateIndexerStakeSummary(
   indexerStakeSummary: IndexerStakeSummary | undefined,
   indexer: string,
   currEraId: string,
+  currEraIdx: number,
   isFirstStake: boolean,
   amountBn: bigint,
   isIndexer: boolean
@@ -401,6 +412,7 @@ async function updateIndexerStakeSummary(
     indexerStakeSummary = IndexerStakeSummary.create({
       id: indexer,
       eraId: currEraId,
+      eraIdx: currEraIdx,
       totalStake: BigInt(0),
       indexerStake: BigInt(0),
       delegatorStake: BigInt(0),
@@ -412,14 +424,16 @@ async function updateIndexerStakeSummary(
 
   if (isFirstStake) {
     indexerStakeSummary.eraId = currEraId;
-    indexerStakeSummary.totalStake = amountBn;
-    indexerStakeSummary.indexerStake = newIndexerStake;
-    indexerStakeSummary.delegatorStake = newDelegatorStake;
-    indexerStakeSummary.nextTotalStake = amountBn;
-    indexerStakeSummary.nextIndexerStake = newIndexerStake;
-    indexerStakeSummary.nextDelegatorStake = newDelegatorStake;
+    indexerStakeSummary.eraIdx = currEraIdx;
+    indexerStakeSummary.totalStake += amountBn;
+    indexerStakeSummary.indexerStake += newIndexerStake;
+    indexerStakeSummary.delegatorStake += newDelegatorStake;
+    indexerStakeSummary.nextTotalStake += amountBn;
+    indexerStakeSummary.nextIndexerStake += newIndexerStake;
+    indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
   } else if (indexerStakeSummary.eraId !== currEraId) {
     indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
     indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
@@ -440,6 +454,7 @@ async function removeFromIndexerStakeSummary(
   indexerStakeSummary: IndexerStakeSummary | undefined,
   indexer: string,
   currEraId: string,
+  currEraIdx: number,
   amountBn: bigint,
   isIndexer: boolean
 ) {
@@ -447,6 +462,7 @@ async function removeFromIndexerStakeSummary(
     indexerStakeSummary = IndexerStakeSummary.create({
       id: indexer,
       eraId: currEraId,
+      eraIdx: currEraIdx,
       totalStake: BigInt(0),
       indexerStake: BigInt(0),
       delegatorStake: BigInt(0),
@@ -458,6 +474,7 @@ async function removeFromIndexerStakeSummary(
 
   if (indexerStakeSummary.eraId !== currEraId) {
     indexerStakeSummary.eraId = currEraId;
+    indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
     indexerStakeSummary.indexerStake = indexerStakeSummary.nextIndexerStake;
     indexerStakeSummary.delegatorStake = indexerStakeSummary.nextDelegatorStake;
@@ -491,41 +508,54 @@ async function updateIndexerStakeSummaryRemoved(
     indexerStakeSummary,
     indexer,
     currEraId,
+    currEraIdx,
     amountBn,
     source === indexer
   );
 
   // update IndexerStakeSummary for all indexers
 
-  const allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
+  let allIndexerStakeSummary = await IndexerStakeSummary.get('0x00');
   assert(
     allIndexerStakeSummary,
     `IndexerStakeSummary 0x00 for all indexers does not exist`
   );
 
-  await removeFromIndexerStakeSummary(
+  allIndexerStakeSummary = await removeFromIndexerStakeSummary(
     allIndexerStakeSummary,
     '0x00',
     currEraId,
+    currEraIdx,
     amountBn,
     source === indexer
   );
 
   // update IndexerStake
-  await updateIndexerStakeRemoved(indexer, nextEraId, indexerStakeSummary);
+  await updateIndexerStakeRemoved(
+    indexer,
+    nextEraId,
+    nextEraIdx,
+    indexerStakeSummary
+  );
 
   // update IndexerStake for all indexers, sum by era
-  await updateIndexerStakeRemovedSumByEra(nextEraId, indexerStakeSummary);
+  await updateIndexerStakeRemovedSumByEra(
+    nextEraId,
+    nextEraIdx,
+    allIndexerStakeSummary
+  );
 }
 
 async function updateIndexerStakeRemoved(
   indexer: string,
   nextEraId: string,
+  nextEraIdx: number,
   indexerStakeSummary: IndexerStakeSummary
 ) {
   await IndexerStake.create({
     id: `${indexer}:${nextEraId}`,
     eraId: nextEraId,
+    eraIdx: nextEraIdx,
     totalStake: indexerStakeSummary.nextTotalStake,
     indexerStake: indexerStakeSummary.nextIndexerStake,
     delegatorStake: indexerStakeSummary.nextDelegatorStake,
@@ -534,13 +564,15 @@ async function updateIndexerStakeRemoved(
 
 async function updateIndexerStakeRemovedSumByEra(
   nextEraId: string,
-  indexerStakeSummary: IndexerStakeSummary
+  nextEraIdx: number,
+  allIndexerStakeSummary: IndexerStakeSummary
 ) {
   await IndexerStake.create({
     id: `${nextEraId}`,
     eraId: nextEraId,
-    totalStake: indexerStakeSummary.nextTotalStake,
-    indexerStake: indexerStakeSummary.nextIndexerStake,
-    delegatorStake: indexerStakeSummary.nextDelegatorStake,
+    eraIdx: nextEraIdx,
+    totalStake: allIndexerStakeSummary.nextTotalStake,
+    indexerStake: allIndexerStakeSummary.nextIndexerStake,
+    delegatorStake: allIndexerStakeSummary.nextDelegatorStake,
   }).save();
 }

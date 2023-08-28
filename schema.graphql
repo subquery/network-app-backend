@@ -284,8 +284,8 @@ type EraReward @entity {
   era: Era!
   eraIdx: Int!
 
-  isIndexer: Boolean! # @index
-  isCommission: Boolean! # @index
+  isIndexer: Boolean!
+  isCommission: Boolean!
 
   amount: BigInt!
   claimed: Boolean!
@@ -302,6 +302,7 @@ type EraRewardClaimed @entity {
 type IndexerStakeSummary @entity {
   id: ID! # indexer address or 0x00 for global
   era: Era!
+  eraIdx: Int!
   totalStake: BigInt!
   indexerStake: BigInt!
   delegatorStake: BigInt!
@@ -313,6 +314,7 @@ type IndexerStakeSummary @entity {
 type IndexerStake @entity {
   id: ID! # indexer address + era id
   era: Era!
+  eraIdx: Int!
   totalStake: BigInt!
   indexerStake: BigInt!
   delegatorStake: BigInt!
