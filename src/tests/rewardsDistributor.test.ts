@@ -8,7 +8,7 @@ import { onError } from '@apollo/client/link/error';
 import { fetch } from 'cross-fetch';
 import * as request from 'supertest';
 import { DocumentNode } from 'graphql';
-import { Indexer, Delegator, Delegation, EraReward, Reward } from '../../types';
+import { Indexer, Delegator, Delegation, EraReward, Reward } from '../types';
 import { BigNumber } from 'ethers';
 
 jest.setTimeout(300000);

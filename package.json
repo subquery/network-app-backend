@@ -15,6 +15,7 @@
     "prepare": "husky install",
     "postinstall": "sh ./scripts/postinstall.sh",
     "prepack": "rm -rf dist && yarn build",
+    "test": "jest",
     "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts"
   },
   "homepage": "https://github.com/subquery/subquery-network-subql-project",

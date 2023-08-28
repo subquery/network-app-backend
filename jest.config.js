@@ -3,5 +3,5 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
-  globalSetup: './src/mappings/tests/globalSetup.ts',
+  globalSetup: './src/tests/globalSetup.ts',
 };
