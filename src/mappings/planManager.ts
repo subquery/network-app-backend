@@ -9,11 +9,11 @@ import {
   PlanTemplateMetadataChangedEvent,
   PlanTemplateStatusChangedEvent,
 } from '@subql/contract-sdk/typechain/PlanManager';
-import assert from 'assert';
-import { Plan, PlanTemplate } from '../types';
-import { bytesToIpfsCid, Contracts, getContractAddress } from './utils';
-import { constants } from 'ethers';
 import { EthereumLog } from '@subql/types-ethereum';
+import assert from 'assert';
+import { constants } from 'ethers';
+import { Plan, PlanTemplate } from '../types';
+import { Contracts, bytesToIpfsCid, getContractAddress } from './utils';
 
 export async function handlePlanTemplateCreated(
   event: EthereumLog<PlanTemplateCreatedEvent['args']>
@@ -36,6 +36,7 @@ export async function handlePlanTemplateCreated(
     period: rawPlanTemplate.period.toBigInt(),
     dailyReqCap: rawPlanTemplate.dailyReqCap.toBigInt(),
     rateLimit: rawPlanTemplate.rateLimit.toBigInt(),
+    priceToken: rawPlanTemplate.priceToken,
     metadata:
       constants.HashZero === rawPlanTemplate.metadata
         ? undefined

@@ -199,6 +199,7 @@ type PlanTemplate @entity {
   period: BigInt!
   dailyReqCap: BigInt!
   rateLimit: BigInt!
+  priceToken: String!
   metadata: String
   active: Boolean!
 
@@ -416,4 +417,13 @@ type Disputes @entity {
 
   slashAmount: BigInt
   returnAmount: BigInt
+}
+
+type PriceOracle @entity {
+  id: ID! #oracleId
+  fromToken: String!
+  toToken: String!
+  beforePrice: BigInt!
+  afterPrice: BigInt!
+  createdBlock: Int
 }
