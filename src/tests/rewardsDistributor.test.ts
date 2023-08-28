@@ -11,7 +11,7 @@ import { DocumentNode } from 'graphql';
 import { Indexer, Delegator, Delegation, EraReward, Reward } from '../types';
 import { BigNumber } from 'ethers';
 
-jest.setTimeout(300000);
+jest.setTimeout(3000000);
 
 describe('rewardsDistributor', () => {
   let client: ApolloClient<any>;
@@ -32,7 +32,7 @@ describe('rewardsDistributor', () => {
           uri: 'https://api.subquery.network/sq/subquery/kepler-network-staging',
           fetch,
           fetchOptions: {
-            timeout: 20000,
+            timeout: 200000,
           },
         })
       ),
@@ -74,85 +74,97 @@ describe('rewardsDistributor', () => {
         );
         const eraRewards = await queryEraRewards(client, indexer.id);
         await Promise.all(
-          delegations.data.delegations.nodes.map(
-            async (delegation: Delegation) => {
-              let delegatorId = delegation.delegatorId;
-              let rewardAmount = BigNumber.from(0);
-              rewards.data.rewards.nodes.map((reward: Reward) => {
-                if (reward.delegatorId == delegatorId) {
-                  rewardAmount = rewardAmount.add(reward.amount);
-                }
-              });
-              let unclaimedReward =
-                unclaimedRewards.data.unclaimedRewards.nodes.find(
-                  (value: any, index: number, obj: []) => {
-                    return value.delegatorId == delegatorId;
-                  }
-                );
-              let allEraRewards = BigNumber.from(0);
-              let allEraUnclaimedRewards = BigNumber.from(0);
-              let count = 0;
-              eraRewards.data.eraRewards.nodes.map((eraReward: EraReward) => {
-                if (eraReward.isCommission) {
-                  return;
-                }
-                if (eraReward.delegatorId == delegatorId) {
-                  if (eraReward.claimed) {
-                    allEraRewards = allEraRewards.add(eraReward.amount);
-                    count++;
-                  } else {
-                    allEraUnclaimedRewards = allEraUnclaimedRewards.add(
-                      eraReward.amount
-                    );
-                  }
-                }
-              });
-              // console.log(
-              //   `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
-              // );
-              if (!rewardAmount.eq(allEraRewards)) {
-                console.log(
-                  `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
-                );
-                console.log(
-                  `rewardAmount: ${rewardAmount}, allEraRewards: ${allEraRewards}`
-                );
-              }
-              // expect(rewardAmount.eq(allEraRewards)).toBe(true);
-              if (unclaimedReward) {
-                if (
-                  !BigNumber.from(unclaimedReward.amount).eq(
-                    allEraUnclaimedRewards
-                  )
-                ) {
-                  console.log(
-                    `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
-                  );
-                  console.log(
-                    `unclaimedReward: ${unclaimedReward.amount}, allEraUnclaimedRewards: ${allEraUnclaimedRewards}`
-                  );
-                }
-                // expect(
-                //   BigNumber.from(unclaimedReward.amount).eq(
-                //     allEraUnclaimedRewards
-                //   )
-                // ).toBe(true);
-              } else {
-                // expect(allEraUnclaimedRewards.eq(BigNumber.from(0))).toBe(true);
-                console.log(
-                  `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
-                );
-                console.log(
-                  `allEraUnclaimedRewards: ${allEraUnclaimedRewards}`
-                );
-              }
-            }
+          await validateIndexerRewards(
+            delegations,
+            rewards,
+            unclaimedRewards,
+            eraRewards,
+            indexer
           )
         );
       })
     );
   });
 });
+
+async function validateIndexerRewards(
+  delegations: {
+    data: { [x: string]: { nodes: any; totalCount: number; aggregates: any } };
+  },
+  rewards: {
+    data: { [x: string]: { nodes: any; totalCount: number; aggregates: any } };
+  },
+  unclaimedRewards: {
+    data: { [x: string]: { nodes: any; totalCount: number; aggregates: any } };
+  },
+  eraRewards: {
+    data: { [x: string]: { nodes: any; totalCount: number; aggregates: any } };
+  },
+  indexer: Indexer
+): Promise<any> {
+  return delegations.data.delegations.nodes.map(
+    async (delegation: Delegation) => {
+      let delegatorId = delegation.delegatorId;
+      let rewardAmount = BigNumber.from(0);
+      rewards.data.rewards.nodes.map((reward: Reward) => {
+        if (reward.delegatorId == delegatorId) {
+          rewardAmount = rewardAmount.add(reward.amount);
+        }
+      });
+      let unclaimedReward = unclaimedRewards.data.unclaimedRewards.nodes.find(
+        (value: any, index: number, obj: []) => {
+          return value.delegatorId == delegatorId;
+        }
+      );
+      let allEraRewards = BigNumber.from(0);
+      let allEraUnclaimedRewards = BigNumber.from(0);
+      let count = 0;
+      eraRewards.data.eraRewards.nodes.map((eraReward: EraReward) => {
+        if (eraReward.isCommission) {
+          return;
+        }
+        if (eraReward.delegatorId == delegatorId) {
+          if (eraReward.claimed) {
+            allEraRewards = allEraRewards.add(eraReward.amount);
+            count++;
+          } else {
+            allEraUnclaimedRewards = allEraUnclaimedRewards.add(
+              eraReward.amount
+            );
+          }
+        }
+      });
+      // console.log(
+      //   `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
+      // );
+      if (!rewardAmount.eq(allEraRewards)) {
+        console.warn(
+          `\nindexerId: ${indexer.id}, delegatorId: ${delegatorId}\nsum(Reward.amount): ${rewardAmount}, sum(EraReward.amount claimed==true): ${allEraRewards}`
+        );
+      }
+      // expect(rewardAmount.eq(allEraRewards)).toBe(true);
+      if (unclaimedReward) {
+        if (
+          !BigNumber.from(unclaimedReward.amount).eq(allEraUnclaimedRewards)
+        ) {
+          console.warn(
+            `\nindexerId: ${indexer.id}, delegatorId: ${delegatorId}\nUnclaimedReward.amount: ${unclaimedReward.amount}, sum(EraReward.amount claimed==false): ${allEraUnclaimedRewards}`
+          );
+        }
+        // expect(
+        //   BigNumber.from(unclaimedReward.amount).eq(allEraUnclaimedRewards)
+        // ).toBe(true);
+      } else {
+        if (!allEraUnclaimedRewards.eq(BigNumber.from(0))) {
+          console.warn(
+            `\nindexerId: ${indexer.id}, delegatorId: ${delegatorId}\nsum(EraReward.amount claimed==false): ${allEraUnclaimedRewards}`
+          );
+        }
+        // expect(allEraUnclaimedRewards.eq(BigNumber.from(0))).toBe(true);
+      }
+    }
+  );
+}
 
 async function queryEraRewards(client: ApolloClient<any>, indexerId: string) {
   const queryEraRewards = gql`
