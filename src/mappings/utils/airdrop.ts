@@ -4,6 +4,11 @@
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { EthereumLog } from '@subql/types-ethereum';
 import { AirdropAmount } from '../../types';
+import { Contracts } from './helpers';
+
+export const isKSQT = (address: string): boolean => {
+  return address === Contracts.KSQT_ADDRESS;
+};
 
 export const getUpsertAt = (handler: string, event: EthereumLog): string => {
   const upsertAt = `${handler}:${event.blockNumber}:${

@@ -47,6 +47,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
     airdropper:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
+    permissionedExchange:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PermissionedExchange.sol/PermissionedExchange.json
 
 dataSources:
   - <<: *ethereum
@@ -363,3 +365,35 @@ dataSources:
           filter:
             topics:
               - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
+  - <<: *ethereum
+    options:
+      abi: permissionedExchange
+      address: "0x063482d40B31f78d4aDA6D0CDCBaE73F07Ea4865"
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleExchangeOrderSent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ExchangeOrderSent(uint256 indexed orderId, address sender, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet, uint256 expireDate)
+        - handler: handleOrderChanged
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ExchangeOrderChanged(uint256 indexed orderId, uint256 tokenGiveBalance);
+        - handler: handleTrade
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Trade(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
+        - handler: handleOrderSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - OrderSettled(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
+        - handler: handleQuotaAdded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - QuotaAdded(address token, address account, uint256 amount)
