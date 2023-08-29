@@ -45,6 +45,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
+    airdropper:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
 
 dataSources:
   - <<: *ethereum
@@ -131,7 +133,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: sqtoken
-      address: "0xed3bb617dbC128095f8b0A00B9498C2Ef5c3D04a"
+      address: '0xed3bb617dbC128095f8b0A00B9498C2Ef5c3D04a'
     mapping:
       file: './dist/index.js'
       handlers:
@@ -334,3 +336,30 @@ dataSources:
           filter:
             topics:
               - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)
+  - <<: *ethereum
+    options:
+      abi: airdropper
+      address: '0x3342cF1D4a6d07D653B53969c960886439d53b25'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRoundCreated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundCreated(uint256 indexed roundId, address tokenAddress, uint256 roundStartTime, uint256 roundDeadline)
+        - handler: handleAddAirdrop
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AddAirdrop(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleAirdropClaimed
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AirdropClaimed(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleRoundSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)

@@ -15,7 +15,8 @@
     "prepare": "husky install",
     "postinstall": "sh ./scripts/postinstall.sh",
     "prepack": "rm -rf dist && yarn build",
-    "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts"
+    "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts",
+    "prettier:fix": "prettier --write ."
   },
   "homepage": "https://github.com/subquery/subquery-network-subql-project",
   "repository": "https://github.com/subquery/subquery-network-subql-project",
@@ -47,7 +48,7 @@
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
-    "@subql/contract-sdk": "^0.15.0",
+    "@subql/contract-sdk": "^0.16.0",
     "@subql/types-ethereum": "^2.2.4",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
@@ -59,7 +60,8 @@
     "class-transformer": "0.4.0",
     "ipfs-unixfs": "6.0.6",
     "@ethersproject/base64": "5.7.0",
-    "@polkadot/util": "10.4.2"
+    "@polkadot/util": "12.3.2",
+    "@polkadot/util-crypto": "12.3.2."
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",

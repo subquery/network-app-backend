@@ -1,8 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
-import { Deployment, DeploymentIndexer, Project, Status } from '../types';
 import { QueryRegistry__factory } from '@subql/contract-sdk';
 import {
   CreateQueryEvent,
@@ -13,16 +11,18 @@ import {
   UpdateQueryDeploymentEvent,
   UpdateQueryMetadataEvent,
 } from '@subql/contract-sdk/typechain/QueryRegistry';
+import { EthereumLog } from '@subql/types-ethereum';
+import assert from 'assert';
+import { ISaveDeploymentIndexer } from '../interfaces';
+import { Deployment, DeploymentIndexer, Project, Status } from '../types';
 import {
+  Contracts,
   biToDate,
   bnToDate,
   bytesToIpfsCid,
   cidToBytes32,
-  Contracts,
   getContractAddress,
 } from './utils';
-import { EthereumLog } from '@subql/types-ethereum';
-import { ISaveDeploymentIndexer } from '../interfaces';
 
 function getDeploymentIndexerId(indexer: string, deploymentId: string): string {
   return `${indexer}:${deploymentId}`;

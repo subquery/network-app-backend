@@ -417,3 +417,38 @@ type Disputes @entity {
   slashAmount: BigInt
   returnAmount: BigInt
 }
+
+# Airdrop
+type Airdrop @entity {
+  id: ID! # Round ID
+  tokenAddress: String!
+  startTime: Date! # Block timestamp the Era is started
+  endTime: Date! # Block timestamp that the successive Era is started
+  withdrawAmount: BigInt
+  hasWithdrawn: Boolean
+  createAt: String #topicHandler:block:Txhash
+  updateAt: String #topicHandler:block:Txhash
+}
+
+enum AirdropClaimStatus {
+  CLAIMED
+  UNCLAIMED
+}
+
+type AirdropUser @entity {
+  id: ID! # roundId:userAccount
+  user: User!
+  airdrop: Airdrop!
+  amount: BigInt!
+  status: AirdropClaimStatus!
+  createAt: String #topicHandler:block:Txhash
+  updateAt: String #topicHandler:block:Txhash
+}
+
+type AirdropAmount @entity {
+  id: ID! # userAccount
+  totalAirdropAmount: BigInt! # Claimed + unClaimed + unlocked + locked
+  claimedAmount: BigInt! # claim total
+  createAt: String #topicHandler:block:Txhash
+  updateAt: String #topicHandler:block:Txhash
+}

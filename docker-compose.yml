@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   postgres:
@@ -12,7 +12,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,7 +20,7 @@ services:
   subquery-node:
     image: onfinality/subql-node-ethereum:v2.11.0
     depends_on:
-      "postgres":
+      'postgres':
         condition: service_healthy
     restart: always
     environment:
@@ -35,7 +35,7 @@ services:
       - -f=/app/project-kepler.yaml
       - --db-schema=app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://subquery-node:3001/ready"]
+      test: ['CMD', 'curl', '-f', 'http://subquery-node:3001/ready']
       interval: 3s
       timeout: 5s
       retries: 10
@@ -45,9 +45,9 @@ services:
     ports:
       - 3001:3001
     depends_on:
-      "postgres":
+      'postgres':
         condition: service_healthy
-      "subquery-node":
+      'subquery-node':
         condition: service_healthy
     restart: always
     environment:
