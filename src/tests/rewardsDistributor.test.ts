@@ -134,9 +134,9 @@ async function validateIndexerRewards(
           }
         }
       });
-      // console.log(
-      //   `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
-      // );
+      console.log(
+        `pair: indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
+      );
       if (!rewardAmount.eq(allEraRewards)) {
         console.warn(
           `\nindexerId: ${indexer.id}, delegatorId: ${delegatorId}\nsum(Reward.amount): ${rewardAmount}, sum(EraReward.amount claimed==true): ${allEraRewards}`
