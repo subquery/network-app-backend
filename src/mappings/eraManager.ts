@@ -3,10 +3,10 @@
 
 import { EthereumLog } from '@subql/types-ethereum';
 import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
-import { EraManager__factory } from '@subql/contract-sdk';
 import assert from 'assert';
 import { Era } from '../types';
 import { biToDate, Contracts, getContractAddress } from './utils';
+import { EraManager__factory } from '../types/contracts/factories/EraManager__factory';
 
 let globalCurrentEra = -1;
 

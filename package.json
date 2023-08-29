@@ -6,8 +6,7 @@
   "scripts": {
     "build:kepler": "yarn check-filters kepler && ./node_modules/.bin/subql build",
     "build:testnet": "yarn check-filters testnet && ./node_modules/.bin/subql build",
-    "codegen:abi": "npx typechain --target=ethers-v5 './node_modules/@subql/contract-sdk/artifacts/contracts/**/*.json' --out-dir src/types/ethers-contracts",
-    "codegen:kepler": "./node_modules/.bin/subql codegen -f ./project-kepler.yaml && yarn codegen:abi",
+    "codegen:kepler": "./node_modules/.bin/subql codegen -f ./project-kepler.yaml",
     "codegen:testnet": "./node_modules/.bin/subql codegen -f ./project-testnet.yaml && yarn codegen:abi",
     "deploy:kepler": "subql publish -f ./project-kepler.yaml",
     "deploy:testnet": "subql publish -f ./project-testnet.yaml",

@@ -186,10 +186,50 @@ dataSources:
           filter:
             topics:
               - StopIndexing(address indexer, bytes32 deploymentId)
-  - <<: *ethereum
+  - kind: ethereum/Runtime
+    startBlock: 4600000
     options:
       abi: planManager
       address: '0x3ce376aaCA549e7AcaBFC882A5cA752a1B8F4B27'
+    assets:
+      planManager:
+        file: abi/PlanManagerV2.json
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handlePlanTemplateCreatedV2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PlanTemplateCreated(uint256 indexed planTemplateId)
+        - handler: handlePlanTemplateMetadataUpdatedV2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PlanTemplateMetadataChanged(uint256 indexed planTemplateId, bytes32 metadata)
+        - handler: handlePlanTemplateStatusUpdatedV2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PlanTemplateStatusChanged(uint256 indexed planTemplateId, bool active)
+        - handler: handlePlanCreatedV2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PlanCreated(uint256 indexed planId, address creator, bytes32 deploymentId, uint256 planTemplateId, uint256 price)
+        - handler: handlePlanRemovedV2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PlanRemoved(uint256 indexed planId)
+  - kind: ethereum/Runtime
+    startBlock: 41192135
+    options:
+      abi: planManager
+      address: '0x3ce376aaCA549e7AcaBFC882A5cA752a1B8F4B27'
+    assets:
+      planManager:
+        file: abi/PlanManager.json
     mapping:
       file: ./dist/index.js
       handlers:

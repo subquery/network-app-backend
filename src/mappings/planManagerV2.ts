@@ -13,15 +13,11 @@ import { Plan, PlanTemplate } from '../types';
 import { bytesToIpfsCid, Contracts, getContractAddress } from './utils';
 import { constants } from 'ethers';
 import { EthereumLog } from '@subql/types-ethereum';
-import { PlanManager__factory } from '../types/contracts/factories/PlanManager__factory';
+import { PlanManagerV2__factory as PlanManager__factory } from '../types/contracts/factories/PlanManagerV2__factory';
 
-export async function handlePlanTemplateCreated(
+export async function handlePlanTemplateCreatedV2(
   event: EthereumLog<PlanTemplateCreatedEvent['args']>
 ): Promise<void> {
-  // handle testnet / kepler difference
-  if (event.blockNumber > xxx) {
-    return;
-  }
   logger.info('handlePlanTemplateCreated');
   assert(event.args, 'No event args');
 
@@ -51,7 +47,7 @@ export async function handlePlanTemplateCreated(
   await planTemplate.save();
 }
 
-export async function handlePlanTemplateMetadataUpdated(
+export async function handlePlanTemplateMetadataUpdatedV2(
   event: EthereumLog<PlanTemplateMetadataChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateMetadataUpdated');
@@ -67,7 +63,7 @@ export async function handlePlanTemplateMetadataUpdated(
   await planTemplate.save();
 }
 
-export async function handlePlanTemplateStatusUpdated(
+export async function handlePlanTemplateStatusUpdatedV2(
   event: EthereumLog<PlanTemplateStatusChangedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanTemplateStatusUpdated');
@@ -83,7 +79,7 @@ export async function handlePlanTemplateStatusUpdated(
   await planTemplate.save();
 }
 
-export async function handlePlanCreated(
+export async function handlePlanCreatedV2(
   event: EthereumLog<PlanCreatedEvent['args']>
 ): Promise<void> {
   logger.info('handlePlanCreated');
