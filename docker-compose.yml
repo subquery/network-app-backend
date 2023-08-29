@@ -35,7 +35,7 @@ services:
       - -f=/app/project-kepler.yaml
       - --db-schema=app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://subquery-node:3001/ready"]
+      test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
       interval: 3s
       timeout: 5s
       retries: 10

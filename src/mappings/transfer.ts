@@ -54,79 +54,52 @@ export async function handleTransfer(
   logger.info(`found transfer from ${from} to ${to}`);
   let token = await Sqtoken.get(tokenAddr);
   if (!token) {
-    const circulatingSupply = !isReservedContract(to)
-      ? event.args.value.toBigInt()
-      : BigInt(0);
-    token = new Sqtoken(
-      tokenAddr,
-      event.args.value.toBigInt(),
-      circulatingSupply
-    );
-    if (!isReservedContract(to)) {
-      logger.info(`circulatingSupply increase ${event.args.value.toBigInt()}`);
-    }
+    token = new Sqtoken(tokenAddr, BigInt(0), BigInt(0));
   }
+  let addCirculating = false;
+  let removeCirculating = false;
+  // mint
   if (from === ethers.constants.AddressZero) {
     logger.info(`Mint at block ${event.blockNumber} from ${from}`);
-    if (!token) {
-      const circulatingSupply = !isReservedContract(to)
-        ? event.args.value.toBigInt()
-        : BigInt(0);
-      token = new Sqtoken(
-        tokenAddr,
-        event.args.value.toBigInt(),
-        circulatingSupply
-      );
-      if (!isReservedContract(to)) {
-        logger.info(
-          `circulatingSupply increase ${event.args.value.toBigInt()}`
-        );
-      }
-    } else {
-      token.totalSupply = token.totalSupply + event.args.value.toBigInt();
-      token.circulatingSupply =
-        token.circulatingSupply + event.args.value.toBigInt();
-      logger.info(
-        `circulatingSupply increase ${event.args.value.toBigInt()} to ${
-          token.circulatingSupply
-        }`
-      );
+    token.totalSupply += event.args.value.toBigInt();
+
+    if (!isReservedContract(to)) {
+      addCirculating = true;
     }
-    await token.save();
   }
   // burn: remove circulatingSupply
   if (to === ethers.constants.AddressZero) {
     logger.info(`Burn at block ${event.blockNumber} from ${from}`);
     token.totalSupply = token.totalSupply - event.args.value.toBigInt();
-    token.circulatingSupply =
-      token.circulatingSupply - event.args.value.toBigInt();
-    logger.info(
-      `circulatingSupply decrease ${event.args.value.toBigInt()} to ${
-        token.circulatingSupply
-      }`
-    );
-    await token.save();
+
+    if (!isReservedContract(from)) {
+      removeCirculating = true;
+    }
   }
   // treasury out: add circulatingSupply
   if (isReservedContract(from)) {
-    token.circulatingSupply =
-      token.circulatingSupply + event.args.value.toBigInt();
+    addCirculating = true;
+  }
+  // treasury in: remove circulatingSupply
+  if (isReservedContract(to)) {
+    removeCirculating = true;
+  }
+
+  if (addCirculating && !removeCirculating) {
+    token.circulatingSupply += event.args.value.toBigInt();
     logger.info(
       `circulatingSupply increase ${event.args.value.toBigInt()} to ${
         token.circulatingSupply
       }`
     );
-    await token.save();
   }
-  // treasury in: remove circulatingSupply
-  if (isReservedContract(to)) {
-    token.circulatingSupply =
-      token.circulatingSupply - event.args.value.toBigInt();
+  if (removeCirculating && !addCirculating) {
+    token.circulatingSupply -= event.args.value.toBigInt();
     logger.info(
       `circulatingSupply decrease ${event.args.value.toBigInt()} to ${
         token.circulatingSupply
       }`
     );
-    await token.save();
   }
+  await token.save();
 }
