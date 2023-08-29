@@ -27,7 +27,7 @@
   "author": "SubQuery Pty. Limited",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@subql/cli": "^3.5.1",
+    "@subql/cli": "3.5.1",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/bs58": "^4.0.1",
     "@types/js-yaml": "^4.0.5",

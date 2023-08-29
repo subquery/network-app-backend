@@ -1,10 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  IndexerRegistry__factory,
-  Staking__factory,
-} from '@subql/contract-sdk';
+import { Staking__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from 'ethers';
 import { CreateIndexerParams } from '../../interfaces';
@@ -28,6 +25,8 @@ import {
   reportIndexerNonExistException,
 } from './helpers';
 import { getCurrentEra } from '../eraManager';
+import { getMinimumStakingAmount } from '../indexerRegistry';
+import { getIndexerLeverageLimit } from '../staking';
 
 export async function createIndexer({
   address,
@@ -139,18 +138,8 @@ export async function updateMaxUnstakeAmount(
   indexerAddress: string,
   event: EthereumLog
 ): Promise<void> {
-  const network = await api.getNetwork();
-  const staking = Staking__factory.connect(
-    getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
-    api
-  );
-  const indexerRegistry = IndexerRegistry__factory.connect(
-    getContractAddress(network.chainId, Contracts.INDEXER_REGISTRY_ADDRESS),
-    api
-  );
-
-  const leverageLimit = await staking.indexerLeverageLimit();
-  const minStakingAmount = await indexerRegistry.minimumStakingAmount();
+  const leverageLimit = await getIndexerLeverageLimit();
+  const minStakingAmount = await getMinimumStakingAmount();
 
   const indexer = await Indexer.get(indexerAddress);
 
