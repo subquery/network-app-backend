@@ -29,7 +29,7 @@ describe('rewardsDistributor', () => {
         }
       }).concat(
         new HttpLink({
-          uri: 'https://api.subquery.network/sq/subquery/kepler-network-staging',
+          uri: 'https://api.subquery.network/sq/subquery/kepler-network',
           fetch,
           fetchOptions: {
             timeout: 200000,
@@ -135,7 +135,7 @@ async function validateIndexerRewards(
         }
       });
       // console.log(
-      //   `indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
+      //   `pair: indexerId: ${indexer.id}, delegatorId: ${delegatorId}`
       // );
       if (!rewardAmount.eq(allEraRewards)) {
         console.warn(
