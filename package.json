@@ -1,6 +1,6 @@
 {
   "name": "subquery-network-subql-project",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
