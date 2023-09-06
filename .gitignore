@@ -54,3 +54,4 @@ Thumbs.db
 
 .data
 .eslintcache
+docker-compose-kepler.yml
