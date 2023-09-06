@@ -1,24 +1,23 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  ChannelCheckpointEvent,
-  ChannelExtendEvent,
-  ChannelFinalizeEvent,
-  ChannelFundEvent,
-  ChannelOpenEvent,
-  ChannelTerminateEvent,
-} from '@subql/contract-sdk/typechain/StateChannel';
-import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { logger, utils } from 'ethers';
-import { ChannelStatus, StateChannel } from '../types';
+import { utils } from 'ethers';
+import {
+  ChannelOpenEvent,
+  ChannelExtendEvent,
+  ChannelFundEvent,
+  ChannelCheckpointEvent,
+  ChannelTerminateEvent,
+  ChannelFinalizeEvent,
+} from '@subql/contract-sdk/typechain/StateChannel';
+import { StateChannel, ChannelStatus } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
+import { EthereumLog } from '@subql/types-ethereum';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
 ): Promise<void> {
-  logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
 
   const {
@@ -31,6 +30,12 @@ export async function handleChannelOpen(
     deploymentId,
     callback,
   } = event.args;
+
+  logger.info(
+    `handleChannelOpen: channel: ${channelId.toHexString()}, at ${
+      event.blockNumber
+    }-${event.blockHash}-${event.transactionHash}`
+  );
   let consumer = _consumer;
   let agent: string | undefined = undefined;
   try {
@@ -58,6 +63,7 @@ export async function handleChannelOpen(
   });
 
   await sc.save();
+  logger.info(`handleChannelOpen Done: channel: ${channelId.toHexString()}`);
 }
 
 export async function handleChannelExtend(
