@@ -1,19 +1,19 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
-import { utils } from 'ethers';
 import {
-  ChannelOpenEvent,
-  ChannelExtendEvent,
-  ChannelFundEvent,
   ChannelCheckpointEvent,
-  ChannelTerminateEvent,
+  ChannelExtendEvent,
   ChannelFinalizeEvent,
+  ChannelFundEvent,
+  ChannelOpenEvent,
+  ChannelTerminateEvent,
 } from '@subql/contract-sdk/typechain/StateChannel';
-import { StateChannel, ChannelStatus } from '../types';
-import { biToDate, bytesToIpfsCid } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
+import assert from 'assert';
+import { logger, utils } from 'ethers';
+import { ChannelStatus, StateChannel } from '../types';
+import { biToDate, bytesToIpfsCid } from './utils';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -37,6 +37,7 @@ export async function handleChannelOpen(
     consumer = utils.defaultAbiCoder.decode(['address'], callback)[0] as string;
     agent = _consumer;
   } catch (e) {
+    logger.info(`Channel created by ${indexer}`);
   }
 
   const sc = StateChannel.create({

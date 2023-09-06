@@ -1,5 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './updateDbFunctions';
+export * from './airdrop';
 export * from './helpers';
+export * from './updateDbFunctions';
