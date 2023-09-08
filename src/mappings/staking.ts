@@ -341,6 +341,7 @@ async function updateIndexerStakeAdded(
   if (isFirstStake) {
     await IndexerStake.create({
       id: `${indexer}:${currEraId}`,
+      indexerId: indexer,
       eraId: currEraId,
       eraIdx: currEraIdx,
       totalStake: indexerStakeSummary.totalStake,
@@ -350,6 +351,7 @@ async function updateIndexerStakeAdded(
   }
   await IndexerStake.create({
     id: `${indexer}:${nextEraId}`,
+    indexerId: indexer,
     eraId: nextEraId,
     eraIdx: nextEraIdx,
     totalStake: indexerStakeSummary.nextTotalStake,
@@ -369,6 +371,7 @@ async function updateIndexerStakeAddedSumByEra(
   if (isFirstStake) {
     await IndexerStake.create({
       id: currEraId,
+      indexerId: '0x00',
       eraId: currEraId,
       eraIdx: currEraIdx,
       totalStake: allIndexerStakeSummary.totalStake,
@@ -379,6 +382,7 @@ async function updateIndexerStakeAddedSumByEra(
 
   await IndexerStake.create({
     id: nextEraId,
+    indexerId: '0x00',
     eraId: nextEraId,
     eraIdx: nextEraIdx,
     totalStake: allIndexerStakeSummary.nextTotalStake,
@@ -555,6 +559,7 @@ async function updateIndexerStakeRemoved(
 ) {
   await IndexerStake.create({
     id: `${indexer}:${nextEraId}`,
+    indexerId: indexer,
     eraId: nextEraId,
     eraIdx: nextEraIdx,
     totalStake: indexerStakeSummary.nextTotalStake,
@@ -570,6 +575,7 @@ async function updateIndexerStakeRemovedSumByEra(
 ) {
   await IndexerStake.create({
     id: `${nextEraId}`,
+    indexerId: '0x00',
     eraId: nextEraId,
     eraIdx: nextEraIdx,
     totalStake: allIndexerStakeSummary.nextTotalStake,
