@@ -24,6 +24,7 @@ import {
 import { IndexerRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from 'ethers';
+import { SetminimumStakingAmountTransaction } from '../types/abi-interfaces/IndexerRegistry';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -234,4 +235,26 @@ async function updateIndexerCommissionRate(
     eraIdx: eraIdx,
     commissionRate,
   }).save();
+}
+
+let minimumStakingAmount: BigNumber | undefined = undefined;
+
+export async function getMinimumStakingAmount(): Promise<BigNumber> {
+  if (minimumStakingAmount === undefined) {
+    const network = await api.getNetwork();
+    const indexerRegistry = IndexerRegistry__factory.connect(
+      getContractAddress(network.chainId, Contracts.INDEXER_REGISTRY_ADDRESS),
+      api
+    );
+
+    minimumStakingAmount = await indexerRegistry.minimumStakingAmount();
+  }
+  return minimumStakingAmount;
+}
+
+export function handleSetMinimumStakingAmount(
+  tx: SetminimumStakingAmountTransaction
+): void {
+  const amount = tx.args?.[0] as BigNumber;
+  minimumStakingAmount = amount;
 }

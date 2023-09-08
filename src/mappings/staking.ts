@@ -40,6 +40,7 @@ import { CreateWithdrawlParams } from '../interfaces';
 import { getWithdrawalType } from './utils/enumToTypes';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
+import { SetIndexerLeverageLimitTransaction } from '../types/abi-interfaces/Staking';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
@@ -575,4 +576,26 @@ async function updateIndexerStakeRemovedSumByEra(
     indexerStake: allIndexerStakeSummary.nextIndexerStake,
     delegatorStake: allIndexerStakeSummary.nextDelegatorStake,
   }).save();
+}
+
+let indexerLeverageLimit: BigNumber | undefined = undefined;
+
+export async function getIndexerLeverageLimit(): Promise<BigNumber> {
+  if (indexerLeverageLimit === undefined) {
+    const network = await api.getNetwork();
+    const staking = Staking__factory.connect(
+      getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
+      api
+    );
+
+    indexerLeverageLimit = await staking.indexerLeverageLimit();
+  }
+  return indexerLeverageLimit;
+}
+
+export function handleSetIndexerLeverageLimit(
+  tx: SetIndexerLeverageLimitTransaction
+): void {
+  const amount = tx.args?.[0] as BigNumber;
+  indexerLeverageLimit = amount;
 }

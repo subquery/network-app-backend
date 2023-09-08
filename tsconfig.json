@@ -13,5 +13,9 @@
     "noImplicitThis": true,
     "strictNullChecks": true
   },
-  "include": ["scripts/**/*.ts","src/**/*", "node_modules/@subql/types-ethereum/dist/global.d.ts"]
+  "include": [
+    "scripts/**/*.ts",
+    "src/**/*",
+    "node_modules/@subql/types-ethereum/dist/global.d.ts"
+  ]
 }

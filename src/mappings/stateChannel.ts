@@ -18,7 +18,6 @@ import { EthereumLog } from '@subql/types-ethereum';
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
 ): Promise<void> {
-  logger.info('handleChannelOpen');
   assert(event.args, 'No event args');
 
   const {
@@ -31,12 +30,19 @@ export async function handleChannelOpen(
     deploymentId,
     callback,
   } = event.args;
+
+  logger.info(
+    `handleChannelOpen: channel: ${channelId.toHexString()}, at ${
+      event.blockNumber
+    }-${event.blockHash}-${event.transactionHash}`
+  );
   let consumer = _consumer;
   let agent: string | undefined = undefined;
   try {
     consumer = utils.defaultAbiCoder.decode(['address'], callback)[0] as string;
     agent = _consumer;
   } catch (e) {
+    logger.info(`Channel created by ${indexer}`);
   }
 
   const sc = StateChannel.create({
@@ -57,6 +63,7 @@ export async function handleChannelOpen(
   });
 
   await sc.save();
+  logger.info(`handleChannelOpen Done: channel: ${channelId.toHexString()}`);
 }
 
 export async function handleChannelExtend(

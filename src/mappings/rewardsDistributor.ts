@@ -143,23 +143,17 @@ export async function handleRewardsClaimed(
   //   } ${event.args.rewards.toBigInt()}`
   // );
 
-  try {
-    await UnclaimedReward.remove(id);
+  await UnclaimedReward.remove(id);
 
-    const reward = Reward.create({
-      id: `${id}:${event.transactionHash}`,
-      indexerAddress: event.args.indexer,
-      delegatorAddress: event.args.delegator,
-      delegatorId: event.args.delegator,
-      amount: event.args.rewards.toBigInt(),
-      claimedTime: biToDate(event.block.timestamp),
-      createdBlock: event.blockNumber,
-    });
-
-    await reward.save();
-  } catch {
-    logger.error(`ERROR: handleRewardsClaimed`);
-  }
+  await Reward.create({
+    id: `${id}:${event.transactionHash}`,
+    indexerAddress: event.args.indexer,
+    delegatorAddress: event.args.delegator,
+    delegatorId: event.args.delegator,
+    amount: event.args.rewards.toBigInt(),
+    claimedTime: biToDate(event.block.timestamp),
+    createdBlock: event.blockNumber,
+  }).save();
 
   await updateEraRewardClaimed(event);
 }

@@ -1,6 +1,6 @@
 {
   "name": "subquery-network-subql-project",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
@@ -15,7 +15,8 @@
     "prepare": "husky install",
     "postinstall": "sh ./scripts/postinstall.sh",
     "prepack": "rm -rf dist && yarn build",
-    "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts"
+    "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts",
+    "prettier:fix": "prettier --write ."
   },
   "homepage": "https://github.com/subquery/subquery-network-subql-project",
   "repository": "https://github.com/subquery/subquery-network-subql-project",
@@ -27,7 +28,7 @@
   "author": "SubQuery Pty. Limited",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@subql/cli": "^3.5.1",
+    "@subql/cli": "^3.6.1",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/bs58": "^4.0.1",
     "@types/js-yaml": "^4.0.5",
@@ -59,10 +60,10 @@
     "class-transformer": "0.4.0",
     "ipfs-unixfs": "6.0.6",
     "@ethersproject/base64": "5.7.0",
-    "@polkadot/util": "10.4.2"
+    "@polkadot/util": "12.3.2",
+    "@polkadot/util-crypto": "12.3.2."
   },
   "lint-staged": {
-    "*.ts": "eslint --cache --fix",
     "*.{ts,css,md}": "prettier --write"
   }
 }
