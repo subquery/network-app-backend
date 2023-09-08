@@ -101,6 +101,10 @@ dataSources:
           filter:
             topics:
               - SetCommissionRate(address indexed indexer, uint256 amount)
+        - handler: handleSetMinimumStakingAmount
+          kind: ethereum/TransactionHandler
+          filter:
+            function: setminimumStakingAmount(uint256 amount)
   - <<: *ethereum
     options:
       abi: staking
@@ -133,6 +137,10 @@ dataSources:
           filter:
             topics:
               - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+        - handler: handleSetIndexerLeverageLimit
+          kind: ethereum/TransactionHandler
+          filter:
+            function: setIndexerLeverageLimit(uint256 _indexerLeverageLimit)
   - <<: *ethereum
     options:
       abi: sqtoken

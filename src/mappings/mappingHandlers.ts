@@ -4,6 +4,7 @@
 export * from './airdropper';
 export * from './eraManager';
 export * from './indexerRegistry';
+export * from './permissionedExchange';
 export * from './planManager';
 export * from './purchaseOffer';
 export * from './queryRegistry';
