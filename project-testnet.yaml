@@ -361,7 +361,8 @@ dataSources:
           filter:
             topics:
               - PricePosted(address assetFrom, address assetTo, uint256 previousPrice, uint256 newPrice);
-       
+  - <<: *ethereum
+    options:
       abi: airdropper
       address: '0x3342cF1D4a6d07D653B53969c960886439d53b25'
     mapping:
