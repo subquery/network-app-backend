@@ -45,6 +45,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
+    priceOracle:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PriceOracle.sol/PriceOracle.json 
     airdropper:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
     permissionedExchange:
@@ -347,6 +349,18 @@ dataSources:
           filter:
             topics:
               - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)
+  - <<: *ethereum
+    options:
+      abi: priceOracle
+      address: '0x03Bf8E450f8a85Cb0F3F7c0a9b2d72A3c74da924'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handlePricePosted
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - PricePosted(address assetFrom, address assetTo, uint256 previousPrice, uint256 newPrice);
   - <<: *ethereum
     options:
       abi: airdropper
