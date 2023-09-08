@@ -8,18 +8,19 @@ import {
   PlanTemplateMetadataChangedEvent,
   PlanTemplateStatusChangedEvent,
 } from '@subql/contract-sdk/typechain/PlanManager';
-import assert from 'assert';
-import { Plan, PlanTemplate } from '../types';
-import { bytesToIpfsCid, Contracts, getContractAddress } from './utils';
-import { constants } from 'ethers';
+
 import { EthereumLog } from '@subql/types-ethereum';
+import assert from 'assert';
+import { constants } from 'ethers';
+import { Plan, PlanTemplate } from '../types';
 import { PlanManager__factory } from '../types/contracts/factories/PlanManager__factory';
+import { Contracts, bytesToIpfsCid, getContractAddress } from './utils';
 
 export async function handlePlanTemplateCreated(
   event: EthereumLog<PlanTemplateCreatedEvent['args']>
 ): Promise<void> {
-  // handle testnet / kepler difference
-  if (event.blockNumber > xxx) {
+  // TODO: handle testnet / kepler difference
+  if (event.blockNumber > 1000) {
     return;
   }
   logger.info('handlePlanTemplateCreated');
@@ -40,6 +41,7 @@ export async function handlePlanTemplateCreated(
     period: rawPlanTemplate.period.toBigInt(),
     dailyReqCap: rawPlanTemplate.dailyReqCap.toBigInt(),
     rateLimit: rawPlanTemplate.rateLimit.toBigInt(),
+    priceToken: rawPlanTemplate.priceToken,
     metadata:
       constants.HashZero === rawPlanTemplate.metadata
         ? undefined
