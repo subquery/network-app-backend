@@ -22,6 +22,7 @@ import { EthereumLog } from '@subql/types-ethereum';
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { getCurrentEra } from './eraManager';
+import { EthereumBlock } from '@subql/types-ethereum/dist/ethereum/interfaces';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -35,15 +36,11 @@ function getPrevIndexerRewardId(indexer: string, eraIdx: BigNumber): string {
   return getIndexerRewardId(indexer, eraIdx.sub(1));
 }
 
-export async function handleRewardsDistributed(
-  event: EthereumLog<DistributeRewardsEvent['args']>
-): Promise<void> {
-  logger.info(
-    `handleRewardsDistributed: ${event.blockNumber}-${event.transactionHash}-${event.logIndex}`
-  );
-  assert(event.args, 'No event args');
-
-  const { indexer, eraIdx, commission } = event.args;
+export async function handleRewardArriveIndexerRevenuePool(
+  indexer: string,
+  block: EthereumBlock,
+  eraIdx: number
+) {
   const delegators = await Delegation.getByIndexerId(indexer);
   if (!delegators) return;
 
@@ -72,7 +69,7 @@ export async function handleRewardsDistributed(
         delegatorId: delegator.delegatorId,
         indexerAddress: indexer,
         amount: rewards.toBigInt(),
-        createdBlock: event.blockNumber,
+        createdBlock: block.number,
       });
       rewardChanged = rewards.gt(0);
     } else {
@@ -80,13 +77,13 @@ export async function handleRewardsDistributed(
       if (rewardChanged) {
         rewardOld = reward.amount;
         reward.amount = rewards.toBigInt();
-        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
+        reward.lastEvent = `handleRewardsDistributed:${block.number}`;
       }
     }
 
     await reward.save();
 
-    if (delegator.exitEra && delegator.exitEra <= eraIdx.toNumber()) {
+    if (delegator.exitEra && delegator.exitEra <= eraIdx) {
       assert(
         !rewardChanged,
         `exited delegator should not have reward changed: ${delegator.id} / ${reward.indexerAddress}, ${rewardOld} -> ${reward.amount}`
@@ -98,16 +95,32 @@ export async function handleRewardsDistributed(
       await createEraReward({
         indexerId: indexer,
         delegatorId: delegator.delegatorId,
-        eraId: eraIdx.toHexString(),
-        eraIdx: eraIdx.toNumber(),
+        eraId: BigNumber.from(eraIdx).toHexString(),
+        eraIdx: eraIdx,
         isCommission: false,
         claimed: false,
         amount: rewards.toBigInt() - rewardOld,
-        createdBlock: event.blockNumber,
-        createdTimestamp: biToDate(event.block.timestamp),
+        createdBlock: block.number,
+        createdTimestamp: biToDate(block.timestamp),
       });
     }
   }
+}
+
+export async function handleRewardsDistributed(
+  event: EthereumLog<DistributeRewardsEvent['args']>
+): Promise<void> {
+  logger.info(
+    `handleRewardsDistributed: ${event.blockNumber}-${event.transactionHash}-${event.logIndex}`
+  );
+  assert(event.args, 'No event args');
+
+  const { indexer, eraIdx, commission } = event.args;
+  await handleRewardArriveIndexerRevenuePool(
+    indexer,
+    event.block,
+    eraIdx.toNumber()
+  );
 
   if (commission.gt(0)) {
     await createEraReward({

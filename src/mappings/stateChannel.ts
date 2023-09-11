@@ -14,6 +14,8 @@ import {
 import { StateChannel, ChannelStatus } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
+import { getCurrentEra } from './eraManager';
+import { handleRewardArriveIndexerRevenuePool } from './rewardsDistributor';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -101,8 +103,13 @@ export async function handleChannelCheckpoint(
   const { channelId, spent } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
+  const spentDiff = spent.toBigInt() - sc.spent;
   sc.spent = spent.toBigInt();
   await sc.save();
+  if (spentDiff > 0) {
+    const era = await getCurrentEra();
+    await handleRewardArriveIndexerRevenuePool(sc.indexer, event.block, era);
+  }
 }
 
 export async function handleChannelTerminate(
@@ -114,11 +121,17 @@ export async function handleChannelTerminate(
   const { channelId, spent, terminatedAt, terminateByIndexer } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
+  const spentDiff = spent.toBigInt() - sc.spent;
   sc.spent = spent.toBigInt();
   sc.status = ChannelStatus.TERMINATING;
   sc.terminatedAt = new Date(terminatedAt.toNumber() * 1000);
   sc.terminateByIndexer = terminateByIndexer;
   await sc.save();
+
+  if (spentDiff > 0) {
+    const era = await getCurrentEra();
+    await handleRewardArriveIndexerRevenuePool(sc.indexer, event.block, era);
+  }
 }
 
 export async function handleChannelFinalize(
