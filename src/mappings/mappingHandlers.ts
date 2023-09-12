@@ -6,6 +6,7 @@ export * from './eraManager';
 export * from './indexerRegistry';
 export * from './permissionedExchange';
 export * from './planManager';
+export * from './priceOracle';
 export * from './purchaseOffer';
 export * from './queryRegistry';
 export * from './rewardsDistributor';

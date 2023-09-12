@@ -194,7 +194,7 @@ dataSources:
           filter:
             topics:
               - StopIndexing(address indexer, bytes32 deploymentId)
-  - <<: *ethereum
+  - kind: ethereum/Runtime
     options:
       abi: planManager
       address: '0x3ce376aaCA549e7AcaBFC882A5cA752a1B8F4B27'
