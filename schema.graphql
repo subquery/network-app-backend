@@ -314,6 +314,7 @@ type IndexerStakeSummary @entity {
 
 type IndexerStake @entity {
   id: ID! # indexer address + era id
+  indexer: Indexer!
   era: Era!
   eraIdx: Int!
   totalStake: BigInt!
@@ -510,4 +511,3 @@ type Order @entity {
   createAt: String #getUpsertAt: topicHandler:block:Txhash
   updateAt: String #getUpsertAt: topicHandler:block:Txhash
 }
-
