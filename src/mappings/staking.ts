@@ -41,6 +41,7 @@ import { getWithdrawalType } from './utils/enumToTypes';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
 import { SetIndexerLeverageLimitTransaction } from '../types/abi-interfaces/Staking';
+import { cacheGetBigNumber, CacheKey, cacheSet } from './utils/cache';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
@@ -584,9 +585,10 @@ async function updateIndexerStakeRemovedSumByEra(
   }).save();
 }
 
-let indexerLeverageLimit: BigNumber | undefined = undefined;
-
 export async function getIndexerLeverageLimit(): Promise<BigNumber> {
+  let indexerLeverageLimit = await cacheGetBigNumber(
+    CacheKey.IndexerLeverageLimit
+  );
   if (indexerLeverageLimit === undefined) {
     const network = await api.getNetwork();
     const staking = Staking__factory.connect(
@@ -595,13 +597,17 @@ export async function getIndexerLeverageLimit(): Promise<BigNumber> {
     );
 
     indexerLeverageLimit = await staking.indexerLeverageLimit();
+    await cacheSet(
+      CacheKey.IndexerLeverageLimit,
+      indexerLeverageLimit.toString()
+    );
   }
   return indexerLeverageLimit;
 }
 
-export function handleSetIndexerLeverageLimit(
+export async function handleSetIndexerLeverageLimit(
   tx: SetIndexerLeverageLimitTransaction
-): void {
+): Promise<void> {
   const amount = tx.args?.[0] as BigNumber;
-  indexerLeverageLimit = amount;
+  await cacheSet(CacheKey.IndexerLeverageLimit, amount.toString());
 }

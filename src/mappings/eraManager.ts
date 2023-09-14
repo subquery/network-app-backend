@@ -7,8 +7,7 @@ import assert from 'assert';
 import { Era } from '../types';
 import { biToDate, Contracts, getContractAddress } from './utils';
 import { EraManager__factory } from '../types/contracts/factories/EraManager__factory';
-
-let globalCurrentEra = -1;
+import { cacheGetNumber, CacheKey, cacheSet } from './utils/cache';
 
 /* Era Handlers */
 export async function handleNewEra(
@@ -18,7 +17,7 @@ export async function handleNewEra(
   assert(event.args, 'No event args');
   const { era: id } = event.args;
 
-  updateGlobalCurrentEra(id.toNumber());
+  await cacheSet(CacheKey.Era, id.toString());
 
   if (id.gt(1)) {
     const previousId = id.sub(1);
@@ -61,20 +60,16 @@ export async function handleNewEra(
   await era.save();
 }
 
-function updateGlobalCurrentEra(era: number): void {
-  globalCurrentEra = era;
-}
-
 export async function getCurrentEra(): Promise<number> {
-  if (globalCurrentEra === -1) {
+  let era = await cacheGetNumber(CacheKey.Era);
+  if (era === undefined) {
     const network = await api.getNetwork();
     const eraManager = EraManager__factory.connect(
       getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
       api
     );
-    updateGlobalCurrentEra(
-      await eraManager.eraNumber().then((r) => r.toNumber())
-    );
+    era = await eraManager.eraNumber().then((r) => r.toNumber());
+    await cacheSet(CacheKey.Era, era!.toString());
   }
-  return globalCurrentEra;
+  return era!;
 }

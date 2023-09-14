@@ -25,6 +25,7 @@ import { IndexerRegistry__factory } from '@subql/contract-sdk';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from 'ethers';
 import { SetminimumStakingAmountTransaction } from '../types/abi-interfaces/IndexerRegistry';
+import { cacheGetBigNumber, CacheKey, cacheSet } from './utils/cache';
 
 /* Indexer Registry Handlers */
 export async function handleRegisterIndexer(
@@ -237,9 +238,10 @@ async function updateIndexerCommissionRate(
   }).save();
 }
 
-let minimumStakingAmount: BigNumber | undefined = undefined;
-
 export async function getMinimumStakingAmount(): Promise<BigNumber> {
+  let minimumStakingAmount = await cacheGetBigNumber(
+    CacheKey.MinimumStakingAmount
+  );
   if (minimumStakingAmount === undefined) {
     const network = await api.getNetwork();
     const indexerRegistry = IndexerRegistry__factory.connect(
@@ -248,13 +250,17 @@ export async function getMinimumStakingAmount(): Promise<BigNumber> {
     );
 
     minimumStakingAmount = await indexerRegistry.minimumStakingAmount();
+    await cacheSet(
+      CacheKey.MinimumStakingAmount,
+      minimumStakingAmount.toString()
+    );
   }
   return minimumStakingAmount;
 }
 
-export function handleSetMinimumStakingAmount(
+export async function handleSetMinimumStakingAmount(
   tx: SetminimumStakingAmountTransaction
-): void {
+): Promise<void> {
   const amount = tx.args?.[0] as BigNumber;
-  minimumStakingAmount = amount;
+  await cacheSet(CacheKey.MinimumStakingAmount, amount.toString());
 }

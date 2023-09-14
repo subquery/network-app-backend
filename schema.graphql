@@ -511,3 +511,8 @@ type Order @entity {
   createAt: String #getUpsertAt: topicHandler:block:Txhash
   updateAt: String #getUpsertAt: topicHandler:block:Txhash
 }
+
+type Cache @entity {
+  id: ID!
+  value: String!
+}
