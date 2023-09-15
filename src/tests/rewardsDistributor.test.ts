@@ -29,7 +29,8 @@ describe('rewardsDistributor', () => {
         }
       }).concat(
         new HttpLink({
-          uri: 'https://api.subquery.network/sq/subquery/kepler-network',
+          // uri: 'https://api.subquery.network/sq/subquery/kepler-network',
+          uri: 'https://api.subquery.network/sq/subquery/kepler-network-staging__c3Vic',
           fetch,
           fetchOptions: {
             timeout: 200000,
