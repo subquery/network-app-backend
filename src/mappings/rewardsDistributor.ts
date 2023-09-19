@@ -91,6 +91,7 @@ export async function handleRewardsDistributed(
         !rewardChanged,
         `exited delegator should not have reward changed: ${delegator.id} / ${reward.indexerAddress}, ${rewardOld} -> ${reward.amount}`
       );
+      logger.info(`Delegation remove: ${delegator.id}`);
       await Delegation.remove(delegator.id);
     }
 
