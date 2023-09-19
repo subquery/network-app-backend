@@ -69,8 +69,6 @@ type DeploymentIndexer @entity {
   indexer: Indexer!
   deployment: Deployment!
 
-  blockHeight: BigInt!
-  mmrRoot: String
   timestamp: Date
   status: Status!
 

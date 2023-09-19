@@ -1,7 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { QueryRegistry__factory } from '@subql/contract-sdk';
 import {
   CreateQueryEvent,
   StartIndexingEvent,
@@ -13,62 +12,11 @@ import {
 } from '@subql/contract-sdk/typechain/QueryRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { ISaveDeploymentIndexer } from '../interfaces';
 import { Deployment, DeploymentIndexer, Project, Status } from '../types';
-import {
-  Contracts,
-  biToDate,
-  bnToDate,
-  bytesToIpfsCid,
-  cidToBytes32,
-  getContractAddress,
-} from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 
 function getDeploymentIndexerId(indexer: string, deploymentId: string): string {
   return `${indexer}:${deploymentId}`;
-}
-
-async function createDeploymentIndexer({
-  indexerId,
-  deploymentId,
-  blockHeight,
-  timestamp,
-  mmrRoot,
-  status,
-  lastEvent,
-}: ISaveDeploymentIndexer) {
-  logger.info(`createDeploymentIndexer: ${deploymentId}`);
-  let sortedBlockHeight = blockHeight || BigInt(0);
-  const network = await api.getNetwork();
-  if (blockHeight === undefined) {
-    const queryRegistryManager = QueryRegistry__factory.connect(
-      getContractAddress(network.chainId, Contracts.QUERY_REGISTRY_ADDRESS),
-      api
-    );
-
-    const deploymentStatus =
-      await queryRegistryManager.deploymentStatusByIndexer(
-        cidToBytes32(deploymentId),
-        indexerId
-      );
-
-    sortedBlockHeight = deploymentStatus.blockHeight.toBigInt();
-    logger.info(
-      `createDeploymentIndexer - fetchDeploymentStatusByIndexer ${deploymentStatus.blockHeight.toBigInt()}`
-    );
-  }
-
-  const indexer = DeploymentIndexer.create({
-    id: getDeploymentIndexerId(indexerId, deploymentId),
-    indexerId,
-    deploymentId: deploymentId,
-    blockHeight: sortedBlockHeight,
-    timestamp,
-    mmrRoot,
-    status,
-    lastEvent,
-  });
-  await indexer.save();
 }
 
 export async function handleNewQuery(
@@ -163,44 +111,10 @@ export async function handleStartIndexing(
     id: getDeploymentIndexerId(event.args.indexer, deploymentId),
     indexerId: event.args.indexer,
     deploymentId: deploymentId,
-    blockHeight: BigInt(0),
     status: Status.INDEXING,
     createdBlock: event.blockNumber,
   });
   await indexer.save();
-}
-
-/**
- * NOTE: 8Jul 2022
- * Event order: handleIndexingReady -> handleIndexingUpdate
- */
-export async function handleIndexingUpdate(
-  event: EthereumLog<UpdateDeploymentStatusEvent['args']>
-): Promise<void> {
-  logger.info('handleIndexingUpdate');
-  assert(event.args, 'No event args');
-  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
-  const id = getDeploymentIndexerId(event.args.indexer, deploymentId);
-  const indexer = await DeploymentIndexer.get(id);
-
-  if (!indexer) {
-    await createDeploymentIndexer({
-      indexerId: event.args.indexer,
-      deploymentId,
-      blockHeight: event.args.blockheight.toBigInt(),
-      mmrRoot: event.args.mmrRoot,
-      timestamp: biToDate(event.block.timestamp),
-      status: Status.READY,
-      lastEvent: `handleIndexingUpdate:forceUpsert:${event.blockNumber}`,
-    });
-  } else {
-    indexer.blockHeight = event.args.blockheight.toBigInt();
-    indexer.mmrRoot = event.args.mmrRoot;
-    indexer.timestamp = bnToDate(event.args.timestamp);
-    indexer.lastEvent = `handleIndexingUpdate:${event.blockNumber}`;
-
-    await indexer.save();
-  }
 }
 
 /**
@@ -215,22 +129,13 @@ export async function handleIndexingReady(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
   const id = getDeploymentIndexerId(event.args.indexer, deploymentId);
   const indexer = await DeploymentIndexer.get(id);
+  assert(indexer, `No DeploymentIndexer found for ${id}`);
 
-  if (!indexer) {
-    await createDeploymentIndexer({
-      indexerId: event.args.indexer,
-      deploymentId,
-      timestamp: biToDate(event.block.timestamp),
-      status: Status.READY,
-      lastEvent: `handleIndexingReady:forceUpsert:${event.blockNumber}`,
-    });
-  } else {
-    indexer.status = Status.READY;
-    indexer.timestamp = biToDate(event.block.timestamp);
-    indexer.lastEvent = `handleIndexingReady:${event.blockNumber}`;
+  indexer.status = Status.READY;
+  indexer.timestamp = biToDate(event.block.timestamp);
+  indexer.lastEvent = `handleIndexingReady:${event.blockNumber}`;
 
-    await indexer.save();
-  }
+  await indexer.save();
 }
 
 export async function handleStopIndexing(

@@ -44,7 +44,9 @@ export const upsertUser = async (
 
     await user.save();
   } else {
-    logger.info(`${HANDLER} - create: ${event.transactionHash ?? ''}`);
+    logger.info(
+      `${HANDLER} - create: ${address} - ${event.transactionHash ?? ''}`
+    );
     const newAddress = new AirdropAmount(
       address,
       toBigNumber(airdropAmount).toBigInt(),

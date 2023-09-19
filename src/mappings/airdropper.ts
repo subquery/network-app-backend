@@ -67,8 +67,10 @@ export async function handleAddAirdrop(
   const { addr, roundId, amount } = event.args;
   const roundIdString = roundId.toString();
   const airdrop = await Airdrop.get(roundIdString);
+  logger.info(`handleAddAirdrop: ${roundIdString}`);
 
   if (airdrop) {
+    logger.info(`upsertUser: ${getAirdropUserId(roundIdString, addr)}`);
     await upsertUser(addr, amount, '0', event);
 
     const airdropUser = AirdropUser.create({

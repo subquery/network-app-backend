@@ -122,8 +122,8 @@ export async function handlePlanTemplateStatusUpdated(
 export async function handlePlanCreated(
   event: EthereumLog<PlanCreatedEvent['args']>
 ): Promise<void> {
-  logger.info('handlePlanCreated');
   assert(event.args, 'No event args');
+  logger.info(`handlePlanCreated: ${event.args.planId.toHexString()}`);
 
   const plan = Plan.create({
     id: event.args.planId.toHexString(),
