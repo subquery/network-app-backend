@@ -320,6 +320,15 @@ type IndexerStake @entity {
   delegatorStake: BigInt!
 }
 
+type EraStake @entity {
+  id: ID! # indexer address + delegator address + era id
+  indexer: Indexer!
+  delegator: Delegator!
+  era: Era!
+  eraIdx: Int!
+  stake: BigInt!
+}
+
 type Sqtoken @entity {
   id: ID! # token address
   totalSupply: BigInt! # total supply
