@@ -329,6 +329,11 @@ type EraStake @entity {
   stake: BigInt!
 }
 
+type EraStakeUpdate @entity {
+  id: ID! # indexer address + delegator address
+  lastUpdateEra: Era!
+}
+
 type Sqtoken @entity {
   id: ID! # token address
   totalSupply: BigInt! # total supply

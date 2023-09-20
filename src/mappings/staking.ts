@@ -16,6 +16,7 @@ import assert from 'assert';
 import {
   Delegation,
   EraStake,
+  EraStakeUpdate,
   IndexerStake,
   IndexerStakeSummary,
   WithdrawalStatus,
@@ -661,18 +662,50 @@ async function updateEraStake(
 ) {
   let eraStake = await EraStake.get(eraStakeId);
   if (!eraStake) {
+    const lastStakeAmountBn = await getLastStakeAmount(
+      indexer,
+      delegator,
+      eraId
+    );
     eraStake = await EraStake.create({
       id: eraStakeId,
       indexerId: indexer,
       delegatorId: delegator,
       eraId,
       eraIdx,
-      stake: amountBn,
+      stake: lastStakeAmountBn + amountBn,
     });
   } else {
     eraStake.stake += amountBn;
   }
   await eraStake.save();
+}
+
+async function getLastStakeAmount(
+  indexer: string,
+  delegator: string,
+  eraId: string
+): Promise<bigint> {
+  let lastStakeAmountBn = BigInt(0);
+
+  const updateRecordId = `${indexer}:${delegator}`;
+  let updateRecord = await EraStakeUpdate.get(updateRecordId);
+  if (!updateRecord) {
+    updateRecord = await EraStakeUpdate.create({
+      id: updateRecordId,
+      lastUpdateEraId: eraId,
+    });
+  } else {
+    assert(eraId !== updateRecord.lastUpdateEraId);
+
+    const lastStakeId = `${indexer}:${delegator}:${updateRecord.lastUpdateEraId}`;
+    lastStakeAmountBn =
+      (await EraStake.get(lastStakeId))?.stake ?? lastStakeAmountBn;
+    updateRecord.lastUpdateEraId = eraId;
+  }
+  await updateRecord.save();
+
+  return lastStakeAmountBn;
 }
 
 export async function getIndexerLeverageLimit(): Promise<BigNumber> {
