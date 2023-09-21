@@ -15,6 +15,8 @@ import {
 import assert from 'assert';
 import {
   Delegation,
+  EraStake,
+  EraStakeUpdate,
   IndexerStake,
   IndexerStakeSummary,
   WithdrawalStatus,
@@ -319,6 +321,18 @@ async function updateIndexerStakeSummaryAdded(
     indexerStakeSummary
   );
 
+  // update EraStake
+  await updateEraStakeAdd(
+    isFirstStake,
+    indexer,
+    source,
+    currEraId,
+    currEraIdx,
+    nextEraId,
+    nextEraIdx,
+    amountBn
+  );
+
   // update IndexerStake for all indexers, sum by era
   await updateIndexerStakeAddedSumByEra(
     isFirstStake,
@@ -544,6 +558,9 @@ async function updateIndexerStakeSummaryRemoved(
     indexerStakeSummary
   );
 
+  // update EraStake
+  await updateEraStakeRemove(indexer, source, nextEraId, nextEraIdx, amountBn);
+
   // update IndexerStake for all indexers, sum by era
   await updateIndexerStakeRemovedSumByEra(
     nextEraId,
@@ -583,6 +600,112 @@ async function updateIndexerStakeRemovedSumByEra(
     indexerStake: allIndexerStakeSummary.nextIndexerStake,
     delegatorStake: allIndexerStakeSummary.nextDelegatorStake,
   }).save();
+}
+
+async function updateEraStakeAdd(
+  isFirstStake: boolean,
+  indexer: string,
+  delegator: string,
+  currEraId: string,
+  currEraIdx: number,
+  nextEraId: string,
+  nextEraIdx: number,
+  amountBn: bigint
+) {
+  if (isFirstStake) {
+    const currEraStakeId = `${indexer}:${delegator}:${currEraId}`;
+    updateEraStake(
+      currEraStakeId,
+      indexer,
+      delegator,
+      currEraId,
+      currEraIdx,
+      amountBn
+    );
+  }
+  const nextEraStakeId = `${indexer}:${delegator}:${nextEraId}`;
+  await updateEraStake(
+    nextEraStakeId,
+    indexer,
+    delegator,
+    nextEraId,
+    nextEraIdx,
+    amountBn
+  );
+}
+
+async function updateEraStakeRemove(
+  indexer: string,
+  delegator: string,
+  nextEraId: string,
+  nextEraIdx: number,
+  amountBn: bigint
+) {
+  const nextEraStakeId = `${indexer}:${delegator}:${nextEraId}`;
+  await updateEraStake(
+    nextEraStakeId,
+    indexer,
+    delegator,
+    nextEraId,
+    nextEraIdx,
+    BigInt(0) - amountBn
+  );
+}
+
+async function updateEraStake(
+  eraStakeId: string,
+  indexer: string,
+  delegator: string,
+  eraId: string,
+  eraIdx: number,
+  amountBn: bigint
+) {
+  let eraStake = await EraStake.get(eraStakeId);
+  if (!eraStake) {
+    const lastStakeAmountBn = await getLastStakeAmount(
+      indexer,
+      delegator,
+      eraId
+    );
+    eraStake = await EraStake.create({
+      id: eraStakeId,
+      indexerId: indexer,
+      delegatorId: delegator,
+      eraId,
+      eraIdx,
+      stake: lastStakeAmountBn + amountBn,
+    });
+  } else {
+    eraStake.stake += amountBn;
+  }
+  await eraStake.save();
+}
+
+async function getLastStakeAmount(
+  indexer: string,
+  delegator: string,
+  eraId: string
+): Promise<bigint> {
+  let lastStakeAmountBn = BigInt(0);
+
+  const updateRecordId = `${indexer}:${delegator}`;
+  let updateRecord = await EraStakeUpdate.get(updateRecordId);
+  if (!updateRecord) {
+    updateRecord = await EraStakeUpdate.create({
+      id: updateRecordId,
+      lastUpdateEraId: eraId,
+    });
+  } else {
+    assert(eraId !== updateRecord.lastUpdateEraId);
+
+    const lastStakeId = `${indexer}:${delegator}:${updateRecord.lastUpdateEraId}`;
+    lastStakeAmountBn =
+      (await EraStake.get(lastStakeId))?.stake ?? lastStakeAmountBn;
+    updateRecord.lastUpdateEraId = eraId;
+  }
+  await updateRecord.save();
+
+  return lastStakeAmountBn;
 }
 
 export async function getIndexerLeverageLimit(): Promise<BigNumber> {
