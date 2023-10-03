@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 2.12.5'
+    version: '>= 3.0.1'
     options:
       unfinalizedBlocks: true
   query:
