@@ -176,9 +176,18 @@ type Withdrawl @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
+type ConsumerController @entity {
+  id: ID! # <consumer_address>_<controller_address>
+  address: String! @index
+  consumer: Consumer!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
 type Consumer @entity {
   id: ID! # Consumer Address
-  users: [User] @derivedFrom(field: "consumer")
+  controllers: [ConsumerController] @derivedFrom(field: "consumer")
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
