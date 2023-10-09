@@ -233,16 +233,6 @@ dataSources:
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
-        - handler: handleUserAdded
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UserAdded(address indexed consumer, address user)
-        - handler: handleUserRemoved
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UserRemoved(address indexed consumer, address user)
   - <<: *ethereum
     options:
       abi: rewardsDistributor

@@ -179,23 +179,7 @@ type Withdrawl @entity {
 type ConsumerController @entity {
   id: ID! # <consumer_address>_<controller_address>
   address: String! @index
-  consumer: Consumer!
-
-  createdBlock: Int
-  lastEvent: String #topicHandler:blockNumber
-}
-
-type Consumer @entity {
-  id: ID! # Consumer Address
-  controllers: [ConsumerController] @derivedFrom(field: "consumer")
-
-  createdBlock: Int
-  lastEvent: String #topicHandler:blockNumber
-}
-
-type User @entity {
-  id: ID! # User address
-  consumer: Consumer!
+  consumer: String!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -468,7 +452,7 @@ enum AirdropClaimStatus {
 
 type AirdropUser @entity {
   id: ID! # roundId:userAccount
-  user: User!
+  userId: String!
   airdrop: Airdrop!
   amount: BigInt!
   status: AirdropClaimStatus!
