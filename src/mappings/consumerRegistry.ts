@@ -6,7 +6,7 @@ import {
   ControllerRemovedLog,
 } from '../types/abi-interfaces/ConsumerRegistry';
 import assert from 'assert';
-import { Consumer, ConsumerController } from '../types';
+import { ConsumerController } from '../types';
 
 export async function handleConsumerControllerAdded(
   event: ControllerAddedLog
@@ -14,25 +14,13 @@ export async function handleConsumerControllerAdded(
   assert(event.args, 'No event args');
   const { consumer, controller } = event.args;
   logger.info(`handleConsumerControllerAdded: ${consumer} ${controller}`);
-  let consumerEntity = await Consumer.get(consumer);
-  const lastEvent = `handleConsumerControllerAdded: ${event.blockNumber}`;
-  if (!consumerEntity) {
-    consumerEntity = Consumer.create({
-      id: consumer,
-      createdBlock: event.blockNumber,
-      lastEvent,
-    });
-  } else {
-    consumerEntity.lastEvent = lastEvent;
-  }
-  await consumerEntity.save();
   await ConsumerController.create({
     id: `${consumer}_${controller}`,
-    consumerId: consumer,
-    address: controller,
+    consumer: consumer,
+    controller: controller,
 
     createdBlock: event.blockNumber,
-    lastEvent,
+    lastEvent: `handleConsumerControllerAdded: ${event.blockNumber}`,
   }).save();
 }
 
