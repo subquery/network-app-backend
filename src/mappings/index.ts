@@ -14,3 +14,4 @@ export * from './serviceAgreement';
 export * from './staking';
 export * from './stateChannel';
 export * from './transfer';
+export * from './consumerRegistry';

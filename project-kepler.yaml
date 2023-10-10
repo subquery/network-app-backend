@@ -233,16 +233,6 @@ dataSources:
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
-        - handler: handleUserAdded
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UserAdded(address indexed consumer, address user)
-        - handler: handleUserRemoved
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UserRemoved(address indexed consumer, address user)
   - <<: *ethereum
     options:
       abi: rewardsDistributor
@@ -400,3 +390,24 @@ dataSources:
           filter:
             topics:
               - QuotaAdded(address token, address account, uint256 amount)
+  - kind: ethereum/Runtime
+    startBlock: 46362177
+    assets:
+      consumerRegistry:
+        file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
+    options:
+      abi: consumerRegistry
+      address: "0x2c871909c692b640C28EDBC6Ef5BC0F68565C464"
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleConsumerControllerAdded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ControllerAdded(address indexed consumer, address controller)
+        - handler: handleConsumerControllerRemoved
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ControllerRemoved(address indexed consumer, address controller)
