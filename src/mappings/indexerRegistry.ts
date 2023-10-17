@@ -261,6 +261,9 @@ export async function getMinimumStakingAmount(): Promise<BigNumber> {
 export async function handleSetMinimumStakingAmount(
   tx: SetminimumStakingAmountTransaction
 ): Promise<void> {
-  const amount = tx.args?.[0] as BigNumber;
-  await cacheSet(CacheKey.MinimumStakingAmount, amount.toString());
+  const receipt = await tx.receipt();
+  if (receipt.status) {
+    const amount = tx.args?.[0] as BigNumber;
+    await cacheSet(CacheKey.MinimumStakingAmount, amount.toString());
+  }
 }

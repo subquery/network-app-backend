@@ -731,6 +731,9 @@ export async function getIndexerLeverageLimit(): Promise<BigNumber> {
 export async function handleSetIndexerLeverageLimit(
   tx: SetIndexerLeverageLimitTransaction
 ): Promise<void> {
-  const amount = tx.args?.[0] as BigNumber;
-  await cacheSet(CacheKey.IndexerLeverageLimit, amount.toString());
+  const receipt = await tx.receipt();
+  if (receipt.status) {
+    const amount = tx.args?.[0] as BigNumber;
+    await cacheSet(CacheKey.IndexerLeverageLimit, amount.toString());
+  }
 }
