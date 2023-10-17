@@ -173,6 +173,7 @@ type Withdrawl @entity {
   status: WithdrawalStatus!
 
   createdBlock: Int
+  updatedBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
 

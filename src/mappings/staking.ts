@@ -47,7 +47,7 @@ import { cacheGetBigNumber, CacheKey, cacheSet } from './utils/cache';
 
 const { ONGOING, CLAIMED, CANCELLED } = WithdrawalStatus;
 
-async function createWithdrawl({
+async function createOrUpdateWithdrawl({
   id,
   delegator,
   indexer,
@@ -64,7 +64,7 @@ async function createWithdrawl({
     withdrawl.amount = amount.toBigInt();
     withdrawl.type = type;
     withdrawl.startTime = biToDate(block.timestamp);
-    withdrawl.createdBlock = blockNumber;
+    withdrawl.updatedBlock = blockNumber;
   } else {
     withdrawl = Withdrawl.create({
       id,
@@ -76,6 +76,7 @@ async function createWithdrawl({
       type,
       status,
       createdBlock: blockNumber,
+      updatedBlock: blockNumber,
     });
   }
   await withdrawl.save();
@@ -184,18 +185,12 @@ export async function handleWithdrawRequested(
 
   const network = await api.getNetwork();
   if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
-    const staking = Staking__factory.connect(
-      getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
-      api
-    );
-    const { amount: unbondingAmount } = await staking.unbondingAmount(
-      indexer,
-      index
-    );
-    updatedAmount = updatedAmount.add(unbondingAmount);
+    const withdrawl = await Withdrawl.get(id);
+    assert(withdrawl, `withdrawl record: ${id} not exist`);
+    updatedAmount = updatedAmount.add(withdrawl.amount);
   }
 
-  await createWithdrawl({
+  await createOrUpdateWithdrawl({
     id,
     delegator: source,
     indexer,
@@ -249,19 +244,13 @@ export async function handleWithdrawCancelled(
   const { source, index } = event.args;
   const id = getWithdrawlId(source, index);
   const withdrawl = await Withdrawl.get(id);
-
-  if (withdrawl) {
-    withdrawl.status = CANCELLED;
-    withdrawl.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
-    await withdrawl.save();
-  } else {
-    logger.warn(`Force upsert: Expected withdrawl ${id} to exist.`);
-    const exception = `Expected withdrawl ${id} to exist: ${JSON.stringify(
-      event
-    )}`;
-
-    await reportException('handleWithdrawCancelled', exception, event);
-  }
+  assert(withdrawl, `withdrawal record: ${id} not exist`);
+  const deleteRecord = withdrawl;
+  deleteRecord.id = `${withdrawl.id}:${event.transactionHash}`;
+  deleteRecord.status = CANCELLED;
+  deleteRecord.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
+  await deleteRecord.save();
+  await Withdrawl.remove(id);
 }
 
 async function updateIndexerStakeSummaryAdded(
