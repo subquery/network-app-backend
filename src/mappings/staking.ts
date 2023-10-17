@@ -64,7 +64,7 @@ async function createOrUpdateWithdrawl({
     withdrawl.amount = amount.toBigInt();
     withdrawl.type = type;
     withdrawl.startTime = biToDate(block.timestamp);
-    withdrawl.updatedBlock = blockNumber;
+    withdrawl.createdBlock = blockNumber;
   } else {
     withdrawl = Withdrawl.create({
       id,
@@ -76,7 +76,6 @@ async function createOrUpdateWithdrawl({
       type,
       status,
       createdBlock: blockNumber,
-      updatedBlock: blockNumber,
     });
   }
   await withdrawl.save();
@@ -183,11 +182,15 @@ export async function handleWithdrawRequested(
 
   let updatedAmount = amount;
 
-  const network = await api.getNetwork();
   if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
-    const withdrawl = await Withdrawl.get(id);
-    assert(withdrawl, `withdrawl record: ${id} not exist`);
-    updatedAmount = updatedAmount.add(withdrawl.amount);
+    const deleteRecord = await Withdrawl.get(id);
+    assert(deleteRecord, `withdrawl record: ${id} not exist`);
+    deleteRecord.id = `${deleteRecord.id}:${event.transactionHash}`;
+    deleteRecord.status = CANCELLED;
+    deleteRecord.lastEvent = `handleWithdrawRequested: unbondReq merged to new one ${event.blockNumber}`;
+    await deleteRecord.save();
+    await Withdrawl.remove(id);
+    updatedAmount = updatedAmount.add(deleteRecord.amount);
   }
 
   await createOrUpdateWithdrawl({
