@@ -32,11 +32,13 @@ export async function handleServiceAgreementCreated(
   );
   const { period, lockedAmount, planTemplateId } = agreement;
 
-  const deployment = await Deployment.get(deploymentId);
-  assert(deployment, `Deployment not found ${deploymentId}`);
+  const deploymentCid = bytesToIpfsCid(deploymentId);
+
+  const deployment = await Deployment.get(deploymentCid);
+  assert(deployment, `Deployment not found ${deploymentCid}`);
 
   const project = await Project.get(deployment?.projectId ?? '');
-  assert(project, `Project not found for deployment ${deploymentId}`);
+  assert(project, `Project not found for deployment ${deploymentCid}`);
   const projectId = project.id;
 
   const endTime = biToDate(event.block.timestamp);
@@ -46,7 +48,7 @@ export async function handleServiceAgreementCreated(
     id: serviceAgreementId.toString(),
     indexerAddress: indexer,
     consumerAddress: consumer,
-    deploymentId: bytesToIpfsCid(deploymentId),
+    deploymentId: deploymentCid,
     planTemplateId: planTemplateId.toHexString(),
     projectId: projectId,
     period: period.toBigInt(),
