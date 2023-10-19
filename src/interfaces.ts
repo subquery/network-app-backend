@@ -1,10 +1,10 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WithdrawalType } from './types/enums';
 import { BigNumber } from '@ethersproject/bignumber';
 import { EthereumLog } from '@subql/types-ethereum';
 import { Status, WithdrawalStatus } from './types';
+import { WithdrawalType } from './types/enums';
 
 export interface CreateWithdrawlParams {
   id: string;
@@ -26,7 +26,7 @@ export interface CreateIndexerParams {
   controller?: string;
 }
 
-export interface ISaveDeploymentIndexer {
+export interface ISaveIndexerDeployment {
   indexerId: string;
   deploymentId: string;
   blockHeight?: bigint;

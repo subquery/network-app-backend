@@ -1,5 +1,9 @@
-enum Status {
-  INDEXING
+enum ProjectType {
+    SUBQUERY,
+    RPC
+}
+
+enum ServiceStatus {
   READY
   TERMINATED
 }
@@ -39,9 +43,10 @@ type Project @entity {
   id: ID!
 
   owner: String!
+  type: ProjectType!
   metadata: String! # IPFS hash
-  currentDeployment: String! # IPFS hash
-  currentVersion: String! # IPFS hash
+  deploymentId: String! # IPFS hash
+  deploymentMetadata: String! # IPFS hash
   updatedTimestamp: Date!
   createdTimestamp: Date!
 
@@ -53,9 +58,9 @@ type Project @entity {
 
 type Deployment @entity {
   id: ID! # deploymentId, IPFS hash to deployment
-  version: String! # IPFS hash to version info
+  metadata: String! # IPFS hash to metadata info
   project: Project!
-  indexers: [DeploymentIndexer]! @derivedFrom(field: "deployment")
+  indexers: [IndexerDeployment]! @derivedFrom(field: "deployment")
   createdTimestamp: Date!
 
   plans: [Plan]! @derivedFrom(field: "deployment")
@@ -64,13 +69,13 @@ type Deployment @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
-type DeploymentIndexer @entity {
+type IndexerDeployment @entity {
   id: ID! # indexer address + deployment id
   indexer: Indexer!
   deployment: Deployment!
 
   timestamp: Date
-  status: Status!
+  status: ServiceStatus!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -110,7 +115,7 @@ type Indexer @entity {
   maxUnstakeAmount: JSONBigInt!
 
   controllers: [Controller] @derivedFrom(field: "indexer")
-  projects: [DeploymentIndexer] @derivedFrom(field: "indexer")
+  projects: [IndexerDeployment] @derivedFrom(field: "indexer")
   delegations: [Delegation] @derivedFrom(field: "indexer")
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 

@@ -166,7 +166,7 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleNewQuery
+        - handler: handleNewProject
           kind: ethereum/LogHandler
           filter:
             topics:
