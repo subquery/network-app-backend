@@ -35,6 +35,7 @@ export async function handleNewQuery(
     metadata: bytesToIpfsCid(event.args.metadata),
     currentDeployment: deploymentId,
     currentVersion,
+    totalReward: BigInt(0),
     updatedTimestamp: biToDate(event.block.timestamp),
     createdTimestamp: biToDate(event.block.timestamp),
     createdBlock: event.blockNumber,
