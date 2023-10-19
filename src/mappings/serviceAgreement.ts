@@ -5,7 +5,7 @@ import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { ServiceAgreement } from '../types';
+import { Deployment, Project, ServiceAgreement } from '../types';
 import {
   Contracts,
   biToDate,
@@ -32,6 +32,13 @@ export async function handleServiceAgreementCreated(
   );
   const { period, lockedAmount, planTemplateId } = agreement;
 
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment not found ${deploymentId}`);
+
+  const project = await Project.get(deployment?.projectId ?? '');
+  assert(project, `Project not found for deployment ${deploymentId}`);
+  const projectId = project.id;
+
   const endTime = biToDate(event.block.timestamp);
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
@@ -41,6 +48,7 @@ export async function handleServiceAgreementCreated(
     consumerAddress: consumer,
     deploymentId: bytesToIpfsCid(deploymentId),
     planTemplateId: planTemplateId.toHexString(),
+    projectId: projectId,
     period: period.toBigInt(),
     startTime: biToDate(event.block.timestamp),
     endTime,

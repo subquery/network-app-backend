@@ -46,6 +46,7 @@ type Project @entity {
   createdTimestamp: Date!
 
   deployments: [Deployment] @derivedFrom(field: "project")
+  agreements: [ServiceAgreement] @derivedFrom(field: "project")
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -217,6 +218,7 @@ type ServiceAgreement @entity {
   consumerAddress: String! @index
   deployment: Deployment!
   planTemplate: PlanTemplate!
+  project: Project!
 
   period: BigInt!
   startTime: Date!
