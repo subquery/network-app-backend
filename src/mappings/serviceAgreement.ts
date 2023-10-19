@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
-import { ClosedAgreementCreatedEvent } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
+import {
+  ClosedAgreementCreatedEvent,
+  TransferEvent,
+} from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { ServiceAgreement } from '../types';
@@ -30,8 +33,8 @@ export async function handleServiceAgreementCreated(
   const agreement = await agreementRegistry.getClosedServiceAgreement(
     serviceAgreementId
   );
-  const { period, lockedAmount, planTemplateId } = agreement;
 
+  const { period, lockedAmount, planTemplateId } = agreement;
   const endTime = biToDate(event.block.timestamp);
   endTime.setSeconds(endTime.getSeconds() + period.toNumber());
 
@@ -49,4 +52,22 @@ export async function handleServiceAgreementCreated(
   });
 
   await sa.save();
+}
+
+export async function handlerAgreementTransferred(
+  event: EthereumLog<TransferEvent['args']>
+): Promise<void> {
+  logger.info('handlerAgreementTransferred');
+  assert(event.args, 'No event args');
+
+  const { from, to, tokenId } = event.args;
+
+  const agreement = await ServiceAgreement.get(tokenId.toString());
+  assert(agreement, `Expected query (${tokenId}) to exist`);
+  assert(agreement.consumerAddress === from, `Expected owner to be ${from}`);
+
+  agreement.consumerAddress = to;
+  agreement.lastEvent = `handlerAgreementTransferred:${event.blockNumber}`;
+
+  await agreement.save();
 }

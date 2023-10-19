@@ -39,8 +39,6 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PurchaseOfferMarket.sol/PurchaseOfferMarket.json
     serviceAgreementRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
-    serviceAgreementExtra:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementExtra.sol/ServiceAgreementExtra.json
     consumerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
     rewardsDistributor:
@@ -171,7 +169,7 @@ dataSources:
           filter:
             topics:
               - event CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, ProjectType projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
-        - handler: handleServiceStatusChanged
+        - handler: handlerProjectTransferred
           kind: ethereum/LogHandler
           filter:
             topics:
@@ -235,18 +233,11 @@ dataSources:
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
-  - <<: *ethereum
-    options:
-      abi: ServiceAgreementExtra
-      address: '0x51501D0bf671061cFf41c186f1913d1139Cf3Ac3'
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleServiceAgreementRemoved
+        - handler: handlerAgreementTransferred
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ClosedAgreementRemoved(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
+              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - <<: *ethereum
     options:
       abi: rewardsDistributor
