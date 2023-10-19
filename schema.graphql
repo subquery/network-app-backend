@@ -49,6 +49,7 @@ type Project @entity {
   deploymentMetadata: String! # IPFS hash
   updatedTimestamp: Date!
   createdTimestamp: Date!
+  totalReward: BigInt!
 
   deployments: [Deployment] @derivedFrom(field: "project")
 

@@ -44,6 +44,7 @@ export async function handleNewProject(
     owner: creator,
     type,
     metadata: projectMetadata,
+    totalReward: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
     deploymentMetadata: bytesToIpfsCid(deploymentMetadata),
     updatedTimestamp: biToDate(event.block.timestamp),

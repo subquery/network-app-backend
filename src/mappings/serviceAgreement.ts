@@ -8,7 +8,7 @@ import {
 } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { ServiceAgreement } from '../types';
+import { Deployment, Project, ServiceAgreement } from '../types';
 import {
   Contracts,
   biToDate,
@@ -52,6 +52,13 @@ export async function handleServiceAgreementCreated(
   });
 
   await sa.save();
+
+  const deployment = await Deployment.get(sa.deploymentId);
+  assert(deployment, `deployment ${sa.deploymentId} not found`);
+  const project = await Project.get(deployment.projectId);
+  assert(project, `project ${deployment.projectId} not found`);
+  project.totalReward += lockedAmount.toBigInt();
+  await project.save();
 }
 
 export async function handlerAgreementTransferred(
