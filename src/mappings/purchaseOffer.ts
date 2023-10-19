@@ -1,14 +1,14 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import {
-  PurchaseOfferCreatedEvent,
-  PurchaseOfferCancelledEvent,
   OfferAcceptedEvent,
+  PurchaseOfferCancelledEvent,
+  PurchaseOfferCreatedEvent,
 } from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
 import { EthereumLog } from '@subql/types-ethereum';
-import { Offer, AcceptedOffer } from '../types';
+import assert from 'assert';
+import { AcceptedOffer, Offer } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 
 export async function handlePurchaseOfferCreated(
@@ -24,7 +24,8 @@ export async function handlePurchaseOfferCreated(
     planTemplateId: event.args.planTemplateId.toHexString(),
     deposit: event.args.deposit.toBigInt(),
     minimumAcceptHeight: event.args.minimumAcceptHeight.toBigInt(),
-    expireDate: new Date(event.args.expireDate.toNumber() * 1000), // seconds return from contract and manipulate into milliseconds / Date object.
+    minimumStakingAmount: event.args.minimumStakingAmount.toBigInt(),
+    expireDate: new Date(event.args.expireDate.toNumber() * 1000),
     limit: event.args.limit,
     accepted: 0,
     reachLimit: false,

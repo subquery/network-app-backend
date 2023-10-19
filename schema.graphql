@@ -361,6 +361,7 @@ type Offer @entity {
   planTemplate: PlanTemplate!
   deposit: BigInt!
   minimumAcceptHeight: BigInt!
+  minimumStakingAmount: BigInt!
   expireDate: Date! @index
   limit: Int! # indexer cap
   accepted: Int! # accepted indexer amount
