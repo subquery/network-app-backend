@@ -4,6 +4,7 @@
 import {
   CreateProjectEvent,
   ServiceStatusChangedEvent,
+  TransferEvent,
   UpdateProjectDeploymentEvent,
   UpdateProjectMetadataEvent,
 } from '@subql/contract-sdk/typechain/ProjectRegistry';
@@ -61,6 +62,25 @@ export async function handleNewProject(
   });
 
   await deployment.save();
+}
+
+export async function handlerProjectTransferred(
+  event: EthereumLog<TransferEvent['args']>
+): Promise<void> {
+  logger.info('handlerProjectTransferred');
+  assert(event.args, 'No event args');
+
+  const { from, to, tokenId } = event.args;
+
+  const project = await Project.get(tokenId.toHexString());
+  assert(project, `Expected query (${tokenId}) to exist`);
+  assert(project.owner === from, `Expected owner to be ${from}`);
+
+  project.owner = to;
+  project.updatedTimestamp = biToDate(event.block.timestamp);
+  project.lastEvent = `handlerProjectTransferred:${event.blockNumber}`;
+
+  await project.save();
 }
 
 export async function handleUpdateProjectMetadata(

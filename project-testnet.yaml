@@ -171,6 +171,11 @@ dataSources:
           filter:
             topics:
               - event CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, ProjectType projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+        - handler: handleServiceStatusChanged
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         - handler: handleUpdateProjectMetadata
           kind: ethereum/LogHandler
           filter:
