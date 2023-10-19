@@ -3,7 +3,7 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { EthereumLog } from '@subql/types-ethereum';
-import { Status, WithdrawalStatus } from './types';
+import { ServiceStatus, WithdrawalStatus } from './types';
 import { WithdrawalType } from './types/enums';
 
 export interface CreateWithdrawlParams {
@@ -32,6 +32,6 @@ export interface ISaveIndexerDeployment {
   blockHeight?: bigint;
   timestamp?: Date;
   mmrRoot?: string;
-  status: Status;
+  status: ServiceStatus;
   lastEvent?: string;
 }
