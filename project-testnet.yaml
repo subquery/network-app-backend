@@ -168,7 +168,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - event CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, ProjectType projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+              - event CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
         - handler: handlerProjectTransferred
           kind: ethereum/LogHandler
           filter:
@@ -188,7 +188,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ServiceStatusChanged(address indexed indexer, bytes32 indexed deploymentId, ServiceStatus status)
+              - ServiceStatusChanged(address indexed indexer, bytes32 indexed deploymentId, uint8 status)
   - <<: *ethereum
     options:
       abi: planManager
@@ -407,7 +407,7 @@ dataSources:
           filter:
             topics:
               - QuotaAdded(address token, address account, uint256 amount)
-  - kind: ethereum/Runtime
+  - <<: *ethereum
     options:
       abi: consumerRegistry
       address: "0x00316f120EB82101D29Fd7857E75372Da3A0Fd49"
