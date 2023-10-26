@@ -168,7 +168,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - event CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+              - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
         - handler: handlerProjectTransferred
           kind: ethereum/LogHandler
           filter:
