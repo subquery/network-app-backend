@@ -8,6 +8,7 @@ import {
 } from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
+import { constants } from 'ethers';
 import { Deployment, Project, ServiceAgreement } from '../types';
 import {
   Contracts,
@@ -68,6 +69,8 @@ export async function handlerAgreementTransferred(
   assert(event.args, 'No event args');
 
   const { from, to, tokenId } = event.args;
+  // Ignore `mint` event
+  if (from === constants.AddressZero) return;
 
   const agreement = await ServiceAgreement.get(tokenId.toString());
   assert(agreement, `Expected query (${tokenId}) to exist`);

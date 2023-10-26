@@ -10,6 +10,7 @@ import {
 } from '@subql/contract-sdk/typechain/ProjectRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
+import { constants } from 'ethers';
 import {
   Deployment,
   IndexerDeployment,
@@ -72,6 +73,8 @@ export async function handlerProjectTransferred(
   assert(event.args, 'No event args');
 
   const { from, to, tokenId } = event.args;
+  // Ignore `mint` event
+  if (from === constants.AddressZero) return;
 
   const project = await Project.get(tokenId.toHexString());
   assert(project, `Expected query (${tokenId}) to exist`);
