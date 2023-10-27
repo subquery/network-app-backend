@@ -10,6 +10,7 @@ import {
 } from '@subql/contract-sdk/typechain/ProjectRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
+import { constants } from 'ethers';
 import {
   Deployment,
   IndexerDeployment,
@@ -19,6 +20,16 @@ import {
 } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 
+const projectTypes: Record<number, ProjectType> = {
+  0: ProjectType.SUBQUERY,
+  1: ProjectType.RPC,
+};
+
+const serviceStatus: Record<number, ServiceStatus> = {
+  0: ServiceStatus.TERMINATED,
+  1: ServiceStatus.READY,
+};
+
 function getIndexerDeploymentId(indexer: string, deploymentId: string): string {
   return `${indexer}:${deploymentId}`;
 }
@@ -26,7 +37,7 @@ function getIndexerDeploymentId(indexer: string, deploymentId: string): string {
 export async function handleNewProject(
   event: EthereumLog<CreateProjectEvent['args']>
 ): Promise<void> {
-  logger.info('handleNewProjectProject');
+  logger.info('handleNewProject');
   assert(event.args, 'No event args');
 
   const {
@@ -37,7 +48,8 @@ export async function handleNewProject(
     deploymentId,
     deploymentMetadata,
   } = event.args;
-  const type = projectType as unknown as ProjectType;
+  const type = projectTypes[projectType];
+  assert(type, `Unknown project type: ${projectType}`);
 
   const project = Project.create({
     id: projectId.toHexString(),
@@ -72,6 +84,8 @@ export async function handlerProjectTransferred(
   assert(event.args, 'No event args');
 
   const { from, to, tokenId } = event.args;
+  // Ignore `mint` event
+  if (from === constants.AddressZero) return;
 
   const project = await Project.get(tokenId.toHexString());
   assert(project, `Expected query (${tokenId}) to exist`);
@@ -124,7 +138,6 @@ export async function handleUpdateProjectDeployment(
   await deployment.save();
 
   const project = await Project.get(projectId);
-
   assert(project, `Expected query (${projectId}) to exist`);
 
   project.deploymentId = deploymentId;
@@ -144,7 +157,9 @@ export async function handleServiceStatusChanged(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
   const id = getIndexerDeploymentId(event.args.indexer, deploymentId);
   const timestamp = biToDate(event.block.timestamp);
-  const status = event.args.status as unknown as ServiceStatus;
+  const status = serviceStatus[event.args.status];
+
+  assert(status, `Unknown status: ${event.args.status}`);
 
   let indexerDeployment = await IndexerDeployment.get(id);
   if (!indexerDeployment) {
