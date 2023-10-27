@@ -37,7 +37,7 @@ function getIndexerDeploymentId(indexer: string, deploymentId: string): string {
 export async function handleNewProject(
   event: EthereumLog<CreateProjectEvent['args']>
 ): Promise<void> {
-  logger.info('handleNewProjectProject');
+  logger.info('handleNewProject');
   assert(event.args, 'No event args');
 
   const {
