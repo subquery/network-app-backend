@@ -59,4 +59,3 @@ services:
     command:
       - --name=app
       - --playground
-      - --indexer=http://subquery-node:3001
