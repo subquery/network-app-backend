@@ -606,7 +606,7 @@ async function updateEraStakeAdd(
 ) {
   if (isFirstStake) {
     const currEraStakeId = `${indexer}:${delegator}:${currEraId}`;
-    updateEraStake(
+    await updateEraStake(
       currEraStakeId,
       indexer,
       delegator,
