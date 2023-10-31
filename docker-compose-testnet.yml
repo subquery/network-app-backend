@@ -35,7 +35,7 @@ services:
       - -f=/app/project-testnet.yaml
       - --db-schema=testnet
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://subquery-node:3001/ready']
+      test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s
       timeout: 5s
       retries: 10
@@ -59,4 +59,3 @@ services:
     command:
       - --name=testnet
       - --playground
-      - --indexer=http://subquery-node:3001

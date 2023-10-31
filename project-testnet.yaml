@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 3.0.1'
+    version: '>= 3.1.1'
     options:
       unfinalizedBlocks: true
   query:
@@ -17,7 +17,7 @@ schema:
 network:
   chainId: '80001' # Mumbai testnet
   endpoint: https://rpc.ankr.com/polygon_mumbai
-  dictionary: https://api.subquery.network/sq/subquery/polygon-mumbai-dictionary
+  dictionary: https://dict-tyk.subquery.network/query/polygon-mumbai
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime
