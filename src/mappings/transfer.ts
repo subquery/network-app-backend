@@ -22,9 +22,10 @@ export async function handleTransfer(
   assert(event.args, 'No event args');
   const { from, to, value } = event.args;
   const transfer = Transfer.create({
-    id: event.transactionHash,
+    id: `${event.transactionHash}-${event.logIndex}`,
     from,
     to,
+    txHash: event.transactionHash,
     amount: value.toBigInt(),
     timestamp: new Date(Number(event.block.timestamp) * 1000),
     blockheight: BigInt(event.blockNumber),

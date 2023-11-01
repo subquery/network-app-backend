@@ -342,10 +342,11 @@ type TokenHolder @entity {
 }
 
 type Transfer @entity {
-  id: ID! # holder address
+  id: ID! # tx hash+eventidx
   amount: BigInt!
   from: String!
   to: String!
+  txHash: String!
   timestamp: Date!
   blockheight: BigInt!
 }
