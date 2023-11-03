@@ -67,8 +67,8 @@ export async function handleNewProject(
   await project.save();
 
   const deployment = Deployment.create({
-    id: deploymentId,
-    metadata: deploymentMetadata,
+    id: bytesToIpfsCid(deploymentId),
+    metadata: bytesToIpfsCid(deploymentMetadata),
     createdTimestamp: biToDate(event.block.timestamp),
     projectId: projectId.toHexString(),
     createdBlock: event.blockNumber,
