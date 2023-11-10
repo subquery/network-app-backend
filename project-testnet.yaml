@@ -168,22 +168,27 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+              - ProjectCreated(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
         - handler: handlerProjectTransferred
           kind: ethereum/LogHandler
           filter:
             topics:
               - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-        - handler: handleUpdateProjectMetadata
+        - handler: handleProjectMetadataUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UpdateProjectMetadata(address indexed owner, uint256 indexed projectId, string metadata)
-        - handler: handleUpdateProjectDeployment
+              - ProjectMetadataUpdated(address indexed owner, uint256 indexed projectId, string metadata)
+        - handler: handleProjectDeploymentUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UpdateProjectDeployment(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
+              - ProjectDeploymentUpdated(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
+        - handler: handleProjectLatestDeploymentUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ProjectLatestDeploymentUpdated(address indexed owner, uint256 projectId, bytes32 deploymentId)
         - handler: handleServiceStatusChanged
           kind: ethereum/LogHandler
           filter:
