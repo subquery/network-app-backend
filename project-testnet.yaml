@@ -31,6 +31,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
+    projectRegistry-v1:
+      file: ./node_modules/@subql/contract-sdk-v1/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     projectRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     planManager:
@@ -157,6 +159,29 @@ dataSources:
           filter:
             topics:
               - Transfer(address indexed from, address indexed to, uint256 amount)
+  - <<: *ethereum
+    # removed once deploy new Testnet
+    options:
+      abi: projectRegistry-v1
+      address: '0xdD7bbd8bF59D11cac793389839fdcFD1468a0545'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleNewProject
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+        - handler: handleUpdateProjectMetadata
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - UpdateProjectMetadata(address indexed owner, uint256 indexed projectId, string metadata)
+        - handler: handleUpdateProjectDeployment
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - UpdateProjectDeployment(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
   - <<: *ethereum
     options:
       abi: projectRegistry

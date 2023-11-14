@@ -18,7 +18,7 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node-ethereum:v3.1.1
+    image: onfinality/subql-node-ethereum:v3.1.2
     depends_on:
       'postgres':
         condition: service_healthy
@@ -34,6 +34,9 @@ services:
     command:
       - -f=/app/project-testnet.yaml
       - --db-schema=testnet
+      - --batch-size=4
+      - --network-endpoint=https://polygon-mumbai.g.alchemy.com/v2/xqsBzOYkSwQ09VkLDSwP4nl2ZqYTcDFP
+      - --network-dictionary=https://dict-tyk.subquery.network/query/polygon-mumbai
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s

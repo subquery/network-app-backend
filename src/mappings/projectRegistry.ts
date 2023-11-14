@@ -47,6 +47,7 @@ export async function handleNewProject(
   event: EthereumLog<CreateProjectEvent['args']>
 ): Promise<void> {
   logger.info('handleNewProject');
+  logger.info(`event: ${JSON.stringify(event)}`);
   assert(event.args, 'No event args');
 
   const {
@@ -140,7 +141,7 @@ export async function handleUpdateProjectDeployment(
 export async function handleProjectCreated(
   event: EthereumLog<ProjectCreatedEvent['args']>
 ): Promise<void> {
-  logger.info('handleNewProject');
+  logger.info('handleProjectCreated');
   assert(event.args, 'No event args');
 
   const {
