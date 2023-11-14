@@ -2664,6 +2664,11 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
+"@subql/contract-sdk-v1@npm:@subql/contract-sdk@0.100.2":
+  version "0.100.2"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.100.2.tgz#d66b01a6cb43bf02547ed87ed4697136e425d3e7"
+  integrity sha512-LPn8qJUMzeOgWJFDZpbqs4P14ibwSGIh7aqWB5yfkpNOr7TvUv9Wv7wYcGkTjQY/NxuBxpAq6OcdOAjbX2QzpA==
+
 "@subql/contract-sdk@^0.100.3":
   version "0.100.3"
   resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.100.3.tgz#a6e6708ad3a545823b54b7eaa1d95a8d6d6b183d"
