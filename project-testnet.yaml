@@ -189,22 +189,6 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        # old version of events, removed once deploy new Testnet
-        - handler: handleNewProject
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
-        - handler: handleUpdateProjectMetadata
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UpdateProjectMetadata(address indexed owner, uint256 indexed projectId, string metadata)
-        - handler: handleUpdateProjectDeployment
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UpdateProjectDeployment(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
         # latest version of events
         - handler: handleProjectCreated
           kind: ethereum/LogHandler
