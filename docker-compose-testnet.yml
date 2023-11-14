@@ -35,8 +35,8 @@ services:
       - -f=/app/project-testnet.yaml
       - --db-schema=testnet
       - --batch-size=4
-      - --network-endpoint=https://polygon-mumbai.g.alchemy.com/v2/xqsBzOYkSwQ09VkLDSwP4nl2ZqYTcDFP
-      - --network-dictionary=https://dict-tyk.subquery.network/query/polygon-mumbai
+      #- --network-endpoint=
+      #- --network-dictionary=
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s
