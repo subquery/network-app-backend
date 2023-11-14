@@ -255,10 +255,11 @@ export async function handleProjectLatestDeploymentUpdated(
   logger.info('handlerProjectLatestDeploymentUpdated');
   assert(event.args, 'No event args');
 
-  const { projectId, deploymentId } = event.args;
+  const { projectId } = event.args;
   const project = await Project.get(projectId.toHexString());
   assert(project, `Expected query (${projectId}) to exist`);
 
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
   const deployment = await Deployment.get(deploymentId);
   assert(deployment, `Expected deployment (${deploymentId}) to exist`);
 
