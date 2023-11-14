@@ -2,12 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  CreateProjectEvent,
+  ProjectCreatedEvent,
   ServiceStatusChangedEvent,
   TransferEvent,
+  ProjectDeploymentUpdatedEvent,
+  ProjectMetadataUpdatedEvent,
+  ProjectLatestDeploymentUpdatedEvent,
+} from '@subql/contract-sdk/typechain/ProjectRegistry';
+
+import {
+  CreateProjectEvent,
   UpdateProjectDeploymentEvent,
   UpdateProjectMetadataEvent,
-} from '@subql/contract-sdk/typechain/ProjectRegistry';
+} from '@subql/contract-sdk-v1/typechain/ProjectRegistry';
+
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { constants } from 'ethers';
@@ -34,10 +42,106 @@ function getIndexerDeploymentId(indexer: string, deploymentId: string): string {
   return `${indexer}:${deploymentId}`;
 }
 
+// TODO: remove these handlers which are use for compatibility with old events
 export async function handleNewProject(
   event: EthereumLog<CreateProjectEvent['args']>
 ): Promise<void> {
   logger.info('handleNewProject');
+  logger.info(`event: ${JSON.stringify(event)}`);
+  assert(event.args, 'No event args');
+
+  const {
+    creator,
+    projectId,
+    projectMetadata,
+    projectType,
+    deploymentId,
+    deploymentMetadata,
+  } = event.args;
+  const type = projectTypes[projectType];
+  assert(type, `Unknown project type: ${projectType}`);
+
+  const project = Project.create({
+    id: projectId.toHexString(),
+    owner: creator,
+    type,
+    metadata: projectMetadata,
+    totalReward: BigInt(0),
+    deploymentId: bytesToIpfsCid(deploymentId),
+    deploymentMetadata: bytesToIpfsCid(deploymentMetadata),
+    updatedTimestamp: biToDate(event.block.timestamp),
+    createdTimestamp: biToDate(event.block.timestamp),
+    createdBlock: event.blockNumber,
+  });
+
+  await project.save();
+
+  const deployment = Deployment.create({
+    id: bytesToIpfsCid(deploymentId),
+    metadata: bytesToIpfsCid(deploymentMetadata),
+    createdTimestamp: biToDate(event.block.timestamp),
+    projectId: projectId.toHexString(),
+    createdBlock: event.blockNumber,
+  });
+
+  await deployment.save();
+}
+
+export async function handleUpdateProjectMetadata(
+  event: EthereumLog<UpdateProjectMetadataEvent['args']>
+): Promise<void> {
+  logger.info('handleUpdateProjectMetadata');
+  assert(event.args, 'No event args');
+
+  const { projectId, metadata } = event.args;
+  const project = await Project.get(projectId.toHexString());
+
+  assert(project, `Expected query (${projectId}) to exist`);
+
+  project.metadata = bytesToIpfsCid(metadata);
+  project.updatedTimestamp = biToDate(event.block.timestamp);
+  project.lastEvent = `handleUpdateProjectMetadata:${event.blockNumber}`;
+
+  await project.save();
+}
+
+export async function handleUpdateProjectDeployment(
+  event: EthereumLog<UpdateProjectDeploymentEvent['args']>
+): Promise<void> {
+  logger.info('handleUpdateProjectDeployment');
+  assert(event.args, 'No event args');
+
+  const projectId = event.args.projectId.toHexString();
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+  const metadata = bytesToIpfsCid(event.args.metadata);
+  const timestamp = biToDate(event.block.timestamp);
+
+  const deployment = Deployment.create({
+    id: deploymentId,
+    metadata,
+    projectId,
+    createdTimestamp: timestamp,
+    createdBlock: event.blockNumber,
+  });
+
+  await deployment.save();
+
+  const project = await Project.get(projectId);
+  assert(project, `Expected query (${projectId}) to exist`);
+
+  project.deploymentId = deploymentId;
+  project.deploymentMetadata = metadata;
+  project.updatedTimestamp = timestamp;
+  project.lastEvent = `handleUpdateProjectDeployment:${event.blockNumber}`;
+
+  await project.save();
+}
+
+// latest handlers
+export async function handleProjectCreated(
+  event: EthereumLog<ProjectCreatedEvent['args']>
+): Promise<void> {
+  logger.info('handleProjectCreated');
   assert(event.args, 'No event args');
 
   const {
@@ -98,10 +202,10 @@ export async function handlerProjectTransferred(
   await project.save();
 }
 
-export async function handleUpdateProjectMetadata(
-  event: EthereumLog<UpdateProjectMetadataEvent['args']>
+export async function handleProjectMetadataUpdated(
+  event: EthereumLog<ProjectMetadataUpdatedEvent['args']>
 ): Promise<void> {
-  logger.info('handleUpdateProjectMetadata');
+  logger.info('handleProjectMetadataUpdated');
   assert(event.args, 'No event args');
 
   const { projectId, metadata } = event.args;
@@ -111,15 +215,15 @@ export async function handleUpdateProjectMetadata(
 
   project.metadata = bytesToIpfsCid(metadata);
   project.updatedTimestamp = biToDate(event.block.timestamp);
-  project.lastEvent = `handleUpdateProjectMetadata:${event.blockNumber}`;
+  project.lastEvent = `handleProjectMetadataUpdated:${event.blockNumber}`;
 
   await project.save();
 }
 
-export async function handleUpdateProjectDeployment(
-  event: EthereumLog<UpdateProjectDeploymentEvent['args']>
+export async function handleProjectDeploymentUpdated(
+  event: EthereumLog<ProjectDeploymentUpdatedEvent['args']>
 ): Promise<void> {
-  logger.info('handleUpdateProjectDeployment');
+  logger.info('handleProjectDeploymentUpdated');
   assert(event.args, 'No event args');
 
   const projectId = event.args.projectId.toHexString();
@@ -127,23 +231,42 @@ export async function handleUpdateProjectDeployment(
   const metadata = bytesToIpfsCid(event.args.metadata);
   const timestamp = biToDate(event.block.timestamp);
 
-  const deployment = Deployment.create({
-    id: deploymentId,
-    metadata,
-    projectId,
-    createdTimestamp: timestamp,
-    createdBlock: event.blockNumber,
-  });
+  const deployment = await Deployment.get(deploymentId);
+  if (!deployment) {
+    const deployment = Deployment.create({
+      id: deploymentId,
+      metadata,
+      projectId,
+      createdTimestamp: timestamp,
+      createdBlock: event.blockNumber,
+    });
 
-  await deployment.save();
+    await deployment.save();
+  } else {
+    deployment.metadata = metadata;
+    deployment.lastEvent = `handleProjectDeploymentUpdated:${event.blockNumber}`;
+    await deployment.save();
+  }
+}
 
-  const project = await Project.get(projectId);
+export async function handleProjectLatestDeploymentUpdated(
+  event: EthereumLog<ProjectLatestDeploymentUpdatedEvent['args']>
+): Promise<void> {
+  logger.info('handlerProjectLatestDeploymentUpdated');
+  assert(event.args, 'No event args');
+
+  const { projectId } = event.args;
+  const project = await Project.get(projectId.toHexString());
   assert(project, `Expected query (${projectId}) to exist`);
 
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Expected deployment (${deploymentId}) to exist`);
+
   project.deploymentId = deploymentId;
-  project.deploymentMetadata = metadata;
-  project.updatedTimestamp = timestamp;
-  project.lastEvent = `handleUpdateProjectDeployment:${event.blockNumber}`;
+  project.deploymentMetadata = deployment.metadata;
+  project.updatedTimestamp = biToDate(event.block.timestamp);
+  project.lastEvent = `handlerProjectLatestDeploymentUpdated:${event.blockNumber}`;
 
   await project.save();
 }

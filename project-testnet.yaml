@@ -31,6 +31,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
+    projectRegistry-v1:
+      file: ./node_modules/@subql/contract-sdk-v1/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     projectRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     planManager:
@@ -158,8 +160,9 @@ dataSources:
             topics:
               - Transfer(address indexed from, address indexed to, uint256 amount)
   - <<: *ethereum
+    # removed once deploy new Testnet
     options:
-      abi: projectRegistry
+      abi: projectRegistry-v1
       address: '0xdD7bbd8bF59D11cac793389839fdcFD1468a0545'
     mapping:
       file: ./dist/index.js
@@ -169,11 +172,6 @@ dataSources:
           filter:
             topics:
               - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
-        - handler: handlerProjectTransferred
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
         - handler: handleUpdateProjectMetadata
           kind: ethereum/LogHandler
           filter:
@@ -184,6 +182,39 @@ dataSources:
           filter:
             topics:
               - UpdateProjectDeployment(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
+  - <<: *ethereum
+    options:
+      abi: projectRegistry
+      address: '0xdD7bbd8bF59D11cac793389839fdcFD1468a0545'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        # latest version of events
+        - handler: handleProjectCreated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ProjectCreated(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+        - handler: handlerProjectTransferred
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        - handler: handleProjectMetadataUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ProjectMetadataUpdated(address indexed owner, uint256 indexed projectId, string metadata)
+        - handler: handleProjectDeploymentUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ProjectDeploymentUpdated(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
+        - handler: handleProjectLatestDeploymentUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ProjectLatestDeploymentUpdated(address indexed owner, uint256 projectId, bytes32 deploymentId)
         - handler: handleServiceStatusChanged
           kind: ethereum/LogHandler
           filter:
