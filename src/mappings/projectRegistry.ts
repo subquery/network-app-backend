@@ -65,7 +65,7 @@ export async function handleNewProject(
     id: projectId.toHexString(),
     owner: creator,
     type,
-    metadata: projectMetadata,
+    metadata: bytesToIpfsCid(projectMetadata),
     totalReward: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
     deploymentMetadata: bytesToIpfsCid(deploymentMetadata),
