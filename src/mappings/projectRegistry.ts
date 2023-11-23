@@ -65,6 +65,7 @@ export async function handleNewProject(
     id: projectId.toHexString(),
     owner: creator,
     type,
+    // note that project metadata is pure CID string without prefix
     metadata: projectMetadata,
     totalReward: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
@@ -98,7 +99,8 @@ export async function handleUpdateProjectMetadata(
 
   assert(project, `Expected query (${projectId}) to exist`);
 
-  project.metadata = bytesToIpfsCid(metadata);
+  // note that project metadata is pure CID string without prefix
+  project.metadata = metadata;
   project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleUpdateProjectMetadata:${event.blockNumber}`;
 
@@ -159,6 +161,7 @@ export async function handleProjectCreated(
     id: projectId.toHexString(),
     owner: creator,
     type,
+    // note that project metadata is pure CID string without prefix
     metadata: projectMetadata,
     totalReward: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
@@ -213,7 +216,8 @@ export async function handleProjectMetadataUpdated(
 
   assert(project, `Expected query (${projectId}) to exist`);
 
-  project.metadata = bytesToIpfsCid(metadata);
+  // note that metadata is pure CID string without prefix
+  project.metadata = metadata;
   project.updatedTimestamp = biToDate(event.block.timestamp);
   project.lastEvent = `handleProjectMetadataUpdated:${event.blockNumber}`;
 
