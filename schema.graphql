@@ -447,8 +447,6 @@ type PriceOracle @entity {
 type Trader @entity {
   id: ID! #trader address
   totalTradeAmount: BigInt! #total sold amount of KSQT
-  totalAwardAmount: BigInt! #summed from ClaimRewards event
-  maxTradeAmount: BigInt! #totalAwardAmount - totalTradeAmount
   trades: [Trade] @derivedFrom(field: "sender")
 
   createAt: String #getUpsertAt: topicHandler:block:Txhash
@@ -478,13 +476,11 @@ enum OrderStatus {
 type Order @entity {
   id: ID! #orderId
   tokenGiveBalance: BigInt! #amount left that indexer can trade
-  pairOrderId: BigInt! # pair order ID
   sender: String!
   tokenGive: String!
   tokenGet: String!
   amountGive: BigInt!
   amountGet: BigInt!
-  expireDate: Date!
   blockHeight: Int! # When submitted
   created: Date! # When submitted
   status: OrderStatus! # Inactive when cancel/setExpired
