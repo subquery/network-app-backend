@@ -51,11 +51,6 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
     priceOracle:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PriceOracle.sol/PriceOracle.json
-    airdropper:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
-    permissionedExchange:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PermissionedExchange.sol/PermissionedExchange.json
-
 
 dataSources:
   - <<: *ethereum
@@ -379,65 +374,6 @@ dataSources:
           filter:
             topics:
               - PricePosted(address assetFrom, address assetTo, uint256 previousPrice, uint256 newPrice);
-  - <<: *ethereum
-    options:
-      abi: airdropper
-      address: '0xec832e2D4c65a6515607E610591C1FBa659536B2'
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleRoundCreated
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - RoundCreated(uint256 indexed roundId, address tokenAddress, uint256 roundStartTime, uint256 roundDeadline)
-        - handler: handleAddAirdrop
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - AddAirdrop(address indexed addr, uint256 roundId, uint256 amount)
-        - handler: handleAirdropClaimed
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - AirdropClaimed(address indexed addr, uint256 roundId, uint256 amount)
-        - handler: handleRoundSettled
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
-  - <<: *ethereum
-    options:
-      abi: permissionedExchange
-      address: "0xfA037453e1086B8Ec4815265A4BCc7AeA546Cac3"
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleExchangeOrderSent
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - ExchangeOrderSent(uint256 indexed orderId, address sender, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet, uint256 expireDate)
-        - handler: handleOrderChanged
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - ExchangeOrderChanged(uint256 indexed orderId, uint256 tokenGiveBalance);
-        - handler: handleTrade
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - Trade(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
-        - handler: handleOrderSettled
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - OrderSettled(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
-        - handler: handleQuotaAdded
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - QuotaAdded(address token, address account, uint256 amount)
   - <<: *ethereum
     options:
       abi: consumerRegistry
