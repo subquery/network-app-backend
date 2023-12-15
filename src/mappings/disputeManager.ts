@@ -4,7 +4,7 @@
 import {
   DisputeFinalizedEvent,
   DisputeOpenEvent,
-} from '@subql/contract-sdk/typechain/DisputeManager';
+} from '@subql/contract-sdk/typechain/contracts/DisputeManager';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { Disputes, DisputeState } from '../types';

@@ -8,7 +8,7 @@ import {
   ChannelFundEvent,
   ChannelOpenEvent,
   ChannelTerminateEvent,
-} from '@subql/contract-sdk/typechain/StateChannel';
+} from '@subql/contract-sdk/typechain/contracts/StateChannel';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { logger, utils } from 'ethers';

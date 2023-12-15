@@ -8,7 +8,7 @@ import {
   SetControllerAccountEvent,
   UnregisterIndexerEvent,
   UpdateMetadataEvent,
-} from '@subql/contract-sdk/typechain/IndexerRegistry';
+} from '@subql/contract-sdk/typechain/contracts/IndexerRegistry';
 import assert from 'assert';
 import { Controller, Indexer, IndexerCommissionRate } from '../types';
 import {

@@ -5,7 +5,7 @@ import {
   OfferAcceptedEvent,
   PurchaseOfferCancelledEvent,
   PurchaseOfferCreatedEvent,
-} from '@subql/contract-sdk/typechain/PurchaseOfferMarket';
+} from '@subql/contract-sdk/typechain/contracts/PurchaseOfferMarket';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { AcceptedOffer, Offer } from '../types';

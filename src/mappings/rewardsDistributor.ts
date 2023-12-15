@@ -16,7 +16,7 @@ import {
   ClaimRewardsEvent,
   DistributeRewardsEvent,
   RewardsChangedEvent,
-} from '@subql/contract-sdk/typechain/RewardsDistributer';
+} from '@subql/contract-sdk/typechain/contracts/RewardsDistributer';
 import { biToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 

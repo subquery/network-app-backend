@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EthereumLog } from '@subql/types-ethereum';
-import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
+import { NewEraStartEvent } from '@subql/contract-sdk/typechain/contracts/EraManager';
 import assert from 'assert';
 import { Era } from '../types';
 import { biToDate, Contracts, getContractAddress } from './utils';

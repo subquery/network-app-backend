@@ -5,7 +5,7 @@ import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import {
   ClosedAgreementCreatedEvent,
   TransferEvent,
-} from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
+} from '@subql/contract-sdk/typechain/contracts/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { constants } from 'ethers';

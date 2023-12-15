@@ -11,7 +11,7 @@ import {
   UnbondCancelledEvent,
   UnbondRequestedEvent,
   UnbondWithdrawnEvent,
-} from '@subql/contract-sdk/typechain/Staking';
+} from '@subql/contract-sdk/typechain/contracts/Staking';
 import assert from 'assert';
 import {
   Delegation,

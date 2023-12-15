@@ -8,7 +8,7 @@ import {
   ProjectDeploymentUpdatedEvent,
   ProjectMetadataUpdatedEvent,
   ProjectLatestDeploymentUpdatedEvent,
-} from '@subql/contract-sdk/typechain/ProjectRegistry';
+} from '@subql/contract-sdk/typechain/contracts/ProjectRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { constants } from 'ethers';

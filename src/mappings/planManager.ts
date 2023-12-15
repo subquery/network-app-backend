@@ -7,10 +7,10 @@ import {
   PlanTemplateCreatedEvent,
   PlanTemplateMetadataChangedEvent,
   PlanTemplateStatusChangedEvent,
-} from '@subql/contract-sdk/typechain/PlanManager';
+} from '@subql/contract-sdk/typechain/contracts/PlanManager';
 
 import { PlanManager__factory } from '@subql/contract-sdk';
-import { PlanTemplateV2Struct } from '@subql/contract-sdk/typechain/interfaces/IPlanManager';
+import { PlanTemplateV2Struct } from '@subql/contract-sdk/typechain/contracts/interfaces/IPlanManager';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { BigNumber, constants } from 'ethers';
