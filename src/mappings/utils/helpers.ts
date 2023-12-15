@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-import keplerDeploymentFile from '@subql/contract-sdk/publish/kepler.json';
+// TODO: uncomment when contract-sdk is updated
+// import mainnetDeploymentFile from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentFile from '@subql/contract-sdk/publish/testnet.json';
 import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
@@ -11,14 +12,12 @@ import assert from 'assert';
 import { Exception, JSONBigInt } from '../../types';
 
 export enum Contracts {
-  QUERY_REGISTRY_ADDRESS = 'QueryRegistry',
   ERA_MANAGER_ADDRESS = 'EraManager',
   STAKING_ADDRESS = 'Staking',
   INDEXER_REGISTRY_ADDRESS = 'IndexerRegistry',
   PLAN_MANAGER_ADDRESS = 'PlanManager',
   SA_REGISTRY_ADDRESS = 'ServiceAgreementRegistry',
   REWARD_DIST_ADDRESS = 'RewardsDistributer',
-  EXCHANGE_DIST_ADDRESS = 'PermissionedExchange',
   KSQT_ADDRESS = 'SQToken',
 }
 
@@ -27,8 +26,8 @@ export function getContractAddress(
   contract: Contracts
 ): string {
   const deploymentFile =
-    networkId === 80001 ? testnetDeploymentFile : keplerDeploymentFile;
-  return deploymentFile[contract as keyof typeof deploymentFile].address;
+    networkId === 80001 ? testnetDeploymentFile : testnetDeploymentFile;
+  return deploymentFile.child[contract].address;
 }
 
 declare global {
