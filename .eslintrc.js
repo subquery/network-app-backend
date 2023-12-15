@@ -38,7 +38,7 @@ module.exports = {
           pattern:
             ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors',
           template:
-            ' Copyright 2020-2022 SubQuery Pte Ltd authors & contributors',
+            ' Copyright 2020-2023 SubQuery Pte Ltd authors & contributors',
         },
         ' SPDX-License-Identifier: Apache-2.0',
       ],

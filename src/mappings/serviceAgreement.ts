@@ -1,4 +1,4 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
