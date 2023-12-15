@@ -1,11 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './airdropper';
 export * from './consumerRegistry';
 export * from './eraManager';
 export * from './indexerRegistry';
-export * from './permissionedExchange';
 export * from './planManager';
 export * from './priceOracle';
 export * from './projectRegistry';

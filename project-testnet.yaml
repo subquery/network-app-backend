@@ -24,15 +24,13 @@ x-ethereum: &ethereum
   startBlock: 41297455
   assets:
     eraManager:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/polygon/EraManager.sol/EraManager.json
     staking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
     sqtoken:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/polygon/ChildERC20.sol/ChildERC20.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
-    projectRegistry-v1:
-      file: ./node_modules/@subql/contract-sdk-v1/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     projectRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     planManager:
@@ -154,29 +152,6 @@ dataSources:
           filter:
             topics:
               - Transfer(address indexed from, address indexed to, uint256 amount)
-  - <<: *ethereum
-    # removed once deploy new Testnet
-    options:
-      abi: projectRegistry-v1
-      address: '0xdD7bbd8bF59D11cac793389839fdcFD1468a0545'
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleNewProject
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - CreateProject(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
-        - handler: handleUpdateProjectMetadata
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UpdateProjectMetadata(address indexed owner, uint256 indexed projectId, string metadata)
-        - handler: handleUpdateProjectDeployment
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - UpdateProjectDeployment(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
   - <<: *ethereum
     options:
       abi: projectRegistry
