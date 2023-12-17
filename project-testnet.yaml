@@ -49,6 +49,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
     priceOracle:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PriceOracle.sol/PriceOracle.json
+    tokenExchange:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/TokenExchange.sol/TokenExchange.json
 
 dataSources:
   - <<: *ethereum
@@ -366,3 +368,26 @@ dataSources:
           filter:
             topics:
               - ControllerRemoved(address indexed consumer, address controller)
+  - <<: *ethereum
+    options:
+      abi: tokenExchange
+      address: "0xE3699a98fBeFeE61AF1F1F695A437d9fF9dd211c"
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleExchangeOrderSent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ExchangeOrderSent(uint256 indexed orderId, address sender, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet, uint256 tokenGiveBalance)
+        - handler: handleOrderSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - OrderSettled(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive)
+        - handler: handleTraded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Trade(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet);
+
