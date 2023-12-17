@@ -2707,10 +2707,10 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
-"@subql/contract-sdk@^0.110.0":
-  version "0.110.0"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.110.0.tgz#275efc9128e41057b0b9b6b74ee8a9ba4bbe49ca"
-  integrity sha512-AISkpdpBbBl+AfY2xRNfI0IqOlwNxudZR4DEWw01fkhPRiymXfJrvnphh98iyQw07qlukxTfHzADdpDs68XVOQ==
+"@subql/contract-sdk@^0.111.0":
+  version "0.111.0"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.111.0.tgz#f0efd73cbd3566b97dab93661832bbda9aa2470d"
+  integrity sha512-SBXuRKWW9sUZ0CyhYyr268uj7WttJRtLs1fXPc/JjvucN/D9820El46bEQIJVSw3QK30rPilIGBihRM/rmckbA==
   dependencies:
     "@maticnetwork/maticjs" "^3.6.7"
     "@maticnetwork/maticjs-ethers" "^1.0.3"
