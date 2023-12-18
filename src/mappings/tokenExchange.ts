@@ -49,12 +49,12 @@ export async function handleOrderSettled(
   logger.info('handleOrderSettled');
   assert(event.args, 'No event args');
 
-  const { orderId, amountGive } = event.args;
+  const { orderId } = event.args;
   const order = await Order.get(orderId.toString());
   assert(order, `Order ${orderId.toString()} not found`);
 
   order.status = OrderStatus.INACTIVE;
-  order.tokenGiveBalance = amountGive.toBigInt();
+  order.tokenGiveBalance = BigInt(0);
   order.updateAt = biToDate(event.block.timestamp);
 
   await order.save();
