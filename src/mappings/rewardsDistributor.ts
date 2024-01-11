@@ -1,4 +1,4 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
@@ -16,7 +16,7 @@ import {
   ClaimRewardsEvent,
   DistributeRewardsEvent,
   RewardsChangedEvent,
-} from '@subql/contract-sdk/typechain/RewardsDistributer';
+} from '@subql/contract-sdk/typechain/contracts/RewardsDistributer';
 import { biToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 

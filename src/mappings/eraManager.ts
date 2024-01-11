@@ -1,8 +1,8 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { EthereumLog } from '@subql/types-ethereum';
-import { NewEraStartEvent } from '@subql/contract-sdk/typechain/EraManager';
+import { NewEraStartEvent } from '@subql/contract-sdk/typechain/Contracts/polygon/EraManager';
 import assert from 'assert';
 import { Era } from '../types';
 import { biToDate, Contracts, getContractAddress } from './utils';

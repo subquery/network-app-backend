@@ -1,11 +1,11 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { IServiceAgreementRegistry__factory } from '@subql/contract-sdk';
 import {
   ClosedAgreementCreatedEvent,
   TransferEvent,
-} from '@subql/contract-sdk/typechain/ServiceAgreementRegistry';
+} from '@subql/contract-sdk/typechain/contracts/ServiceAgreementRegistry';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { constants } from 'ethers';

@@ -1,10 +1,10 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {
   DisputeFinalizedEvent,
   DisputeOpenEvent,
-} from '@subql/contract-sdk/typechain/DisputeManager';
+} from '@subql/contract-sdk/typechain/contracts/DisputeManager';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { Disputes, DisputeState } from '../types';

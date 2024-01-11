@@ -1,4 +1,4 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -8,7 +8,7 @@ import {
   ChannelFundEvent,
   ChannelOpenEvent,
   ChannelTerminateEvent,
-} from '@subql/contract-sdk/typechain/StateChannel';
+} from '@subql/contract-sdk/typechain/contracts/StateChannel';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { logger, utils } from 'ethers';

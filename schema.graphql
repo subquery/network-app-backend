@@ -441,66 +441,30 @@ type PriceOracle @entity {
   afterPrice: BigInt!
   createdBlock: Int
 }
-# Airdrop
-type Airdrop @entity {
-  id: ID! # Round ID
-  tokenAddress: String!
-  startTime: Date! # Block timestamp the Era is started
-  endTime: Date! # Block timestamp that the successive Era is started
-  withdrawAmount: BigInt
-  hasWithdrawn: Boolean
-  createAt: String #topicHandler:block:Txhash
-  updateAt: String #topicHandler:block:Txhash
-}
 
-enum AirdropClaimStatus {
-  CLAIMED
-  UNCLAIMED
-}
-
-type AirdropUser @entity {
-  id: ID! # roundId:userAccount
-  user: String!
-  airdrop: Airdrop!
-  amount: BigInt!
-  status: AirdropClaimStatus!
-  createAt: String #topicHandler:block:Txhash
-  updateAt: String #topicHandler:block:Txhash
-}
-
-type AirdropAmount @entity {
-  id: ID! # userAccount
-  totalAirdropAmount: BigInt! # Claimed + unClaimed + unlocked + locked
-  claimedAmount: BigInt! # claim total
-  createAt: String #topicHandler:block:Txhash
-  updateAt: String #topicHandler:block:Txhash
-}
-
+# TODO: update it with TokenExchange
 # permission exchange contract
 type Trader @entity {
   id: ID! #trader address
-  totalTradeAmount: BigInt! #total sold amount of KSQT
-  totalAwardAmount: BigInt! #summed from ClaimRewards event
-  maxTradeAmount: BigInt! #totalAwardAmount - totalTradeAmount
+  totalSwapSQTAmount: BigInt! # total swap SQT amount
+  totalSwapkSQTAmount: BigInt! # total swap SQT amount
   trades: [Trade] @derivedFrom(field: "sender")
 
-  createAt: String #getUpsertAt: topicHandler:block:Txhash
-  updateAt: String #getUpsertAt: topicHandler:block:Txhash
+  createAt: Date!
+  updateAt: Date!
 }
 
 type Trade @entity {
   id: ID! #orderId:txhash
   sender: Trader!
 
-  tokenGive: String!
-  tokenGet: String!
+  tokenGive: String! # SQT
+  tokenGet: String!  # kSQT
   amountGive: BigInt!
   amountGet: BigInt!
 
-  blockHeight: Int! # When submitted
-  created: Date! # When submitted
-  createAt: String #getUpsertAt: topicHandler:block:Txhash
-  updateAt: String #getUpsertAt: topicHandler:block:Txhash
+  createAt: Date!
+  updateAt: Date!
 }
 
 enum OrderStatus {
@@ -510,19 +474,16 @@ enum OrderStatus {
 
 type Order @entity {
   id: ID! #orderId
-  tokenGiveBalance: BigInt! #amount left that indexer can trade
-  pairOrderId: BigInt! # pair order ID
   sender: String!
   tokenGive: String!
   tokenGet: String!
   amountGive: BigInt!
   amountGet: BigInt!
-  expireDate: Date!
-  blockHeight: Int! # When submitted
-  created: Date! # When submitted
-  status: OrderStatus! # Inactive when cancel/setExpired
-  createAt: String #getUpsertAt: topicHandler:block:Txhash
-  updateAt: String #getUpsertAt: topicHandler:block:Txhash
+  tokenGiveBalance: BigInt! #amount SQT left for swapping
+  status: OrderStatus! # Inactive when cancel order
+
+  createAt: Date!
+  updateAt: Date!
 }
 
 type Cache @entity {

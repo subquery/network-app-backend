@@ -1,4 +1,4 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -11,7 +11,7 @@ import {
   UnbondCancelledEvent,
   UnbondRequestedEvent,
   UnbondWithdrawnEvent,
-} from '@subql/contract-sdk/typechain/Staking';
+} from '@subql/contract-sdk/typechain/contracts/Staking';
 import assert from 'assert';
 import {
   Delegation,

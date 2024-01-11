@@ -1,4 +1,4 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -8,7 +8,7 @@ import {
   SetControllerAccountEvent,
   UnregisterIndexerEvent,
   UpdateMetadataEvent,
-} from '@subql/contract-sdk/typechain/IndexerRegistry';
+} from '@subql/contract-sdk/typechain/contracts/IndexerRegistry';
 import assert from 'assert';
 import { Controller, Indexer, IndexerCommissionRate } from '../types';
 import {
