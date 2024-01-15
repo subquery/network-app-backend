@@ -123,11 +123,18 @@ export async function handleChannelTerminate(
   const { channelId, spent, terminatedAt, terminateByIndexer } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
+
+  sc.terminatedAt = new Date(terminatedAt.toNumber() * 1000);
+  sc.terminateByIndexer = terminateByIndexer;
+
+  if (sc.status === ChannelStatus.FINALIZED) {
+    await sc.save();
+    return;
+  }
+
   const diff = spent.toBigInt() - sc.spent;
   sc.spent = spent.toBigInt();
   sc.status = ChannelStatus.TERMINATING;
-  sc.terminatedAt = new Date(terminatedAt.toNumber() * 1000);
-  sc.terminateByIndexer = terminateByIndexer;
   await sc.save();
   if (diff > 0) {
     const deployment = await Deployment.get(sc.deploymentId);
