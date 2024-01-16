@@ -156,6 +156,7 @@ export async function handleChannelFinalize(
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   sc.status = ChannelStatus.FINALIZED;
+  sc.isFinal = true;
   const diff = total.toBigInt() - remain.toBigInt() - sc.spent;
   sc.spent = total.toBigInt() - remain.toBigInt();
   await sc.save();
