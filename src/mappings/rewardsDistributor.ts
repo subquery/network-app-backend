@@ -22,6 +22,14 @@ import { EthereumLog } from '@subql/types-ethereum';
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { getCurrentEra } from './eraManager';
+import { IndexerRewardProps } from '../types/models/IndexerReward';
+
+type EraRewardCacheItem = {
+  lastUpdatedEra: bigint;
+  rewardChange: bigint;
+};
+
+const eraRewardCache: Record<string, EraRewardCacheItem> = {};
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -242,47 +250,123 @@ export async function handleRewardsUpdated(
 
   const { indexer, eraIdx, additions, removals } = event.args;
 
-  const prevEraRewards = await IndexerReward.get(
-    getPrevIndexerRewardId(indexer, eraIdx)
-  );
-  const prevAmount = prevEraRewards?.amount ?? BigInt(0);
+  let cache = eraRewardCache[event.blockNumber];
+  if (!cache) {
+    cache = {
+      lastUpdatedEra: eraIdx.toBigInt(),
+      rewardChange: additions.toBigInt() - removals.toBigInt(),
+    };
+    eraRewardCache[event.blockNumber] = cache;
+  }
+  cache.rewardChange += additions.toBigInt() - removals.toBigInt();
+  if (cache.rewardChange === BigInt(0)) {
+    delete eraRewardCache[event.blockNumber];
+  }
 
-  const id = getIndexerRewardId(indexer, eraIdx);
-  let eraRewards = await IndexerReward.get(id);
-  // Hook for `additions` equal to zero
-  const additionValue = additions.eq(0)
-    ? BigNumber.from(eraRewards?.additions ?? 0)
-    : additions;
-  if (!eraRewards) {
-    eraRewards = IndexerReward.create({
-      id,
+  let prevAmount = BigInt(0);
+  if (cache.lastUpdatedEra < eraIdx.toBigInt() - BigInt(1)) {
+    prevAmount = await IndexerReward.get(
+      getIndexerRewardId(indexer, BigNumber.from(cache.lastUpdatedEra))
+    ).then((r) => r?.amount || BigInt(0));
+  }
+  while (cache.lastUpdatedEra < eraIdx.toBigInt() - BigInt(1)) {
+    const eraToUpdate = cache.lastUpdatedEra + BigInt(1);
+    prevAmount = await upsertEraReward(
+      {
+        id: getIndexerRewardId(indexer, BigNumber.from(eraToUpdate)),
+        indexerId: indexer,
+        eraIdx: eraToUpdate.toString(),
+        eraId: eraToUpdate,
+        additions: BigInt(0),
+        removals: BigInt(0),
+        amount: BigInt(0), // update in function
+        createdBlock: event.blockNumber,
+        lastEvent: `handleRewardsUpdated:${event.blockNumber}`,
+      },
+      cache,
+      prevAmount
+    ).then((r) => r.amount);
+  }
+
+  if (prevAmount === BigInt(0)) {
+    prevAmount = await IndexerReward.get(
+      getPrevIndexerRewardId(indexer, eraIdx)
+    ).then((r) => r?.amount || BigInt(0));
+  }
+
+  await upsertEraReward(
+    {
+      id: getIndexerRewardId(indexer, eraIdx),
       indexerId: indexer,
       eraIdx: eraIdx.toHexString(),
       eraId: eraIdx.toBigInt(),
-      additions: additionValue.toBigInt(),
+      additions: additions.toBigInt(),
       removals: removals.toBigInt(),
-      amount: BigInt(0), // Updated below
+      amount: BigInt(0), // update in function
       createdBlock: event.blockNumber,
-    });
-  } else {
-    eraRewards.additions = additionValue.toBigInt();
-    eraRewards.removals = removals.toBigInt();
-    eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
-  }
-
-  eraRewards.amount =
-    prevAmount + additionValue.toBigInt() - removals.toBigInt();
-
-  await eraRewards.save();
-
-  const lastEraIdx = await upsertIndexerLastRewardEra(
-    indexer,
-    eraIdx,
-    event.blockNumber
+      lastEvent: `handleRewardsUpdated:${event.blockNumber}`,
+    },
+    cache,
+    prevAmount
   );
 
+  // const id = getIndexerRewardId(indexer, eraIdx);
+  // let eraRewards = await IndexerReward.get(id);
+  // // Hook for `additions` equal to zero
+  // const additionValue = additions.eq(0)
+  //   ? BigNumber.from(eraRewards?.additions ?? 0)
+  //   : additions;
+  // if (!eraRewards) {
+  //   eraRewards = IndexerReward.create({
+  //     id,
+  //     indexerId: indexer,
+  //     eraIdx: eraIdx.toHexString(),
+  //     eraId: eraIdx.toBigInt(),
+  //     additions: additionValue.toBigInt(),
+  //     removals: removals.toBigInt(),
+  //     amount: BigInt(0), // Updated below
+  //     createdBlock: event.blockNumber,
+  //   });
+  // } else {
+  //   eraRewards.additions = additionValue.toBigInt();
+  //   eraRewards.removals = removals.toBigInt();
+  //   eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
+  // }
+
+  // eraRewards.amount =
+  //   prevAmount + additionValue.toBigInt() - removals.toBigInt();
+
+  // await eraRewards.save();
+
+  // const lastEraIdx = await upsertIndexerLastRewardEra(
+  //   indexer,
+  //   eraIdx,
+  //   event.blockNumber
+  // );
+  await upsertIndexerLastRewardEra(indexer, eraIdx, event.blockNumber);
+
   /* Rewards changed events don't come in in order and may not be the latest set era */
-  await updateFutureRewards(indexer, lastEraIdx, eraRewards, event.blockNumber);
+  // await updateFutureRewards(indexer, lastEraIdx, eraRewards, event.blockNumber);
+}
+
+async function upsertEraReward(
+  data: IndexerRewardProps,
+  cache: EraRewardCacheItem,
+  prevAmount: bigint
+) {
+  let eraReward = await IndexerReward.get(data.id);
+  if (!eraReward) {
+    eraReward = IndexerReward.create(data);
+  } else {
+    eraReward.additions += data.additions;
+    eraReward.removals += data.removals;
+  }
+  eraReward.amount = prevAmount + eraReward.additions - eraReward.removals;
+  await eraReward.save();
+
+  cache.lastUpdatedEra = data.eraId;
+
+  return eraReward;
 }
 
 async function upsertIndexerLastRewardEra(
