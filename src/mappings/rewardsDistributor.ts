@@ -24,12 +24,12 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { getCurrentEra } from './eraManager';
 import { IndexerRewardProps } from '../types/models/IndexerReward';
 
-type EraRewardCacheItem = {
+type IndexerRewardCacheItem = {
   lastUpdatedEra: bigint;
   rewardChange: bigint;
 };
 
-const eraRewardCache: Record<string, EraRewardCacheItem> = {};
+const indexerRewardCache: Record<string, IndexerRewardCacheItem> = {};
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -250,17 +250,25 @@ export async function handleRewardsUpdated(
 
   const { indexer, eraIdx, additions, removals } = event.args;
 
-  let cache = eraRewardCache[event.blockNumber];
+  const existingReward = await IndexerReward.get(
+    getIndexerRewardId(indexer, eraIdx)
+  );
+  const additionChange =
+    additions.toBigInt() - (existingReward?.additions || BigInt(0));
+  const removalChange =
+    removals.toBigInt() - (existingReward?.removals || BigInt(0));
+
+  let cache = indexerRewardCache[event.blockNumber];
   if (!cache) {
     cache = {
       lastUpdatedEra: eraIdx.toBigInt(),
-      rewardChange: additions.toBigInt() - removals.toBigInt(),
+      rewardChange: additionChange - removalChange,
     };
-    eraRewardCache[event.blockNumber] = cache;
+    indexerRewardCache[event.blockNumber] = cache;
   }
-  cache.rewardChange += additions.toBigInt() - removals.toBigInt();
+  cache.rewardChange += additionChange - removalChange;
   if (cache.rewardChange === BigInt(0)) {
-    delete eraRewardCache[event.blockNumber];
+    delete indexerRewardCache[event.blockNumber];
   }
 
   let prevAmount = BigInt(0);
@@ -271,7 +279,7 @@ export async function handleRewardsUpdated(
   }
   while (cache.lastUpdatedEra < eraIdx.toBigInt() - BigInt(1)) {
     const eraToUpdate = cache.lastUpdatedEra + BigInt(1);
-    prevAmount = await upsertEraReward(
+    prevAmount = await upsertIndexerReward(
       {
         id: getIndexerRewardId(indexer, BigNumber.from(eraToUpdate)),
         indexerId: indexer,
@@ -294,7 +302,7 @@ export async function handleRewardsUpdated(
     ).then((r) => r?.amount || BigInt(0));
   }
 
-  await upsertEraReward(
+  await upsertIndexerReward(
     {
       id: getIndexerRewardId(indexer, eraIdx),
       indexerId: indexer,
@@ -310,63 +318,28 @@ export async function handleRewardsUpdated(
     prevAmount
   );
 
-  // const id = getIndexerRewardId(indexer, eraIdx);
-  // let eraRewards = await IndexerReward.get(id);
-  // // Hook for `additions` equal to zero
-  // const additionValue = additions.eq(0)
-  //   ? BigNumber.from(eraRewards?.additions ?? 0)
-  //   : additions;
-  // if (!eraRewards) {
-  //   eraRewards = IndexerReward.create({
-  //     id,
-  //     indexerId: indexer,
-  //     eraIdx: eraIdx.toHexString(),
-  //     eraId: eraIdx.toBigInt(),
-  //     additions: additionValue.toBigInt(),
-  //     removals: removals.toBigInt(),
-  //     amount: BigInt(0), // Updated below
-  //     createdBlock: event.blockNumber,
-  //   });
-  // } else {
-  //   eraRewards.additions = additionValue.toBigInt();
-  //   eraRewards.removals = removals.toBigInt();
-  //   eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
-  // }
-
-  // eraRewards.amount =
-  //   prevAmount + additionValue.toBigInt() - removals.toBigInt();
-
-  // await eraRewards.save();
-
-  // const lastEraIdx = await upsertIndexerLastRewardEra(
-  //   indexer,
-  //   eraIdx,
-  //   event.blockNumber
-  // );
   await upsertIndexerLastRewardEra(indexer, eraIdx, event.blockNumber);
-
-  /* Rewards changed events don't come in in order and may not be the latest set era */
-  // await updateFutureRewards(indexer, lastEraIdx, eraRewards, event.blockNumber);
 }
 
-async function upsertEraReward(
+async function upsertIndexerReward(
   data: IndexerRewardProps,
-  cache: EraRewardCacheItem,
+  cache: IndexerRewardCacheItem,
   prevAmount: bigint
 ) {
-  let eraReward = await IndexerReward.get(data.id);
-  if (!eraReward) {
-    eraReward = IndexerReward.create(data);
+  let indexerReward = await IndexerReward.get(data.id);
+  if (!indexerReward) {
+    indexerReward = IndexerReward.create(data);
   } else {
-    eraReward.additions += data.additions;
-    eraReward.removals += data.removals;
+    indexerReward.additions = data.additions;
+    indexerReward.removals = data.removals;
   }
-  eraReward.amount = prevAmount + eraReward.additions - eraReward.removals;
-  await eraReward.save();
+  indexerReward.amount =
+    prevAmount + indexerReward.additions - indexerReward.removals;
+  await indexerReward.save();
 
   cache.lastUpdatedEra = data.eraId;
 
-  return eraReward;
+  return indexerReward;
 }
 
 async function upsertIndexerLastRewardEra(
