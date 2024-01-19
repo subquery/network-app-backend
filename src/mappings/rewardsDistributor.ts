@@ -292,7 +292,8 @@ export async function handleRewardsUpdated(
         lastEvent: `handleRewardsUpdated:${event.blockNumber}`,
       },
       cache,
-      prevAmount
+      prevAmount,
+      false
     ).then((r) => r.amount);
   }
 
@@ -324,12 +325,13 @@ export async function handleRewardsUpdated(
 async function upsertIndexerReward(
   data: IndexerRewardProps,
   cache: IndexerRewardCacheItem,
-  prevAmount: bigint
+  prevAmount: bigint,
+  modifyAddRem = true
 ) {
   let indexerReward = await IndexerReward.get(data.id);
   if (!indexerReward) {
     indexerReward = IndexerReward.create(data);
-  } else {
+  } else if (modifyAddRem) {
     indexerReward.additions = data.additions;
     indexerReward.removals = data.removals;
   }
