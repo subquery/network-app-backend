@@ -303,7 +303,7 @@ export async function handleRewardsUpdated(
     ).then((r) => r?.amount || BigInt(0));
   }
 
-  await upsertIndexerReward(
+  const indexerReward = await upsertIndexerReward(
     {
       id: getIndexerRewardId(indexer, eraIdx),
       indexerId: indexer,
@@ -316,10 +316,23 @@ export async function handleRewardsUpdated(
       lastEvent: `handleRewardsUpdated:${event.blockNumber}`,
     },
     cache,
-    prevAmount
+    prevAmount,
+    true
   );
 
-  await upsertIndexerLastRewardEra(indexer, eraIdx, event.blockNumber);
+  const lastEraIdx = await upsertIndexerLastRewardEra(
+    indexer,
+    eraIdx,
+    event.blockNumber
+  );
+
+  /* Rewards changed events don't come in in order and may not be the latest set era */
+  await updateFutureRewards(
+    indexer,
+    lastEraIdx,
+    indexerReward,
+    event.blockNumber
+  );
 }
 
 async function upsertIndexerReward(
