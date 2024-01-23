@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 3.1.1'
+    version: '>= 3.5.2'
     options:
       unfinalizedBlocks: true
   query:
@@ -15,20 +15,21 @@ repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '80001' # Mumbai testnet
-  endpoint: https://rpc.ankr.com/polygon_mumbai
-  dictionary: https://dict-tyk.subquery.network/query/polygon-mumbai
+  chainId: '84532' # base-sepolia
+  endpoint: https://sepolia.base.org
+  dictionary: ''
 
 x-ethereum: &ethereum
   kind: ethereum/Runtime
-  startBlock: 43436676
+  startBlock: 5073990
+
   assets:
     eraManager:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/polygon/EraManager.sol/EraManager.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/EraManager.sol/EraManager.json
     staking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
     sqtoken:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/polygon/ChildERC20.sol/ChildERC20.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/L2SQToken.sol/L2SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
     projectRegistry:
@@ -42,7 +43,7 @@ x-ethereum: &ethereum
     consumerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
     rewardsDistributor:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributor.sol/RewardsDistributor.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:

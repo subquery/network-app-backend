@@ -40,7 +40,7 @@ x-ethereum: &ethereum
     serviceAgreementRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
     rewardsDistributor:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributor.sol/RewardsDistributor.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:

@@ -17,7 +17,7 @@ export enum Contracts {
   INDEXER_REGISTRY_ADDRESS = 'IndexerRegistry',
   PLAN_MANAGER_ADDRESS = 'PlanManager',
   SA_REGISTRY_ADDRESS = 'ServiceAgreementRegistry',
-  REWARD_DIST_ADDRESS = 'RewardsDistributer',
+  REWARD_DIST_ADDRESS = 'RewardsDistributor',
   KSQT_ADDRESS = 'SQToken',
 }
 
