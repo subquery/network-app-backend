@@ -57,7 +57,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: eraManager
-      address: '0xc193B6C752079CdE4020D8463cDAA62FAA09b253'
+      address: '0x6E98e462c864Fa2D9Cc165bc4bf4fD891Fc2b8b2'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -69,7 +69,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: indexerRegistry
-      address: '0x7f87DC86d4d31db2B28583BaFe6c63d62b6a7e7b'
+      address: '0x9b207b3ba85cE57c398d4ca07BA71a46C917EF1A'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -110,7 +110,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: staking
-      address: '0x8E861d7CD5d66843A869a0316F401C2fd0d21692'
+      address: '0x520c2A23000D134780a90bd9dec533df434140a2'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -146,7 +146,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: sqtoken
-      address: '0xDa9f97B9dE8509938c65DB0F0CB0ff9Ea425E9a0'
+      address: '0x37B797EBE14B4490FE64c67390AeCfE20D650953'
     mapping:
       file: './dist/index.js'
       handlers:
@@ -158,7 +158,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: projectRegistry
-      address: '0x984F8CBea62c54953BB3b9532841d774Dd04669b'
+      address: '0xaa5c9b4a3975FF78ffDd00321dAbce28EF7F7C7c'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -196,7 +196,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: planManager
-      address: '0x7369D48B2e47533A9Cd6C811f827Aac6202F0D17'
+      address: '0x61562768175432072cdD6C25De9ED74e24f1a458'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -228,7 +228,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: serviceAgreementRegistry
-      address: '0xD218581F435643c25305C1c877431E15d6BbFC70'
+      address: '0x0E0730B1ec1D0E4C1AE15C73b0Be089d07261fBB'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -245,7 +245,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: rewardsDistributor
-      address: '0xbCa51C6Ccd9959466108A243F6c8Fd527A73Cb8d'
+      address: '0x5c0d1F22C4D7aaF35Ade34CA7c7491dBB0A91Cb7'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -267,7 +267,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
-      address: '0x87c9C7a2672f31EbA5dB31CfF105eCbF2591eF12'
+      address: '0x60060511d0dfC7B3a6013B7E565aeC8F353639a9'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -289,7 +289,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: stateChannel
-      address: '0x4BCd439E0cE238a48BeCCee236Fe402A676Cdea9'
+      address: '0x8C3d312291CC666757daFbb6eD20874Ae573C895'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -307,7 +307,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ChannelFund(uint256 channelId, uint256 total)
+              - ChannelFund(uint256 channelId, uint256 realTotal, uint256 total)
         - handler: handleChannelCheckpoint
           kind: ethereum/LogHandler
           filter:
@@ -326,7 +326,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: disputeManager
-      address: '0x60988c4475BaB7B0f99335FBeCAA6716176dF114'
+      address: '0x7c244A53E57aaBEfF7Fb93745AA8993DB307788d'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -343,7 +343,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: priceOracle
-      address: '0xaB9189822844b90eE0A99F33512c2Aa3927232a4'
+      address: '0x0D5A4266573975222292601686f2C3CF02E2120A'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -355,7 +355,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: consumerRegistry
-      address: "0x6E0FaE74E83f524b228752a304348Fbe4a29De10"
+      address: "0x74C3c2273f47dDF4E435f20A01601a44a519a9c0"
     mapping:
       file: ./dist/index.js
       handlers:
@@ -372,7 +372,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: tokenExchange
-      address: "0xE3699a98fBeFeE61AF1F1F695A437d9fF9dd211c"
+      address: "0x91514003aDfb9371985cBEB59D10EdC784dec330"
     mapping:
       file: ./dist/index.js
       handlers:

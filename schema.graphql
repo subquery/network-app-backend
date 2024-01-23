@@ -408,6 +408,7 @@ type StateChannel @entity {
   agent: String
   status: ChannelStatus!
   deployment: Deployment!
+  realTotal: BigInt!
   total: BigInt!
   price: BigInt!
   spent: BigInt!
