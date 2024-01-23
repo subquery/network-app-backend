@@ -4,11 +4,11 @@
   "description": "Subql project for indexing the Subquery Network",
   "main": "dist/index.js",
   "scripts": {
-    "build:kepler": "yarn check-filters kepler && ./node_modules/.bin/subql build",
+    "build:mainnet": "yarn check-filters mainnet && ./node_modules/.bin/subql build",
     "build:testnet": "yarn check-filters testnet && ./node_modules/.bin/subql build",
-    "codegen:kepler": "./node_modules/.bin/subql codegen -f ./project-kepler.yaml",
+    "codegen:mainnet": "./node_modules/.bin/subql codegen -f ./project-mainnet.yaml",
     "codegen:testnet": "./node_modules/.bin/subql codegen -f ./project-testnet.yaml",
-    "deploy:kepler": "subql publish -f ./project-kepler.yaml",
+    "deploy:mainnet": "subql publish -f ./project-mainnet.yaml",
     "deploy:testnet": "subql publish -f ./project-testnet.yaml",
     "validate": "subql validate",
     "prepare": "husky install",
@@ -17,8 +17,8 @@
     "check-filters": "node -r ts-node/register/transpile-only ./scripts/checkFilters.ts",
     "prettier:fix": "prettier --write ."
   },
-  "homepage": "https://github.com/subquery/subquery-network-subql-project",
-  "repository": "https://github.com/subquery/subquery-network-subql-project",
+  "homepage": "https://github.com/subquery/network-app-backend",
+  "repository": "https://github.com/subquery/network-app-backend",
   "files": [
     "dist",
     "schema.graphql",

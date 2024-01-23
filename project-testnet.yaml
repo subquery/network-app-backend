@@ -10,7 +10,7 @@ runner:
   query:
     name: '@subql/query'
     version: '*'
-description: 'Query registry project for SubQuery Kepler Testnet'
+description: 'Query registry project for SubQuery Testnet'
 repository: ''
 schema:
   file: ./schema.graphql
