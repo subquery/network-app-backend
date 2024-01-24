@@ -17,8 +17,8 @@ export enum Contracts {
   INDEXER_REGISTRY_ADDRESS = 'IndexerRegistry',
   PLAN_MANAGER_ADDRESS = 'PlanManager',
   SA_REGISTRY_ADDRESS = 'ServiceAgreementRegistry',
-  REWARD_DIST_ADDRESS = 'RewardsDistributer',
-  KSQT_ADDRESS = 'SQToken',
+  REWARD_DIST_ADDRESS = 'RewardsDistributor',
+  SQT_ADDRESS = 'L2SQToken',
 }
 
 export function getContractAddress(
@@ -26,7 +26,7 @@ export function getContractAddress(
   contract: Contracts
 ): string {
   const deploymentFile =
-    networkId === 80001 ? testnetDeploymentFile : testnetDeploymentFile;
+    networkId === 84532 ? testnetDeploymentFile : testnetDeploymentFile;
   return deploymentFile.child[contract].address;
 }
 

@@ -51,6 +51,7 @@ export async function handleChannelOpen(
     consumer,
     agent,
     status: ChannelStatus.OPEN,
+    realTotal: total.toBigInt(),
     total: total.toBigInt(),
     price: price.toBigInt(),
     spent: BigInt(0),
@@ -85,10 +86,11 @@ export async function handleChannelFund(
   logger.info('handleChannelFund');
   assert(event.args, 'No event args');
 
-  const { channelId, total } = event.args;
+  const { channelId, total, realTotal } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   sc.total = total.toBigInt();
+  sc.realTotal = realTotal.toBigInt();
   await sc.save();
 }
 

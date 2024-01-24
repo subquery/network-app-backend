@@ -1,7 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransferEvent } from '@subql/contract-sdk/typechain/contracts/polygon/ChildERC20.sol/ChildERC20';
+import { TransferEvent } from '@subql/contract-sdk/typechain/contracts/l2/L2SQToken';
 import { EthereumLog } from '@subql/types-ethereum';
 import { ethers } from 'ethers';
 import { Sqtoken, TokenHolder, Transfer } from '../types';

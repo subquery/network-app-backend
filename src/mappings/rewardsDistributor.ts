@@ -11,12 +11,12 @@ import {
   EraReward,
   EraRewardClaimed,
 } from '../types';
-import { RewardsDistributer__factory } from '@subql/contract-sdk';
+import { RewardsDistributor__factory } from '@subql/contract-sdk';
 import {
   ClaimRewardsEvent,
   DistributeRewardsEvent,
   RewardsChangedEvent,
-} from '@subql/contract-sdk/typechain/contracts/RewardsDistributer';
+} from '@subql/contract-sdk/typechain/contracts/RewardsDistributor';
 import { biToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 
@@ -48,7 +48,7 @@ export async function handleRewardsDistributed(
   if (!delegators) return;
 
   const network = await api.getNetwork();
-  const rewardsDistributor = RewardsDistributer__factory.connect(
+  const rewardsDistributor = RewardsDistributor__factory.connect(
     getContractAddress(network.chainId, Contracts.REWARD_DIST_ADDRESS),
     api
   );

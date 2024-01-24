@@ -408,6 +408,7 @@ type StateChannel @entity {
   agent: String
   status: ChannelStatus!
   deployment: Deployment!
+  realTotal: BigInt!
   total: BigInt!
   price: BigInt!
   spent: BigInt!
@@ -427,7 +428,7 @@ type Disputes @entity {
   isFinalized: Boolean!
 
   fisherman: String!
-  indexer: String!
+  runner: String!
 
   slashAmount: BigInt
   returnAmount: BigInt

@@ -16,7 +16,7 @@ export async function handleDisputeOpen(
   logger.info('handleDisputeOpen');
   assert(event.args, 'No event args');
 
-  const { disputeId, fisherman, indexer, _type } = event.args;
+  const { disputeId, fisherman, runner, _type } = event.args;
 
   const disputeType = getDisputeType(_type);
 
@@ -25,7 +25,7 @@ export async function handleDisputeOpen(
     state: DisputeState.ONGOING,
     disputeType,
     isFinalized: false,
-    indexer,
+    runner,
     fisherman,
   });
 

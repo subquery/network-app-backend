@@ -18,8 +18,8 @@ function getProjectFile() {
   switch (network) {
     case 'testnet':
       return path.resolve(__dirname, '../project-testnet.yaml');
-    case 'kepler':
-      return path.resolve(__dirname, '../project-kepler.yaml');
+    case 'mainnet':
+      return path.resolve(__dirname, '../project-mainnet.yaml');
     default:
       throw new Error('Unknown network');
   }

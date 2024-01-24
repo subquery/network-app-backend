@@ -4,57 +4,60 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 3.1.1'
+    version: '>= 3.5.2'
     options:
       unfinalizedBlocks: true
   query:
     name: '@subql/query'
-    version: '>= 2.6.0'
-description: 'Query registry project for SubQuery Kepler Testnet'
+    version: '*'
+description: 'Query registry project for SubQuery Mainnet'
 repository: ''
 schema:
   file: ./schema.graphql
 network:
-  chainId: '137' # Mumbai testnet
-  endpoint: https://polygon.api.onfinality.io/public
-  dictionary: https://dict-tyk.subquery.network/query/polygon
-
+  chainId: '8453' # base-sepolia
+  endpoint: https://mainnet.base.org
+  dictionary: ''
+# TODO: need to update this config file with the mainnet information
 x-ethereum: &ethereum
   kind: ethereum/Runtime
-  startBlock: 41192135
+  startBlock: 5073990
+
   assets:
     eraManager:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/EraManager.sol/EraManager.json
     staking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
     sqtoken:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SQToken.sol/SQToken.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/L2SQToken.sol/L2SQToken.json
     indexerRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
-    queryRegistry:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/QueryRegistry.sol/QueryRegistry.json
+    projectRegistry:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ProjectRegistry.sol/ProjectRegistry.json
     planManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PlanManager.sol/PlanManager.json
     purchaseOfferMarket:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PurchaseOfferMarket.sol/PurchaseOfferMarket.json
     serviceAgreementRegistry:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
+    consumerRegistry:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
     rewardsDistributor:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributor.sol/RewardsDistributor.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/DisputeManager.sol/DisputeManager.json
-    airdropper:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
-    permissionedExchange:
-      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PermissionedExchange.sol/PermissionedExchange.json
+    priceOracle:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PriceOracle.sol/PriceOracle.json
+    tokenExchange:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/TokenExchange.sol/TokenExchange.json
 
 dataSources:
   - <<: *ethereum
     options:
       abi: eraManager
-      address: '0x7Bf309E35405B9aD3077D45c077E569C480B8F0b'
+      address: '0xc193B6C752079CdE4020D8463cDAA62FAA09b253'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -66,7 +69,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: indexerRegistry
-      address: '0xf1485b4CfA7F4cD75F0B1395240F15b81a757Cbb'
+      address: '0x7f87DC86d4d31db2B28583BaFe6c63d62b6a7e7b'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -107,7 +110,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: staking
-      address: '0x580Cc0C038A8Bc78aED71BFbDf329467276eEe64'
+      address: '0x8E861d7CD5d66843A869a0316F401C2fd0d21692'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -143,7 +146,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: sqtoken
-      address: '0xcEE50Ee839a2ab3914cF4c3cbAc78f6F11E0c937'
+      address: '0xDa9f97B9dE8509938c65DB0F0CB0ff9Ea425E9a0'
     mapping:
       file: './dist/index.js'
       handlers:
@@ -154,45 +157,46 @@ dataSources:
               - Transfer(address indexed from, address indexed to, uint256 amount)
   - <<: *ethereum
     options:
-      abi: queryRegistry
-      address: '0x7d77597FF06795EB1fA796f8E959eD3184e34299'
+      abi: projectRegistry
+      address: '0x984F8CBea62c54953BB3b9532841d774Dd04669b'
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleNewQuery
+        # latest version of events
+        - handler: handleProjectCreated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - CreateQuery(uint256 queryId, address creator, bytes32 metadata, bytes32 deploymentId, bytes32 version)
-        - handler: handleUpdateQueryMetadata
+              - ProjectCreated(address indexed creator, uint256 indexed projectId, string projectMetadata, uint8 projectType, bytes32 deploymentId, bytes32 deploymentMetadata)
+        - handler: handlerProjectTransferred
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UpdateQueryMetadata(address owner, uint256 queryId, bytes32 metadata)
-        - handler: handleUpdateQueryDeployment
+              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+        - handler: handleProjectMetadataUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UpdateQueryDeployment(address owner, uint256 queryId, bytes32 deploymentId, bytes32 version)
-        - handler: handleStartIndexing
+              - ProjectMetadataUpdated(address indexed owner, uint256 indexed projectId, string metadata)
+        - handler: handleProjectDeploymentUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - StartIndexing(address indexer, bytes32 deploymentId)
-        - handler: handleIndexingReady
+              - ProjectDeploymentUpdated(address indexed owner, uint256 indexed projectId, bytes32 deploymentId, bytes32 metadata)
+        - handler: handleProjectLatestDeploymentUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UpdateIndexingStatusToReady(address indexer, bytes32 deploymentId)
-        - handler: handleStopIndexing
+              - ProjectLatestDeploymentUpdated(address indexed owner, uint256 projectId, bytes32 deploymentId)
+        - handler: handleServiceStatusChanged
           kind: ethereum/LogHandler
           filter:
             topics:
-              - StopIndexing(address indexer, bytes32 deploymentId)
+              - ServiceStatusChanged(address indexed indexer, bytes32 indexed deploymentId, uint8 status)
   - <<: *ethereum
     options:
       abi: planManager
-      address: '0x3ce376aaCA549e7AcaBFC882A5cA752a1B8F4B27'
+      address: '0x7369D48B2e47533A9Cd6C811f827Aac6202F0D17'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -224,7 +228,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: serviceAgreementRegistry
-      address: '0x8d29A0671c563Cf216BBea3440d6D93CAc9ce583'
+      address: '0xD218581F435643c25305C1c877431E15d6BbFC70'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -233,10 +237,15 @@ dataSources:
           filter:
             topics:
               - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, uint256 serviceAgreementId)
+        - handler: handlerAgreementTransferred
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
   - <<: *ethereum
     options:
       abi: rewardsDistributor
-      address: '0x9e96592cd510da1EBC6bB94448F6043980Bf3c51'
+      address: '0xbCa51C6Ccd9959466108A243F6c8Fd527A73Cb8d'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -258,7 +267,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
-      address: '0x15124a66b375741CE8d26DA80c31Dcb0016864Ae'
+      address: '0x87c9C7a2672f31EbA5dB31CfF105eCbF2591eF12'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -266,7 +275,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - PurchaseOfferCreated(address consumer, uint256 offerId, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
+              - PurchaseOfferCreated(address consumer, uint256 offerId, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 minimumStakingAmount, uint256 expireDate)
         - handler: handlePurchaseOfferCancelled
           kind: ethereum/LogHandler
           filter:
@@ -280,7 +289,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: stateChannel
-      address: '0xcd5E5807298a24734EBcC3B08F10Bf6b0C309E45'
+      address: '0x4BCd439E0cE238a48BeCCee236Fe402A676Cdea9'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -317,7 +326,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: disputeManager
-      address: '0xEb63E6d1BA46382F2a05D821ef5aE5744187E275'
+      address: '0x60988c4475BaB7B0f99335FBeCAA6716176dF114'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -333,71 +342,20 @@ dataSources:
               - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)
   - <<: *ethereum
     options:
-      abi: airdropper
-      address: '0x22Ab0be7a2eC82a983883839f7d5b4B12F5EbddC'
+      abi: priceOracle
+      address: '0xaB9189822844b90eE0A99F33512c2Aa3927232a4'
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleRoundCreated
+        - handler: handlePricePosted
           kind: ethereum/LogHandler
           filter:
             topics:
-              - RoundCreated(uint256 indexed roundId, address tokenAddress, uint256 roundStartTime, uint256 roundDeadline)
-        - handler: handleAddAirdrop
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - AddAirdrop(address indexed addr, uint256 roundId, uint256 amount)
-        - handler: handleAirdropClaimed
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - AirdropClaimed(address indexed addr, uint256 roundId, uint256 amount)
-        - handler: handleRoundSettled
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
+              - PricePosted(address assetFrom, address assetTo, uint256 previousPrice, uint256 newPrice);
   - <<: *ethereum
     options:
-      abi: permissionedExchange
-      address: "0x063482d40B31f78d4aDA6D0CDCBaE73F07Ea4865"
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleExchangeOrderSent
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - ExchangeOrderSent(uint256 indexed orderId, address sender, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet, uint256 expireDate)
-        - handler: handleOrderChanged
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - ExchangeOrderChanged(uint256 indexed orderId, uint256 tokenGiveBalance);
-        - handler: handleTrade
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - Trade(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
-        - handler: handleOrderSettled
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - OrderSettled(uint256 indexed orderId, address tokenGive, uint256 amountGive, address tokenGet, uint256 amountGet)
-        - handler: handleQuotaAdded
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - QuotaAdded(address token, address account, uint256 amount)
-  - kind: ethereum/Runtime
-    startBlock: 46362177
-    assets:
-      consumerRegistry:
-        file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
-    options:
       abi: consumerRegistry
-      address: "0x2c871909c692b640C28EDBC6Ef5BC0F68565C464"
+      address: "0x6E0FaE74E83f524b228752a304348Fbe4a29De10"
     mapping:
       file: ./dist/index.js
       handlers:
@@ -411,3 +369,26 @@ dataSources:
           filter:
             topics:
               - ControllerRemoved(address indexed consumer, address controller)
+  - <<: *ethereum
+    options:
+      abi: tokenExchange
+      address: "0xE3699a98fBeFeE61AF1F1F695A437d9fF9dd211c"
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleExchangeOrderSent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ExchangeOrderSent(uint256 indexed orderId, address sender, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet, uint256 tokenGiveBalance)
+        - handler: handleOrderSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - OrderSettled(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive)
+        - handler: handleTraded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Trade(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet);
+

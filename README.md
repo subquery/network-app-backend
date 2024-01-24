@@ -43,11 +43,11 @@ For `Testnet`:
 - `yarn build:testnet`
 - `yarn deploy:testnet`
 
-For `Kepler`
+For `Mainnet`
 
-- `yarn codegen:kepler`
-- `yarn build:kepler`
-- `yarn deploy:kepler`
+- `yarn codegen:mainnet`
+- `yarn build:mainnet`
+- `yarn deploy:mainnet`
 
 ## Publish your project
 
@@ -59,7 +59,7 @@ SubQuery is open-source, meaning you have the freedom to run it in the following
 
 ```
 export SUBQL_ACCESS_TOKEN=<token>     (replace with your own token)
-yarn deploy:testnet or yarn deploy:kepler
+yarn deploy:testnet or yarn deploy:mainnet
 ```
 
 ## What Next?
