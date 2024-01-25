@@ -1,6 +1,6 @@
 enum ProjectType {
-    SUBQUERY,
-    RPC
+  SUBQUERY
+  RPC
 }
 
 enum ServiceStatus {
@@ -460,7 +460,7 @@ type Trade @entity {
   sender: Trader!
 
   tokenGive: String! # SQT
-  tokenGet: String!  # kSQT
+  tokenGet: String! # kSQT
   amountGive: BigInt!
   amountGet: BigInt!
 
@@ -482,7 +482,6 @@ type Order @entity {
   amountGet: BigInt!
   tokenGiveBalance: BigInt! #amount SQT left for swapping
   status: OrderStatus! # Inactive when cancel order
-
   createAt: Date!
   updateAt: Date!
 }
@@ -490,4 +489,86 @@ type Order @entity {
 type Cache @entity {
   id: ID!
   value: String!
+}
+
+type DeploymentBooster @entity {
+  id: ID! # deploymentId:consumer:txHash
+  deployment: Deployment!
+  consumer: String! @index
+  amountAdded: BigInt!
+  amountRemoved: BigInt!
+  amount: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocation @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  deployment: Deployment!
+  indexer: Indexer!
+  amountAdded: BigInt!
+  amountRemoved: BigInt!
+  amount: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationOverflow @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  deployment: Deployment!
+  indexer: Indexer!
+  overflowStart: Date!
+  overflowEnd: Date!
+  overflowTime: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerMissedLabor @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  deployment: Deployment!
+  indexer: Indexer!
+  missedLabor: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationReward @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  deployment: Deployment!
+  indexer: Indexer!
+  reward: BigInt!
+  burnt: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationRewardSummary @entity {
+  id: ID! # deploymentId:indexerId
+  deployment: Deployment!
+  indexer: Indexer!
+  totalReward: BigInt!
+  totalBurnt: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type ConsumerQueryReward @entity {
+  id: ID! # deploymentId:consumer:txHash
+  deployment: Deployment!
+  consumer: String! @index
+  spent: BigInt!
+  refunded: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type ConsumerQueryRewardSummary @entity {
+  id: ID! # deploymentId:consumer
+  deployment: Deployment!
+  consumer: String! @index
+  totalSpent: BigInt!
+  totalRefunded: BigInt!
+  createAt: Date!
+  updateAt: Date!
 }
