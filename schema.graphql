@@ -3,6 +3,12 @@ enum ProjectType {
   RPC
 }
 
+enum OrderType {
+  SERVICE_AGREEMENT
+  STATE_CHANNEL
+  UNKNOWN
+}
+
 enum ServiceStatus {
   READY
   TERMINATED
@@ -497,9 +503,19 @@ type DeploymentBooster @entity {
   consumer: String! @index
   amountAdded: BigInt!
   amountRemoved: BigInt!
-  amount: BigInt!
   eraIdx: Int! @index
   createAt: Date!
+}
+
+type DeploymentBoosterSummary @entity {
+  id: ID! # deploymentId:consumer
+  deployment: Deployment!
+  consumer: String! @index
+  totalAdded: BigInt!
+  totalRemoved: BigInt!
+  totalAmount: BigInt!
+  createAt: Date!
+  updateAt: Date!
 }
 
 type IndexerAllocation @entity {
@@ -508,9 +524,19 @@ type IndexerAllocation @entity {
   indexer: Indexer!
   amountAdded: BigInt!
   amountRemoved: BigInt!
-  amount: BigInt!
   eraIdx: Int! @index
   createAt: Date!
+}
+
+type IndexerAllocationSummary @entity {
+  id: ID! # deploymentId:indexerId
+  deployment: Deployment!
+  indexer: Indexer!
+  totalAdded: BigInt!
+  totalRemoved: BigInt!
+  totalAmount: BigInt!
+  createAt: Date!
+  updateAt: Date!
 }
 
 type IndexerAllocationOverflow @entity {
@@ -554,19 +580,22 @@ type IndexerAllocationRewardSummary @entity {
 }
 
 type ConsumerQueryReward @entity {
-  id: ID! # deploymentId:consumer:txHash
+  id: ID! # deploymentId:consumer:orderType:orderAddress
   deployment: Deployment!
   consumer: String! @index
+  orderType: OrderType!
+  orderAddress: String!
   spent: BigInt!
   refunded: BigInt!
-  eraIdx: Int! @index
   createAt: Date!
+  updateAt: Date!
 }
 
 type ConsumerQueryRewardSummary @entity {
-  id: ID! # deploymentId:consumer
+  id: ID! # deploymentId:consumer:orderType
   deployment: Deployment!
   consumer: String! @index
+  orderType: OrderType!
   totalSpent: BigInt!
   totalRefunded: BigInt!
   createAt: Date!
