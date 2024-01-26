@@ -52,6 +52,10 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PriceOracle.sol/PriceOracle.json
     tokenExchange:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/TokenExchange.sol/TokenExchange.json
+    rewardsBooster:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsBooster.sol/RewardsBooster.json
+    stakingAllocation:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StakingAllocation.sol/StakingAllocation.json
 
 dataSources:
   - <<: *ethereum
@@ -264,6 +268,16 @@ dataSources:
           filter:
             topics:
               - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
+        - handler: handleInstantRewards
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - InstantRewards(address indexed indexer, uint256 indexed eraIdx, uint256 token)
+        - handler: handleAgreementRewards
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AgreementRewards(address indexed indexer, uint256 agreementId, uint256 token);
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
@@ -307,12 +321,12 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ChannelFund(uint256 channelId, uint256 realTotal, uint256 total)
+              - ChannelFund(uint256 indexed channelId, uint256 realTotal, uint256 total)
         - handler: handleChannelCheckpoint
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ChannelCheckpoint(uint256 channelId, uint256 spent)
+              - ChannelCheckpoint(uint256 indexed channelId, uint256 spent, bool isFinal)
         - handler: handleChannelTerminate
           kind: ethereum/LogHandler
           filter:
@@ -355,7 +369,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: consumerRegistry
-      address: "0x74C3c2273f47dDF4E435f20A01601a44a519a9c0"
+      address: '0x74C3c2273f47dDF4E435f20A01601a44a519a9c0'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -372,7 +386,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: tokenExchange
-      address: "0x91514003aDfb9371985cBEB59D10EdC784dec330"
+      address: '0x91514003aDfb9371985cBEB59D10EdC784dec330'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -391,4 +405,72 @@ dataSources:
           filter:
             topics:
               - Trade(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet);
-
+  - <<: *ethereum
+    options:
+      abi: rewardsBooster
+      address: '0x4f6A1045A56EeD1D2795b5f6F6713972B67C09C2'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleDeploymentBoosterAdded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - DeploymentBoosterAdded(bytes32 indexed deploymentId, address indexed account, uint256 amount)
+        - handler: handleDeploymentBoosterRemoved
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - DeploymentBoosterRemoved(bytes32 indexed deploymentId, address indexed account, uint256 amount)
+        - handler: handleMissedLabor
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - MissedLabor(bytes32 indexed deploymentId, address indexed runner, uint256 labor)
+        - handler: handleAllocationRewardsGiven
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AllocationRewardsGiven(bytes32 indexed deploymentId, address indexed runner, uint256 amount)
+        - handler: handleAllocationRewardsBurnt
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AllocationRewardsBurnt(bytes32 indexed deploymentId, address indexed runner, uint256 amount)
+        - handler: handleQueryRewardsSpent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - QueryRewardsSpent(bytes32 indexed deploymentId, address indexed runner, uint256 amount, bytes data)
+        - handler: handleQueryRewardsRefunded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - QueryRewardsRefunded(bytes32 indexed deploymentId, address indexed runner, uint256 amount, bytes data)
+  - <<: *ethereum
+    options:
+      abi: stakingAllocation
+      address: '0x505B8fD4331080e5130A21349E5438951D4d2e4a'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleStakeAllocationAdded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - StakeAllocationAdded(bytes32 deploymentId, address runner, uint256 amount)
+        - handler: handleStakeAllocationRemoved
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - StakeAllocationRemoved(bytes32 deploymentId, address runner, uint256 amount)
+        - handler: handleOverAllocationStarted
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - OverAllocationStarted(address runner, uint256 start)
+        - handler: handleOverAllocationEnded
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - OverAllocationEnded(address runner, uint256 end, uint256 time)
