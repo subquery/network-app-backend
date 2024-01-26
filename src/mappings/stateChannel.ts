@@ -100,11 +100,12 @@ export async function handleChannelCheckpoint(
   logger.info('handleChannelCheckpoint');
   assert(event.args, 'No event args');
 
-  const { channelId, spent } = event.args;
+  const { channelId, spent, isFinal } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   const diff = spent.toBigInt() - sc.spent;
   sc.spent = spent.toBigInt();
+  sc.isFinal = isFinal;
   await sc.save();
   if (diff > 0) {
     const deployment = await Deployment.get(sc.deploymentId);
