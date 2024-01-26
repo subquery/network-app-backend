@@ -434,16 +434,28 @@ async function updateIndexerStakeSummary(
     });
   }
 
+  const isCurrentEra = indexerStakeSummary.eraId === currEraId;
+
   if (isFirstStake) {
+    // for 0x00 indexer, record could be already existing even if it's first stake
+    const exTotalStake = isCurrentEra
+      ? indexerStakeSummary.totalStake
+      : indexerStakeSummary.nextTotalStake;
+    const exIndexerStake = isCurrentEra
+      ? indexerStakeSummary.indexerStake
+      : indexerStakeSummary.nextIndexerStake;
+    const exDelegatorStake = isCurrentEra
+      ? indexerStakeSummary.delegatorStake
+      : indexerStakeSummary.nextDelegatorStake;
     indexerStakeSummary.eraId = currEraId;
     indexerStakeSummary.eraIdx = currEraIdx;
-    indexerStakeSummary.totalStake += amountBn;
-    indexerStakeSummary.indexerStake += newIndexerStake;
-    indexerStakeSummary.delegatorStake += newDelegatorStake;
+    indexerStakeSummary.totalStake = exTotalStake + amountBn;
+    indexerStakeSummary.indexerStake = exIndexerStake + newIndexerStake;
+    indexerStakeSummary.delegatorStake = exDelegatorStake + newDelegatorStake;
     indexerStakeSummary.nextTotalStake += amountBn;
     indexerStakeSummary.nextIndexerStake += newIndexerStake;
     indexerStakeSummary.nextDelegatorStake += newDelegatorStake;
-  } else if (indexerStakeSummary.eraId !== currEraId) {
+  } else if (!isCurrentEra) {
     indexerStakeSummary.eraId = currEraId;
     indexerStakeSummary.eraIdx = currEraIdx;
     indexerStakeSummary.totalStake = indexerStakeSummary.nextTotalStake;
