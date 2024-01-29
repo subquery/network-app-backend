@@ -449,31 +449,6 @@ type PriceOracle @entity {
   createdBlock: Int
 }
 
-# TODO: update it with TokenExchange
-# permission exchange contract
-type Trader @entity {
-  id: ID! #trader address
-  totalSwapSQTAmount: BigInt! # total swap SQT amount
-  totalSwapkSQTAmount: BigInt! # total swap SQT amount
-  trades: [Trade] @derivedFrom(field: "sender")
-
-  createAt: Date!
-  updateAt: Date!
-}
-
-type Trade @entity {
-  id: ID! #orderId:txhash
-  sender: Trader!
-
-  tokenGive: String! # SQT
-  tokenGet: String! # kSQT
-  amountGive: BigInt!
-  amountGet: BigInt!
-
-  createAt: Date!
-  updateAt: Date!
-}
-
 enum OrderStatus {
   ACTIVE
   INACTIVE
