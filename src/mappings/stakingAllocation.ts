@@ -121,7 +121,8 @@ export async function handleOverAllocationStarted(
     overflowStart: biToDate(start.toBigInt()),
     overflowEnd: new Date(0),
     overflowTime: BigInt(0),
-    eraIdx: await getCurrentEra(),
+    eraIdxStart: await getCurrentEra(),
+    eraIdxEnd: -1,
     createAt: biToDate(event.block.timestamp),
     updateAt: biToDate(event.block.timestamp),
   });
@@ -154,6 +155,7 @@ export async function handleOverAllocationEnded(
 
   overflow.overflowEnd = biToDate(end.toBigInt());
   overflow.overflowTime = time.toBigInt();
+  overflow.eraIdxEnd = await getCurrentEra();
   overflow.updateAt = biToDate(event.block.timestamp);
   await overflow.save();
 
