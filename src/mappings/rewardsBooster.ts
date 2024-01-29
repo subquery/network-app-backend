@@ -16,6 +16,7 @@ import {
   DeploymentBoosterSummary,
   IndexerAllocationReward,
   IndexerAllocationRewardSummary,
+  IndexerMissedLabor,
   OrderType,
   ServiceAgreement,
   StateChannel,
@@ -115,6 +116,20 @@ export async function handleMissedLabor(
 ): Promise<void> {
   assert(event.args, 'No event args');
   const { deploymentId, runner: indexerId, labor } = event.args;
+
+  const missedLaborId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+  let missedLabor = await IndexerMissedLabor.get(missedLaborId);
+  assert(!missedLabor, 'Missed labor already exists');
+
+  missedLabor = IndexerMissedLabor.create({
+    id: missedLaborId,
+    deploymentId,
+    indexerId,
+    missedLabor: labor.toBigInt(),
+    eraIdx: await getCurrentEra(),
+    createAt: biToDate(event.block.timestamp),
+  });
+  await missedLabor.save();
 }
 
 export async function handleAllocationRewardsGiven(

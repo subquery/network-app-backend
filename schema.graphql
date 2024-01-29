@@ -540,14 +540,22 @@ type IndexerAllocationSummary @entity {
 }
 
 type IndexerAllocationOverflow @entity {
-  id: ID! # deploymentId:indexerId:txHash
-  deployment: Deployment!
+  id: ID! # indexerId:txHash
   indexer: Indexer!
   overflowStart: Date!
-  overflowEnd: Date!
-  overflowTime: BigInt!
-  eraIdx: Int! @index
+  overflowEnd: Date! @index
+  overflowTime: BigInt! @index
+  eraIdxStart: Int! @index
+  eraIdxEnd: Int! @index
   createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerLatestAllocationOverflow @entity {
+  id: ID! # indexerId
+  overflowId: IndexerAllocationOverflow!
+  createAt: Date!
+  updateAt: Date!
 }
 
 type IndexerMissedLabor @entity {

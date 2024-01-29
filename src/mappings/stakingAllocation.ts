@@ -6,7 +6,12 @@ import {
   StakeAllocationRemovedEvent,
 } from '../types/contracts/StakingAllocation';
 import assert from 'assert';
-import { IndexerAllocation, IndexerAllocationSummary } from '../types';
+import {
+  IndexerAllocation,
+  IndexerAllocationOverflow,
+  IndexerAllocationSummary,
+  IndexerLatestAllocationOverflow,
+} from '../types';
 import { biToDate } from './utils';
 import { getCurrentEra } from './eraManager';
 
@@ -99,6 +104,36 @@ export async function handleOverAllocationStarted(
 ): Promise<void> {
   assert(event.args, 'No event args');
   const { runner, start } = event.args;
+
+  const latestOverflowId = `${runner}`;
+  let latestOverflow = await IndexerLatestAllocationOverflow.get(
+    latestOverflowId
+  );
+  assert(!latestOverflow, 'Latest overflow already exists');
+
+  const overflowId = `${runner}:${event.transactionHash}`;
+  let overflow = await IndexerAllocationOverflow.get(overflowId);
+  assert(!overflow, 'Overflow already exists');
+
+  overflow = IndexerAllocationOverflow.create({
+    id: overflowId,
+    indexerId: runner,
+    overflowStart: biToDate(start.toBigInt()),
+    overflowEnd: new Date(0),
+    overflowTime: BigInt(0),
+    eraIdx: await getCurrentEra(),
+    createAt: biToDate(event.block.timestamp),
+    updateAt: biToDate(event.block.timestamp),
+  });
+  await overflow.save();
+
+  latestOverflow = IndexerLatestAllocationOverflow.create({
+    id: latestOverflowId,
+    overflowIdId: overflowId,
+    createAt: biToDate(event.block.timestamp),
+    updateAt: biToDate(event.block.timestamp),
+  });
+  await latestOverflow.save();
 }
 
 export async function handleOverAllocationEnded(
@@ -106,4 +141,21 @@ export async function handleOverAllocationEnded(
 ): Promise<void> {
   assert(event.args, 'No event args');
   const { runner, end, time } = event.args;
+
+  const latestOverflowId = `${runner}`;
+  const latestOverflow = await IndexerLatestAllocationOverflow.get(
+    latestOverflowId
+  );
+  assert(latestOverflow, 'Latest overflow not found');
+
+  const overflowId = latestOverflow.overflowIdId;
+  const overflow = await IndexerAllocationOverflow.get(overflowId);
+  assert(overflow, 'Overflow not found');
+
+  overflow.overflowEnd = biToDate(end.toBigInt());
+  overflow.overflowTime = time.toBigInt();
+  overflow.updateAt = biToDate(event.block.timestamp);
+  await overflow.save();
+
+  await IndexerLatestAllocationOverflow.remove(latestOverflowId);
 }
