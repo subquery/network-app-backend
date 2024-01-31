@@ -12,24 +12,34 @@ import assert from 'assert';
 import {
   ConsumerQueryReward,
   ConsumerQueryRewardSummary,
+  Deployment,
   DeploymentBooster,
   DeploymentBoosterSummary,
   IndexerAllocationReward,
   IndexerAllocationRewardSummary,
   IndexerMissedLabor,
   OrderType,
+  Project,
   ServiceAgreement,
   StateChannel,
 } from '../types';
-import { biToDate } from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
-import { defaultAbiCoder } from 'ethers/lib/utils';
+import { BigNumber } from 'ethers';
 
 export async function handleDeploymentBoosterAdded(
   event: EthereumLog<DeploymentBoosterAddedEvent['args']>
 ): Promise<void> {
+  logger.info(`handleDeploymentBoosterAdded`);
   assert(event.args, 'No event args');
-  const { deploymentId, account: consumer, amount: amountAdded } = event.args;
+  const { account: consumer, amount: amountAdded } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
 
@@ -38,6 +48,7 @@ export async function handleDeploymentBoosterAdded(
 
   booster = DeploymentBooster.create({
     id: boosterId,
+    proejctId: project.id,
     deploymentId,
     consumer,
     amountAdded: amountAdded.toBigInt(),
@@ -53,6 +64,7 @@ export async function handleDeploymentBoosterAdded(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
+      proejctId: deployment.projectId,
       deploymentId,
       consumer,
       totalAdded: amountAdded.toBigInt(),
@@ -72,8 +84,16 @@ export async function handleDeploymentBoosterAdded(
 export async function handleDeploymentBoosterRemoved(
   event: EthereumLog<DeploymentBoosterRemovedEvent['args']>
 ): Promise<void> {
+  logger.info(`handleDeploymentBoosterRemoved`);
   assert(event.args, 'No event args');
-  const { deploymentId, account: consumer, amount: amountRemoved } = event.args;
+  const { account: consumer, amount: amountRemoved } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
   let booster = await DeploymentBooster.get(boosterId);
@@ -81,6 +101,7 @@ export async function handleDeploymentBoosterRemoved(
 
   booster = DeploymentBooster.create({
     id: boosterId,
+    proejctId: project.id,
     deploymentId,
     consumer: consumer,
     amountAdded: BigInt(0),
@@ -95,6 +116,7 @@ export async function handleDeploymentBoosterRemoved(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
+      proejctId: deployment.projectId,
       deploymentId,
       consumer: consumer,
       totalAdded: BigInt(0),
@@ -114,8 +136,10 @@ export async function handleDeploymentBoosterRemoved(
 export async function handleMissedLabor(
   event: EthereumLog<MissedLaborEvent['args']>
 ): Promise<void> {
+  logger.info(`handleMissedLabor`);
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, labor } = event.args;
+  const { runner: indexerId, labor } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const missedLaborId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let missedLabor = await IndexerMissedLabor.get(missedLaborId);
@@ -135,8 +159,16 @@ export async function handleMissedLabor(
 export async function handleAllocationRewardsGiven(
   event: EthereumLog<AllocationRewardsGivenEvent['args']>
 ): Promise<void> {
+  logger.info(`handleAllocationRewardsGiven`);
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, amount: reward } = event.args;
+  const { runner: indexerId, amount: reward } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocationReward = await IndexerAllocationReward.get(rewardId);
@@ -144,6 +176,7 @@ export async function handleAllocationRewardsGiven(
 
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
+    proejctId: project.id,
     deploymentId,
     indexerId,
     reward: reward.toBigInt(),
@@ -158,6 +191,7 @@ export async function handleAllocationRewardsGiven(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
+      proejctId: deployment.projectId,
       deploymentId,
       indexerId,
       totalReward: reward.toBigInt(),
@@ -175,8 +209,16 @@ export async function handleAllocationRewardsGiven(
 export async function handleAllocationRewardsBurnt(
   event: EthereumLog<AllocationRewardsBurntEvent['args']>
 ): Promise<void> {
+  logger.info(`handleAllocationRewardsBurnt`);
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, amount: burnt } = event.args;
+  const { runner: indexerId, amount: burnt } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocationReward = await IndexerAllocationReward.get(rewardId);
@@ -190,6 +232,7 @@ export async function handleAllocationRewardsBurnt(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
+      proejctId: deployment.projectId,
       deploymentId,
       indexerId,
       totalReward: BigInt(0),
@@ -207,32 +250,45 @@ export async function handleAllocationRewardsBurnt(
 export async function handleQueryRewardsSpent(
   event: EthereumLog<QueryRewardsSpentEvent['args']>
 ): Promise<void> {
+  logger.info(`handleQueryRewardsSpent`);
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, amount: spent, data } = event.args;
+  const { runner: indexerId, amount: spent, data } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
-  const address = defaultAbiCoder.decode(['address'], data)[0] as string;
-  const agreement = await ServiceAgreement.get(address);
-  const channel = await StateChannel.get(address);
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
+
+  logger.info(`handleQueryRewardsSpent orderId [data]: ${data}`);
+
+  const agreement = await ServiceAgreement.get(BigNumber.from(data).toString());
+  const channel = await StateChannel.get(BigNumber.from(data).toHexString());
   assert(agreement || channel, 'No agreement or channel found');
 
   let orderType: OrderType = OrderType.UNKNOWN;
+  let orderId = '';
   if (agreement) {
     orderType = OrderType.SERVICE_AGREEMENT;
+    orderId = agreement.id;
   } else if (channel) {
     orderType = OrderType.STATE_CHANNEL;
+    orderId = channel.id;
   }
 
   const consumer = agreement?.consumerAddress || channel?.consumer || '';
-  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${address}`;
+  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${orderId}`;
   let queryReward = await ConsumerQueryReward.get(rewardId);
 
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
+      proejctId: project.id,
       deploymentId,
       consumer,
       orderType,
-      orderAddress: address,
+      orderId,
       spent: spent.toBigInt(),
       refunded: BigInt(0),
       createAt: biToDate(event.block.timestamp),
@@ -249,6 +305,7 @@ export async function handleQueryRewardsSpent(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
+      proejctId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -267,37 +324,45 @@ export async function handleQueryRewardsSpent(
 export async function handleQueryRewardsRefunded(
   event: EthereumLog<QueryRewardsRefundedEvent['args']>
 ): Promise<void> {
+  logger.info(`handleQueryRewardsRefunded`);
   assert(event.args, 'No event args');
-  const {
-    deploymentId,
-    runner: indexerId,
-    amount: refunded,
-    data,
-  } = event.args;
+  const { runner: indexerId, amount: refunded, data } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
-  const address = defaultAbiCoder.decode(['address'], data)[0] as string;
-  const agreement = await ServiceAgreement.get(address);
-  const channel = await StateChannel.get(address);
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
+
+  logger.info(`handleQueryRewardsRefunded orderId [data]: ${data}`);
+
+  const agreement = await ServiceAgreement.get(BigNumber.from(data).toString());
+  const channel = await StateChannel.get(BigNumber.from(data).toHexString());
   assert(agreement || channel, 'No agreement or channel found');
 
   let orderType: OrderType = OrderType.UNKNOWN;
+  let orderId = '';
   if (agreement) {
     orderType = OrderType.SERVICE_AGREEMENT;
+    orderId = agreement.id;
   } else if (channel) {
     orderType = OrderType.STATE_CHANNEL;
+    orderId = channel.id;
   }
 
   const consumer = agreement?.consumerAddress || channel?.consumer || '';
-  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${address}`;
+  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${orderId}`;
   let queryReward = await ConsumerQueryReward.get(rewardId);
 
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
+      proejctId: project.id,
       deploymentId,
       consumer,
       orderType,
-      orderAddress: address,
+      orderId,
       spent: BigInt(0),
       refunded: refunded.toBigInt(),
       createAt: biToDate(event.block.timestamp),
@@ -314,6 +379,7 @@ export async function handleQueryRewardsRefunded(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
+      proejctId: project.id,
       deploymentId,
       consumer,
       orderType,

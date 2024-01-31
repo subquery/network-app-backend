@@ -7,10 +7,12 @@ import {
 } from '../types/contracts/StakingAllocation';
 import assert from 'assert';
 import {
+  Deployment,
   IndexerAllocation,
   IndexerAllocationOverflow,
   IndexerAllocationSummary,
   IndexerLatestAllocationOverflow,
+  Project,
 } from '../types';
 import { biToDate } from './utils';
 import { getCurrentEra } from './eraManager';
@@ -18,8 +20,15 @@ import { getCurrentEra } from './eraManager';
 export async function handleStakeAllocationAdded(
   event: EthereumLog<StakeAllocationAddedEvent['args']>
 ): Promise<void> {
+  logger.info('handleStakeAllocationAdded');
   assert(event.args, 'No event args');
   const { deploymentId, runner: indexerId, amount: amountAdded } = event.args;
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocation = await IndexerAllocation.get(allocationId);
@@ -27,6 +36,7 @@ export async function handleStakeAllocationAdded(
 
   allocation = IndexerAllocation.create({
     id: allocationId,
+    proejctId: project.id,
     deploymentId,
     indexerId,
     amountAdded: amountAdded.toBigInt(),
@@ -41,6 +51,7 @@ export async function handleStakeAllocationAdded(
   if (!summary) {
     summary = IndexerAllocationSummary.create({
       id: summaryId,
+      proejctId: project.id,
       deploymentId,
       indexerId,
       totalAdded: amountAdded.toBigInt(),
@@ -60,8 +71,15 @@ export async function handleStakeAllocationAdded(
 export async function handleStakeAllocationRemoved(
   event: EthereumLog<StakeAllocationRemovedEvent['args']>
 ): Promise<void> {
+  logger.info('handleStakeAllocationRemoved');
   assert(event.args, 'No event args');
   const { deploymentId, runner: indexerId, amount: amountRemoved } = event.args;
+
+  const deployment = await Deployment.get(deploymentId);
+  assert(deployment, `Deployment ${deploymentId} not found`);
+
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocation = await IndexerAllocation.get(allocationId);
@@ -69,6 +87,7 @@ export async function handleStakeAllocationRemoved(
 
   allocation = IndexerAllocation.create({
     id: allocationId,
+    proejctId: project.id,
     deploymentId,
     indexerId,
     amountAdded: BigInt(0),
@@ -83,6 +102,7 @@ export async function handleStakeAllocationRemoved(
   if (!summary) {
     summary = IndexerAllocationSummary.create({
       id: summaryId,
+      proejctId: project.id,
       deploymentId,
       indexerId,
       totalAdded: BigInt(0),
@@ -102,6 +122,7 @@ export async function handleStakeAllocationRemoved(
 export async function handleOverAllocationStarted(
   event: EthereumLog<OverAllocationStartedEvent['args']>
 ): Promise<void> {
+  logger.info('handleOverAllocationStarted');
   assert(event.args, 'No event args');
   const { runner, start } = event.args;
 
@@ -140,6 +161,7 @@ export async function handleOverAllocationStarted(
 export async function handleOverAllocationEnded(
   event: EthereumLog<OverAllocationEndedEvent['args']>
 ): Promise<void> {
+  logger.info('handleOverAllocationEnded');
   assert(event.args, 'No event args');
   const { runner, end, time } = event.args;
 

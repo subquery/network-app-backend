@@ -92,11 +92,6 @@ dataSources:
           filter:
             topics:
               - SetControllerAccount(address indexed indexer, address indexed controller)
-        - handler: handleRemoveControllerAccount
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - RemoveControllerAccount(address indexed indexer, address indexed controller)
         - handler: handleUnregisterIndexer
           kind: ethereum/LogHandler
           filter:
