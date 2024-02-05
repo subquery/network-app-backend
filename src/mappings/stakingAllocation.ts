@@ -14,7 +14,7 @@ import {
   IndexerLatestAllocationOverflow,
   Project,
 } from '../types';
-import { biToDate } from './utils';
+import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 
 export async function handleStakeAllocationAdded(
@@ -22,7 +22,8 @@ export async function handleStakeAllocationAdded(
 ): Promise<void> {
   logger.info('handleStakeAllocationAdded');
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, amount: amountAdded } = event.args;
+  const { runner: indexerId, amount: amountAdded } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
   assert(deployment, `Deployment ${deploymentId} not found`);
@@ -73,7 +74,8 @@ export async function handleStakeAllocationRemoved(
 ): Promise<void> {
   logger.info('handleStakeAllocationRemoved');
   assert(event.args, 'No event args');
-  const { deploymentId, runner: indexerId, amount: amountRemoved } = event.args;
+  const { runner: indexerId, amount: amountRemoved } = event.args;
+  const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
   assert(deployment, `Deployment ${deploymentId} not found`);
