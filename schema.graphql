@@ -1,6 +1,12 @@
 enum ProjectType {
-    SUBQUERY,
-    RPC
+  SUBQUERY
+  RPC
+}
+
+enum OrderType {
+  SERVICE_AGREEMENT
+  STATE_CHANNEL
+  UNKNOWN
 }
 
 enum ServiceStatus {
@@ -443,31 +449,6 @@ type PriceOracle @entity {
   createdBlock: Int
 }
 
-# TODO: update it with TokenExchange
-# permission exchange contract
-type Trader @entity {
-  id: ID! #trader address
-  totalSwapSQTAmount: BigInt! # total swap SQT amount
-  totalSwapkSQTAmount: BigInt! # total swap SQT amount
-  trades: [Trade] @derivedFrom(field: "sender")
-
-  createAt: Date!
-  updateAt: Date!
-}
-
-type Trade @entity {
-  id: ID! #orderId:txhash
-  sender: Trader!
-
-  tokenGive: String! # SQT
-  tokenGet: String!  # kSQT
-  amountGive: BigInt!
-  amountGet: BigInt!
-
-  createAt: Date!
-  updateAt: Date!
-}
-
 enum OrderStatus {
   ACTIVE
   INACTIVE
@@ -482,7 +463,6 @@ type Order @entity {
   amountGet: BigInt!
   tokenGiveBalance: BigInt! #amount SQT left for swapping
   status: OrderStatus! # Inactive when cancel order
-
   createAt: Date!
   updateAt: Date!
 }
@@ -490,4 +470,125 @@ type Order @entity {
 type Cache @entity {
   id: ID!
   value: String!
+}
+
+type DeploymentBooster @entity {
+  id: ID! # deploymentId:consumer:txHash
+  proejct: Project!
+  deployment: Deployment!
+  consumer: String! @index
+  amountAdded: BigInt!
+  amountRemoved: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type DeploymentBoosterSummary @entity {
+  id: ID! # deploymentId:consumer
+  proejct: Project!
+  deployment: Deployment!
+  consumer: String! @index
+  totalAdded: BigInt!
+  totalRemoved: BigInt!
+  totalAmount: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerAllocation @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  proejct: Project!
+  deployment: Deployment!
+  indexer: Indexer!
+  amountAdded: BigInt!
+  amountRemoved: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationSummary @entity {
+  id: ID! # deploymentId:indexerId
+  proejct: Project!
+  deployment: Deployment!
+  indexer: Indexer!
+  totalAdded: BigInt!
+  totalRemoved: BigInt!
+  totalAmount: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerAllocationOverflow @entity {
+  id: ID! # indexerId:txHash
+  indexer: Indexer!
+  overflowStart: Date!
+  overflowEnd: Date! @index
+  overflowTime: BigInt! @index
+  eraIdxStart: Int! @index
+  eraIdxEnd: Int! @index
+  createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerLatestAllocationOverflow @entity {
+  id: ID! # indexerId
+  overflowId: IndexerAllocationOverflow!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerMissedLabor @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  deployment: Deployment!
+  indexer: Indexer!
+  missedLabor: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationReward @entity {
+  id: ID! # deploymentId:indexerId:txHash
+  proejct: Project!
+  deployment: Deployment!
+  indexer: Indexer!
+  reward: BigInt!
+  burnt: BigInt!
+  eraIdx: Int! @index
+  createAt: Date!
+}
+
+type IndexerAllocationRewardSummary @entity {
+  id: ID! # deploymentId:indexerId
+  proejct: Project!
+  deployment: Deployment!
+  indexer: Indexer!
+  totalReward: BigInt!
+  totalBurnt: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type ConsumerQueryReward @entity {
+  id: ID! # deploymentId:consumer:orderType:orderId
+  proejct: Project!
+  deployment: Deployment!
+  consumer: String! @index
+  orderType: OrderType!
+  orderId: String!
+  spent: BigInt!
+  refunded: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type ConsumerQueryRewardSummary @entity {
+  id: ID! # deploymentId:consumer:orderType
+  proejct: Project!
+  deployment: Deployment!
+  consumer: String! @index
+  orderType: OrderType!
+  totalSpent: BigInt!
+  totalRefunded: BigInt!
+  createAt: Date!
+  updateAt: Date!
 }

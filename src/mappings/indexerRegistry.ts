@@ -3,7 +3,6 @@
 
 import {
   RegisterIndexerEvent,
-  RemoveControllerAccountEvent,
   SetCommissionRateEvent,
   SetControllerAccountEvent,
   UnregisterIndexerEvent,
@@ -133,6 +132,14 @@ export async function handleSetControllerAccount(
   const lastEvent = `handleSetControllerAccount:${event.blockNumber}`;
 
   if (indexer) {
+    const prevController = await Controller.get(
+      `${indexerAddress}:${indexer.controller}`
+    );
+    if (prevController) {
+      prevController.isActive = false;
+      await prevController.save();
+    }
+
     indexer.controller = event.args.controller;
     indexer.lastEvent = lastEvent;
     await indexer.save();
@@ -148,40 +155,6 @@ export async function handleSetControllerAccount(
       event.args.indexer,
       event
     );
-  }
-}
-
-export async function handleRemoveControllerAccount(
-  event: EthereumLog<RemoveControllerAccountEvent['args']>
-): Promise<void> {
-  logger.info('handleRemoveControllerAccount');
-  assert(event.args, 'No event args');
-  const address = event.args.indexer;
-
-  const indexer = await Indexer.get(address);
-  const lastEvent = `handleRemoveControllerAccount:${event.blockNumber}`;
-
-  if (indexer) {
-    delete indexer.controller;
-    indexer.lastEvent = lastEvent;
-
-    await indexer.save();
-  } else {
-    await reportException(
-      'HandleRemoveControllerAccount',
-      event.args.indexer,
-      event
-    );
-  }
-
-  const controller = await Controller.get(
-    `${event.args.indexer}:${event.args.controller}`
-  );
-
-  if (controller) {
-    controller.lastEvent = lastEvent;
-    controller.isActive = false;
-    await controller.save();
   }
 }
 

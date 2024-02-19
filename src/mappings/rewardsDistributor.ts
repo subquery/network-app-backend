@@ -19,9 +19,12 @@ import {
 } from '@subql/contract-sdk/typechain/contracts/RewardsDistributor';
 import { biToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
-
 import { BigNumber } from '@ethersproject/bignumber';
 import { getCurrentEra } from './eraManager';
+import {
+  AgreementRewardsEvent,
+  InstantRewardsEvent,
+} from '../types/contracts/RewardsDistributor';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -347,3 +350,11 @@ async function updateFutureRewards(
     prevEraId = eraId;
   }
 }
+
+export async function handleInstantRewards(
+  event: EthereumLog<InstantRewardsEvent['args']>
+): Promise<void> {}
+
+export async function handleAgreementRewards(
+  event: EthereumLog<AgreementRewardsEvent['args']>
+): Promise<void> {}
