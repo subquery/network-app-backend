@@ -1,15 +1,15 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-// TODO: uncomment when contract-sdk is updated
-// import mainnetDeploymentFile from '@subql/contract-sdk/publish/mainnet.json';
+import mainnetDeploymentFile from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentFile from '@subql/contract-sdk/publish/testnet.json';
 import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
 
 import assert from 'assert';
-import { Exception, JSONBigInt } from '../../types';
+import { AirdropAmount, Exception, JSONBigInt } from '../../types';
+import { BigNumberish } from 'ethers';
 
 export enum Contracts {
   ERA_MANAGER_ADDRESS = 'EraManager',
@@ -21,12 +21,18 @@ export enum Contracts {
   SQT_ADDRESS = 'L2SQToken',
 }
 
+const deploymentMap = {
+  84532: testnetDeploymentFile,
+  8453: mainnetDeploymentFile,
+};
+
 export function getContractAddress(
   networkId: number,
   contract: Contracts
 ): string {
-  const deploymentFile =
-    networkId === 84532 ? testnetDeploymentFile : testnetDeploymentFile;
+  // @ts-ignore
+  const deploymentFile = deploymentMap[networkId];
+  assert(deploymentFile, `Deployment file not found for network: ${networkId}`);
   return deploymentFile.child[contract].address;
 }
 
@@ -145,3 +151,41 @@ export async function reportException(
 
   assert(false, `${id}: Error at ${handler}: ${error});`);
 }
+
+export const toBigNumber = (amount: BigNumberish): BigNumber =>
+  BigNumber.from(amount.toString());
+
+// airdropper
+export const upsertAirdropper = async (
+  address: string,
+  airdropAmount: BigNumberish,
+  claimedAmount: BigNumberish,
+  event: EthereumLog
+): Promise<void> => {
+  const HANDLER = 'upsertUser';
+  const user = await AirdropAmount.get(address);
+
+  if (user) {
+    user.totalAirdropAmount = toBigNumber(user.totalAirdropAmount)
+      .add(toBigNumber(airdropAmount))
+      .toBigInt();
+    user.claimedAmount = toBigNumber(user.claimedAmount)
+      .add(toBigNumber(claimedAmount))
+      .toBigInt();
+    user.updateAt = `${HANDLER}:${event.blockNumber}`;
+
+    await user.save();
+  } else {
+    logger.info(
+      `${HANDLER} - create: ${address} - ${event.transactionHash ?? ''}`
+    );
+    const newAidropAmount = new AirdropAmount(
+      address,
+      toBigNumber(airdropAmount).toBigInt(),
+      toBigNumber(claimedAmount).toBigInt()
+    );
+
+    newAidropAmount.createAt = `${HANDLER}:${event.blockNumber}`;
+    await newAidropAmount.save();
+  }
+};

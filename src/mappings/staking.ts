@@ -1,4 +1,4 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -87,8 +87,8 @@ export async function handleAddDelegation(
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
-  const { source, indexer, amount } = event.args;
-  const id = getDelegationId(source, indexer);
+  const { source, runner, amount } = event.args;
+  const id = getDelegationId(source, runner);
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
@@ -97,15 +97,15 @@ export async function handleAddDelegation(
     source,
     amountBn,
     'add',
-    indexer === source && !delegation
+    runner === source && !delegation
   );
 
   await updateTotalStake(
-    indexer,
+    runner,
     amountBn,
     'add',
     event,
-    indexer === source && !delegation
+    runner === source && !delegation
   );
 
   if (!delegation) {
@@ -114,13 +114,13 @@ export async function handleAddDelegation(
       undefined,
       amountBn,
       'add',
-      indexer === source
+      runner === source
     );
 
     delegation = Delegation.create({
       id,
       delegatorId: source,
-      indexerId: indexer,
+      indexerId: runner,
       amount: eraAmount,
       createdBlock: event.blockNumber,
     });
@@ -131,10 +131,10 @@ export async function handleAddDelegation(
   if (BigInt.fromJSONType(delegation.amount.valueAfter) > BigInt(0)) {
     delegation.exitEra = undefined;
   }
-  await updateTotalLock(amountBn, 'add', indexer === source, event);
+  await updateTotalLock(amountBn, 'add', runner === source, event);
   await delegation.save();
-  await updateIndexerCapacity(indexer, event);
-  await updateMaxUnstakeAmount(indexer, event);
+  await updateIndexerCapacity(runner, event);
+  await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryAdded(event);
 }
 
@@ -144,8 +144,8 @@ export async function handleRemoveDelegation(
   logger.info('handleRemoveDelegation');
   assert(event.args, 'No event args');
 
-  const { source, indexer, amount } = event.args;
-  const id = getDelegationId(source, indexer);
+  const { source, runner, amount } = event.args;
+  const id = getDelegationId(source, runner);
   const delegation = await Delegation.get(id);
 
   // Entity has already been removed when indexer unregisters
@@ -162,12 +162,12 @@ export async function handleRemoveDelegation(
   }
 
   await updateTotalDelegation(source, amount.toBigInt(), 'sub');
-  await updateTotalStake(indexer, amount.toBigInt(), 'sub', event);
-  await updateTotalLock(amount.toBigInt(), 'sub', indexer === source, event);
+  await updateTotalStake(runner, amount.toBigInt(), 'sub', event);
+  await updateTotalLock(amount.toBigInt(), 'sub', runner === source, event);
 
   await delegation.save();
-  await updateIndexerCapacity(indexer, event);
-  await updateMaxUnstakeAmount(indexer, event);
+  await updateIndexerCapacity(runner, event);
+  await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryRemoved(event);
 }
 
@@ -177,7 +177,7 @@ export async function handleWithdrawRequested(
   logger.info('handleWithdrawRequested');
   assert(event.args, 'No event args');
 
-  const { source, indexer, amount, index, _type } = event.args;
+  const { source, runner, amount, index, _type } = event.args;
   const id = getWithdrawlId(source, index);
 
   let updatedAmount = amount;
@@ -196,7 +196,7 @@ export async function handleWithdrawRequested(
   await createOrUpdateWithdrawl({
     id,
     delegator: source,
-    indexer,
+    indexer: runner,
     index,
     amount: updatedAmount,
     type: getWithdrawalType(_type),
@@ -260,7 +260,7 @@ async function updateIndexerStakeSummaryAdded(
   event: EthereumLog<DelegationAddedEvent['args']>
 ): Promise<void> {
   assert(event.args, 'No event args');
-  const { source, indexer, amount } = event.args;
+  const { source, runner, amount } = event.args;
   const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();
@@ -269,7 +269,7 @@ async function updateIndexerStakeSummaryAdded(
   const nextEraId = BigNumber.from(nextEraIdx).toHexString();
 
   // update IndexerStakeSummary
-  let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
+  let indexerStakeSummary = await IndexerStakeSummary.get(runner);
 
   let isFirstStake = false;
   if (
@@ -281,12 +281,12 @@ async function updateIndexerStakeSummaryAdded(
 
   indexerStakeSummary = await updateIndexerStakeSummary(
     indexerStakeSummary,
-    indexer,
+    runner,
     currEraId,
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === indexer
+    source === runner
   );
 
   // update IndexerStakeSummary for all indexers
@@ -299,13 +299,13 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === indexer
+    source === runner
   );
 
   // update IndexerStake
   await updateIndexerStakeAdded(
     isFirstStake,
-    indexer,
+    runner,
     currEraId,
     currEraIdx,
     nextEraId,
@@ -316,7 +316,7 @@ async function updateIndexerStakeSummaryAdded(
   // update EraStake
   await updateEraStakeAdd(
     isFirstStake,
-    indexer,
+    runner,
     source,
     currEraId,
     currEraIdx,
@@ -515,7 +515,7 @@ async function updateIndexerStakeSummaryRemoved(
   event: EthereumLog<DelegationRemovedEvent['args']>
 ): Promise<void> {
   assert(event.args, 'No event args');
-  const { source, indexer, amount } = event.args;
+  const { source, runner, amount } = event.args;
   const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();
@@ -525,16 +525,16 @@ async function updateIndexerStakeSummaryRemoved(
 
   // update IndexerStakeSummary
 
-  let indexerStakeSummary = await IndexerStakeSummary.get(indexer);
-  assert(indexerStakeSummary, `IndexerStakeSummary ${indexer} does not exist`);
+  let indexerStakeSummary = await IndexerStakeSummary.get(runner);
+  assert(indexerStakeSummary, `IndexerStakeSummary ${runner} does not exist`);
 
   indexerStakeSummary = await removeFromIndexerStakeSummary(
     indexerStakeSummary,
-    indexer,
+    runner,
     currEraId,
     currEraIdx,
     amountBn,
-    source === indexer
+    source === runner
   );
 
   // update IndexerStakeSummary for all indexers
@@ -551,19 +551,19 @@ async function updateIndexerStakeSummaryRemoved(
     currEraId,
     currEraIdx,
     amountBn,
-    source === indexer
+    source === runner
   );
 
   // update IndexerStake
   await updateIndexerStakeRemoved(
-    indexer,
+    runner,
     nextEraId,
     nextEraIdx,
     indexerStakeSummary
   );
 
   // update EraStake
-  await updateEraStakeRemove(indexer, source, nextEraId, nextEraIdx, amountBn);
+  await updateEraStakeRemove(runner, source, nextEraId, nextEraIdx, amountBn);
 
   // update IndexerStake for all indexers, sum by era
   await updateIndexerStakeRemovedSumByEra(

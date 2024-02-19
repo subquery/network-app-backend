@@ -1,4 +1,4 @@
-// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './consumerRegistry';
@@ -16,3 +16,4 @@ export * from './stakingAllocation';
 export * from './stateChannel';
 export * from './tokenExchange';
 export * from './transfer';
+export * from './airdropper';

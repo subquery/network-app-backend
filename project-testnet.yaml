@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 3.5.2'
+    version: '>= 3.7.1'
     options:
       unfinalizedBlocks: true
   query:
@@ -56,6 +56,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsBooster.sol/RewardsBooster.json
     stakingAllocation:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StakingAllocation.sol/StakingAllocation.json
+    airdropper:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
 
 dataSources:
   - <<: *ethereum
@@ -117,17 +119,17 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DelegationAdded(address indexed source, address indexed indexer, uint256 amount)
+              - DelegationAdded(address indexed source, address indexed runner, uint256 amount)
         - handler: handleRemoveDelegation
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DelegationRemoved(address indexed source, address indexed indexer, uint256 amount)
+              - DelegationRemoved(address indexed source, address indexed runner, uint256 amount)
         - handler: handleWithdrawRequested
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index, uint8 _type)
+              - UnbondRequested(address indexed source, address indexed runner, uint256 amount, uint256 index, uint8 _type)
         - handler: handleWithdrawClaimed
           kind: ethereum/LogHandler
           filter:
@@ -137,7 +139,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+              - UnbondCancelled(address indexed source, address indexed runner, uint256 amount, uint256 index)
         - handler: handleSetIndexerLeverageLimit
           kind: ethereum/TransactionHandler
           filter:
@@ -252,27 +254,27 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DistributeRewards(address indexed indexer, uint256 indexed eraIdx, uint256 rewards, uint256 commission)
+              - DistributeRewards(address indexed runner, uint256 indexed eraIdx, uint256 rewards, uint256 commission)
         - handler: handleRewardsClaimed
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ClaimRewards(address indexed indexer, address indexed delegator, uint256 rewards)
+              - ClaimRewards(address indexed runner, address indexed delegator, uint256 rewards)
         - handler: handleRewardsUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
+              - RewardsChanged(address indexed runner, uint256 indexed eraIdx, uint256 additions, uint256 removals)
         - handler: handleInstantRewards
           kind: ethereum/LogHandler
           filter:
             topics:
-              - InstantRewards(address indexed indexer, uint256 indexed eraIdx, uint256 token)
+              - InstantRewards(address indexed runner, uint256 indexed eraIdx, uint256 token)
         - handler: handleAgreementRewards
           kind: ethereum/LogHandler
           filter:
             topics:
-              - AgreementRewards(address indexed indexer, uint256 agreementId, uint256 token);
+              - AgreementRewards(address indexed runner, uint256 agreementId, uint256 token);
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
@@ -469,3 +471,31 @@ dataSources:
           filter:
             topics:
               - OverAllocationEnded(address runner, uint256 end, uint256 time)
+
+  - <<: *ethereum
+    options:
+      abi: airdropper
+      address: '0x26B7e6B239e77eb13004CAdf7Ea3AeCB3A902586'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRoundCreated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundCreated(uint256 indexed roundId, address tokenAddress, uint256 roundStartTime, uint256 roundDeadline)
+        - handler: handleAddAirdrop
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AddAirdrop(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleAirdropClaimed
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AirdropClaimed(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleRoundSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
