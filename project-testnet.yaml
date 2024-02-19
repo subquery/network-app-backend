@@ -117,17 +117,17 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DelegationAdded(address indexed source, address indexed indexer, uint256 amount)
+              - DelegationAdded(address indexed source, address indexed runner, uint256 amount)
         - handler: handleRemoveDelegation
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DelegationRemoved(address indexed source, address indexed indexer, uint256 amount)
+              - DelegationRemoved(address indexed source, address indexed runner, uint256 amount)
         - handler: handleWithdrawRequested
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index, uint8 _type)
+              - UnbondRequested(address indexed source, address indexed runner, uint256 amount, uint256 index, uint8 _type)
         - handler: handleWithdrawClaimed
           kind: ethereum/LogHandler
           filter:
@@ -137,7 +137,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - UnbondCancelled(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+              - UnbondCancelled(address indexed source, address indexed runner, uint256 amount, uint256 index)
         - handler: handleSetIndexerLeverageLimit
           kind: ethereum/TransactionHandler
           filter:
