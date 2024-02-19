@@ -222,7 +222,19 @@ export async function handleAllocationRewardsBurnt(
 
   const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocationReward = await IndexerAllocationReward.get(rewardId);
-  assert(allocationReward, 'Allocation reward not found');
+  if (!allocationReward) {
+    allocationReward = IndexerAllocationReward.create({
+      id: rewardId,
+      proejctId: project.id,
+      deploymentId,
+      indexerId,
+      reward: BigInt(0),
+      burnt: burnt.toBigInt(),
+      eraIdx: await getCurrentEra(),
+      createAt: biToDate(event.block.timestamp),
+    });
+    await allocationReward.save();
+  }
 
   allocationReward.burnt = burnt.toBigInt();
   await allocationReward.save();
