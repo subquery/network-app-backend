@@ -46,8 +46,8 @@ export async function handleRewardsDistributed(
   );
   assert(event.args, 'No event args');
 
-  const { indexer, eraIdx, commission } = event.args;
-  const delegators = await Delegation.getByIndexerId(indexer);
+  const { runner, eraIdx, commission } = event.args;
+  const delegators = await Delegation.getByIndexerId(runner);
   if (!delegators) return;
 
   const network = await api.getNetwork();
@@ -60,10 +60,10 @@ export async function handleRewardsDistributed(
     a.delegatorId.localeCompare(b.delegatorId)
   )) {
     const rewards = await rewardsDistributor.userRewards(
-      indexer,
+      runner,
       delegator.delegatorId
     );
-    const id = buildRewardId(indexer, delegator.delegatorId);
+    const id = buildRewardId(runner, delegator.delegatorId);
 
     let reward = await UnclaimedReward.get(id);
     let rewardChanged = false;
@@ -73,7 +73,7 @@ export async function handleRewardsDistributed(
         id,
         delegatorAddress: delegator.delegatorId,
         delegatorId: delegator.delegatorId,
-        indexerAddress: indexer,
+        indexerAddress: runner,
         amount: rewards.toBigInt(),
         createdBlock: event.blockNumber,
       });
@@ -100,7 +100,7 @@ export async function handleRewardsDistributed(
 
     if (rewards.gt(0) && rewardChanged) {
       await createEraReward({
-        indexerId: indexer,
+        indexerId: runner,
         delegatorId: delegator.delegatorId,
         eraId: eraIdx.toHexString(),
         eraIdx: eraIdx.toNumber(),
@@ -115,8 +115,8 @@ export async function handleRewardsDistributed(
 
   if (commission.gt(0)) {
     await createEraReward({
-      indexerId: indexer,
-      delegatorId: indexer,
+      indexerId: runner,
+      delegatorId: runner,
       eraId: eraIdx.toHexString(),
       eraIdx: eraIdx.toNumber(),
       isCommission: true,
@@ -134,24 +134,13 @@ export async function handleRewardsClaimed(
   logger.info('handleRewardsClaimed');
   assert(event.args, 'No event args');
 
-  const id = buildRewardId(event.args.indexer, event.args.delegator);
-
-  // FIXME: need to investigate this issue in the future
-  // FIXME: unclaimed?.amount NOT EQUAL event.args.rewards.toBigInt(),
-  // const unclaimed = await UnclaimedReward.get(id);
-  // assert(
-  //   event.args.rewards.isZero() ||
-  //     unclaimed?.amount === event.args.rewards.toBigInt(),
-  //   `unclaimed reward doesn't match claimed reward ${
-  //     unclaimed?.amount
-  //   } ${event.args.rewards.toBigInt()}`
-  // );
+  const id = buildRewardId(event.args.runner, event.args.delegator);
 
   await UnclaimedReward.remove(id);
 
   await Reward.create({
     id: `${id}:${event.transactionHash}`,
-    indexerAddress: event.args.indexer,
+    indexerAddress: event.args.runner,
     delegatorAddress: event.args.delegator,
     delegatorId: event.args.delegator,
     amount: event.args.rewards.toBigInt(),
@@ -206,8 +195,8 @@ async function updateEraRewardClaimed(
   logger.info('updateEraRewardClaimed');
   assert(event.args, 'No event args');
 
-  const { indexer, delegator } = event.args;
-  const id = `${indexer}:${delegator}`;
+  const { runner, delegator } = event.args;
+  const id = `${runner}:${delegator}`;
 
   let eraRewardClaimed = await EraRewardClaimed.get(id);
   if (!eraRewardClaimed) {
@@ -243,14 +232,14 @@ export async function handleRewardsUpdated(
   logger.info('handleRewardsUpdated');
   assert(event.args, 'No event args');
 
-  const { indexer, eraIdx, additions, removals } = event.args;
+  const { runner, eraIdx, additions, removals } = event.args;
 
   const prevEraRewards = await IndexerReward.get(
-    getPrevIndexerRewardId(indexer, eraIdx)
+    getPrevIndexerRewardId(runner, eraIdx)
   );
   const prevAmount = prevEraRewards?.amount ?? BigInt(0);
 
-  const id = getIndexerRewardId(indexer, eraIdx);
+  const id = getIndexerRewardId(runner, eraIdx);
   let eraRewards = await IndexerReward.get(id);
   // Hook for `additions` equal to zero
   const additionValue = additions.eq(0)
@@ -259,7 +248,7 @@ export async function handleRewardsUpdated(
   if (!eraRewards) {
     eraRewards = IndexerReward.create({
       id,
-      indexerId: indexer,
+      indexerId: runner,
       eraIdx: eraIdx.toHexString(),
       eraId: eraIdx.toBigInt(),
       additions: additionValue.toBigInt(),
@@ -279,13 +268,13 @@ export async function handleRewardsUpdated(
   await eraRewards.save();
 
   const lastEraIdx = await upsertIndexerLastRewardEra(
-    indexer,
+    runner,
     eraIdx,
     event.blockNumber
   );
 
   /* Rewards changed events don't come in in order and may not be the latest set era */
-  await updateFutureRewards(indexer, lastEraIdx, eraRewards, event.blockNumber);
+  await updateFutureRewards(runner, lastEraIdx, eraRewards, event.blockNumber);
 }
 
 async function upsertIndexerLastRewardEra(

@@ -252,27 +252,27 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DistributeRewards(address indexed indexer, uint256 indexed eraIdx, uint256 rewards, uint256 commission)
+              - DistributeRewards(address indexed runner, uint256 indexed eraIdx, uint256 rewards, uint256 commission)
         - handler: handleRewardsClaimed
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ClaimRewards(address indexed indexer, address indexed delegator, uint256 rewards)
+              - ClaimRewards(address indexed runner, address indexed delegator, uint256 rewards)
         - handler: handleRewardsUpdated
           kind: ethereum/LogHandler
           filter:
             topics:
-              - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
+              - RewardsChanged(address indexed runner, uint256 indexed eraIdx, uint256 additions, uint256 removals)
         - handler: handleInstantRewards
           kind: ethereum/LogHandler
           filter:
             topics:
-              - InstantRewards(address indexed indexer, uint256 indexed eraIdx, uint256 token)
+              - InstantRewards(address indexed runner, uint256 indexed eraIdx, uint256 token)
         - handler: handleAgreementRewards
           kind: ethereum/LogHandler
           filter:
             topics:
-              - AgreementRewards(address indexed indexer, uint256 agreementId, uint256 token);
+              - AgreementRewards(address indexed runner, uint256 agreementId, uint256 token);
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
