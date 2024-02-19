@@ -355,7 +355,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: consumerRegistry
-      address: "0x6E0FaE74E83f524b228752a304348Fbe4a29De10"
+      address: '0x6E0FaE74E83f524b228752a304348Fbe4a29De10'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -372,7 +372,7 @@ dataSources:
   - <<: *ethereum
     options:
       abi: tokenExchange
-      address: "0xE3699a98fBeFeE61AF1F1F695A437d9fF9dd211c"
+      address: '0xE3699a98fBeFeE61AF1F1F695A437d9fF9dd211c'
     mapping:
       file: ./dist/index.js
       handlers:
@@ -391,4 +391,3 @@ dataSources:
           filter:
             topics:
               - Trade(uint256 indexed orderId, address tokenGive, address tokenGet, uint256 amountGive, uint256 amountGet);
-

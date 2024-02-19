@@ -9,7 +9,8 @@ import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
 
 import assert from 'assert';
-import { Exception, JSONBigInt } from '../../types';
+import { AirdropAmount, Exception, JSONBigInt } from '../../types';
+import { BigNumberish } from 'ethers';
 
 export enum Contracts {
   ERA_MANAGER_ADDRESS = 'EraManager',
@@ -145,3 +146,41 @@ export async function reportException(
 
   assert(false, `${id}: Error at ${handler}: ${error});`);
 }
+
+export const toBigNumber = (amount: BigNumberish): BigNumber =>
+  BigNumber.from(amount.toString());
+
+// airdropper
+export const upsertAirdropper = async (
+  address: string,
+  airdropAmount: BigNumberish,
+  claimedAmount: BigNumberish,
+  event: EthereumLog
+): Promise<void> => {
+  const HANDLER = 'upsertUser';
+  const user = await AirdropAmount.get(address);
+
+  if (user) {
+    user.totalAirdropAmount = toBigNumber(user.totalAirdropAmount)
+      .add(toBigNumber(airdropAmount))
+      .toBigInt();
+    user.claimedAmount = toBigNumber(user.claimedAmount)
+      .add(toBigNumber(claimedAmount))
+      .toBigInt();
+    user.updateAt = `${HANDLER}:${event.blockNumber}`;
+
+    await user.save();
+  } else {
+    logger.info(
+      `${HANDLER} - create: ${address} - ${event.transactionHash ?? ''}`
+    );
+    const newAidropAmount = new AirdropAmount(
+      address,
+      toBigNumber(airdropAmount).toBigInt(),
+      toBigNumber(claimedAmount).toBigInt()
+    );
+
+    newAidropAmount.createAt = `${HANDLER}:${event.blockNumber}`;
+    await newAidropAmount.save();
+  }
+};

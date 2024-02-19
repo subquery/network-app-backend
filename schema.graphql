@@ -592,3 +592,38 @@ type ConsumerQueryRewardSummary @entity {
   createAt: Date!
   updateAt: Date!
 }
+
+# Airdrop
+enum AirdropClaimStatus {
+  CLAIMED
+  UNCLAIMED
+}
+
+type Airdrop @entity {
+  id: ID! # Round ID
+  tokenAddress: String!
+  startTime: Date!
+  endTime: Date!
+  withdrawAmount: BigInt
+  hasWithdrawn: Boolean
+  createAt: String
+  updateAt: String
+}
+
+type AirdropUser @entity {
+  id: ID! # roundId:userAccount
+  user: String!
+  airdrop: Airdrop!
+  amount: BigInt!
+  status: AirdropClaimStatus!
+  createAt: String
+  updateAt: String
+}
+
+type AirdropAmount @entity {
+  id: ID! # userAccount
+  totalAirdropAmount: BigInt! # Claimed + unClaimed + unlocked + locked
+  claimedAmount: BigInt! # claim total
+  createAt: String
+  updateAt: String
+}

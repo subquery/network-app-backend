@@ -469,3 +469,31 @@ dataSources:
           filter:
             topics:
               - OverAllocationEnded(address runner, uint256 end, uint256 time)
+
+  - <<: *ethereum
+    options:
+      abi: airdropper
+      address: '0x26B7e6B239e77eb13004CAdf7Ea3AeCB3A902586'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRoundCreated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundCreated(uint256 indexed roundId, address tokenAddress, uint256 roundStartTime, uint256 roundDeadline)
+        - handler: handleAddAirdrop
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AddAirdrop(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleAirdropClaimed
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - AirdropClaimed(address indexed addr, uint256 roundId, uint256 amount)
+        - handler: handleRoundSettled
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
