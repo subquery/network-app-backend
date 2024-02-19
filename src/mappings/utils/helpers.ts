@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from '@ethersproject/bignumber';
-// TODO: uncomment when contract-sdk is updated
-// import mainnetDeploymentFile from '@subql/contract-sdk/publish/mainnet.json';
+import mainnetDeploymentFile from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentFile from '@subql/contract-sdk/publish/testnet.json';
 import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
@@ -22,12 +21,18 @@ export enum Contracts {
   SQT_ADDRESS = 'L2SQToken',
 }
 
+const deploymentMap = {
+  84532: testnetDeploymentFile,
+  8453: mainnetDeploymentFile,
+};
+
 export function getContractAddress(
   networkId: number,
   contract: Contracts
 ): string {
-  const deploymentFile =
-    networkId === 84532 ? testnetDeploymentFile : testnetDeploymentFile;
+  // @ts-ignore
+  const deploymentFile = deploymentMap[networkId];
+  assert(deploymentFile, `Deployment file not found for network: ${networkId}`);
   return deploymentFile.child[contract].address;
 }
 

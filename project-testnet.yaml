@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 3.5.2'
+    version: '>= 3.7.1'
     options:
       unfinalizedBlocks: true
   query:
@@ -56,6 +56,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsBooster.sol/RewardsBooster.json
     stakingAllocation:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StakingAllocation.sol/StakingAllocation.json
+    airdropper:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
 
 dataSources:
   - <<: *ethereum
