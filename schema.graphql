@@ -631,8 +631,8 @@ type AirdropAmount @entity {
 type Withdraw @entity {
   id: ID! # txHash:logIndex
   txHash: String!
-  sender: String!
+  sender: String! @index
   amount: BigInt!
   createAt: Date!
-  blockheight: Int!
+  blockheight: Int! @index
 }

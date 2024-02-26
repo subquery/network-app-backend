@@ -17,3 +17,4 @@ export * from './stateChannel';
 export * from './tokenExchange';
 export * from './transfer';
 export * from './airdropper';
+export * from './l2SQToken';
