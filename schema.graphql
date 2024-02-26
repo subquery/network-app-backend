@@ -628,11 +628,11 @@ type AirdropAmount @entity {
   updateAt: String
 }
 
-type Withdraw @entity {
+type Withdraw @entity @compositeIndexes(fields: [["sender", "blockheight"]]) {
   id: ID! # txHash:logIndex
   txHash: String!
-  sender: String! @index
+  sender: String!
   amount: BigInt!
   createAt: Date!
-  blockheight: Int! @index
+  blockheight: Int!
 }
