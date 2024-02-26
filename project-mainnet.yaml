@@ -57,6 +57,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StakingAllocation.sol/StakingAllocation.json
     airdropper:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
+    l2SQToken:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/L2SQToken.sol/L2SQToken.json
 
 dataSources:
   - <<: *ethereum
@@ -448,7 +450,6 @@ dataSources:
           filter:
             topics:
               - OverAllocationEnded(address runner, uint256 end, uint256 time)
-
   - <<: *ethereum
     options:
       abi: airdropper
@@ -476,3 +477,15 @@ dataSources:
           filter:
             topics:
               - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
+  - <<: *ethereum
+    options:
+      abi: l2SQToken
+      address: '0x858c50C3AF1913b0E849aFDB74617388a1a5340d'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleBurn
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Burn(address indexed _account, uint256 _amount)
