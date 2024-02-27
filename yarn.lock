@@ -2755,7 +2755,7 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
-"@subql/contract-sdk@1.0.1":
+"@subql/contract-sdk@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.0.1.tgz#d4f29ee74b45ce4b8903e6c365f537ddf5cea519"
   integrity sha512-+ZcZLgvZ7UDg57r2AYHsZV4DnxVMwlXPp1KGMncyC/c8ZpFdc5wam0uPGn7Hb5mmGSGQZ/aIUWuJHqIg7lhANw==
