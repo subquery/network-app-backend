@@ -36,10 +36,13 @@ export async function handleDeploymentBoosterAdded(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
-  assert(deployment, `Deployment ${deploymentId} not found`);
+  // assert(deployment, `Deployment ${deploymentId} not found`);
 
-  const project = await Project.get(deployment.projectId);
-  assert(project, `Project ${deployment.projectId} not found`);
+  let project;
+  if (deployment) {
+    project = await Project.get(deployment.projectId);
+    assert(project, `Project ${deployment.projectId} not found`);
+  }
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
 
@@ -48,7 +51,7 @@ export async function handleDeploymentBoosterAdded(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    proejctId: project.id,
+    projectId: project?.id,
     deploymentId,
     consumer,
     amountAdded: amountAdded.toBigInt(),
@@ -64,7 +67,7 @@ export async function handleDeploymentBoosterAdded(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project?.id,
       deploymentId,
       consumer,
       totalAdded: amountAdded.toBigInt(),
@@ -74,6 +77,7 @@ export async function handleDeploymentBoosterAdded(
       updateAt: biToDate(event.block.timestamp),
     });
   } else {
+    summary.projectId = project?.id;
     summary.totalAdded += amountAdded.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
@@ -90,10 +94,13 @@ export async function handleDeploymentBoosterRemoved(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
-  assert(deployment, `Deployment ${deploymentId} not found`);
+  // assert(deployment, `Deployment ${deploymentId} not found`);
 
-  const project = await Project.get(deployment.projectId);
-  assert(project, `Project ${deployment.projectId} not found`);
+  let project;
+  if (deployment) {
+    project = await Project.get(deployment.projectId);
+    assert(project, `Project ${deployment.projectId} not found`);
+  }
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
   let booster = await DeploymentBooster.get(boosterId);
@@ -101,7 +108,7 @@ export async function handleDeploymentBoosterRemoved(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    proejctId: project.id,
+    projectId: project?.id,
     deploymentId,
     consumer: consumer,
     amountAdded: BigInt(0),
@@ -116,7 +123,7 @@ export async function handleDeploymentBoosterRemoved(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project?.id,
       deploymentId,
       consumer: consumer,
       totalAdded: BigInt(0),
@@ -126,6 +133,7 @@ export async function handleDeploymentBoosterRemoved(
       updateAt: biToDate(event.block.timestamp),
     });
   } else {
+    summary.projectId = project?.id;
     summary.totalRemoved += amountRemoved.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
@@ -176,7 +184,7 @@ export async function handleAllocationRewardsGiven(
 
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
-    proejctId: project.id,
+    projectId: project?.id,
     deploymentId,
     indexerId,
     reward: reward.toBigInt(),
@@ -191,7 +199,7 @@ export async function handleAllocationRewardsGiven(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalReward: reward.toBigInt(),
@@ -225,7 +233,7 @@ export async function handleAllocationRewardsBurnt(
   if (!allocationReward) {
     allocationReward = IndexerAllocationReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       indexerId,
       reward: BigInt(0),
@@ -244,7 +252,7 @@ export async function handleAllocationRewardsBurnt(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalReward: BigInt(0),
@@ -296,7 +304,7 @@ export async function handleQueryRewardsSpent(
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -317,7 +325,7 @@ export async function handleQueryRewardsSpent(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -370,7 +378,7 @@ export async function handleQueryRewardsRefunded(
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -391,7 +399,7 @@ export async function handleQueryRewardsRefunded(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
