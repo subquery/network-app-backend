@@ -52,7 +52,8 @@ export async function handleDeploymentBoosterAdded(
   booster = DeploymentBooster.create({
     id: boosterId,
     projectId: project?.id,
-    deploymentId,
+    deploymentId: deployment?.id,
+    deploymentCid: deploymentId,
     consumer,
     amountAdded: amountAdded.toBigInt(),
     amountRemoved: BigInt(0),
@@ -68,7 +69,8 @@ export async function handleDeploymentBoosterAdded(
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
       projectId: project?.id,
-      deploymentId,
+      deploymentId: deployment?.id,
+      deploymentCid: deploymentId,
       consumer,
       totalAdded: amountAdded.toBigInt(),
       totalRemoved: BigInt(0),
@@ -78,6 +80,7 @@ export async function handleDeploymentBoosterAdded(
     });
   } else {
     summary.projectId = project?.id;
+    summary.deploymentId = deployment?.id;
     summary.totalAdded += amountAdded.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
@@ -109,7 +112,8 @@ export async function handleDeploymentBoosterRemoved(
   booster = DeploymentBooster.create({
     id: boosterId,
     projectId: project?.id,
-    deploymentId,
+    deploymentId: deployment?.id,
+    deploymentCid: deploymentId,
     consumer: consumer,
     amountAdded: BigInt(0),
     amountRemoved: amountRemoved.toBigInt(),
@@ -124,7 +128,8 @@ export async function handleDeploymentBoosterRemoved(
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
       projectId: project?.id,
-      deploymentId,
+      deploymentId: deployment?.id,
+      deploymentCid: deploymentId,
       consumer: consumer,
       totalAdded: BigInt(0),
       totalRemoved: amountRemoved.toBigInt(),
@@ -134,6 +139,7 @@ export async function handleDeploymentBoosterRemoved(
     });
   } else {
     summary.projectId = project?.id;
+    summary.deploymentId = deployment?.id;
     summary.totalRemoved += amountRemoved.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);

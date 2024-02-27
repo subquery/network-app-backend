@@ -476,6 +476,7 @@ type DeploymentBooster @entity {
   id: ID! # deploymentId:consumer:txHash
   project: Project
   deployment: Deployment
+  deploymentCid: String! @index
   consumer: String! @index
   amountAdded: BigInt!
   amountRemoved: BigInt!
@@ -487,6 +488,7 @@ type DeploymentBoosterSummary @entity {
   id: ID! # deploymentId:consumer
   project: Project
   deployment: Deployment
+  deploymentCid: String! @index
   consumer: String! @index
   totalAdded: BigInt!
   totalRemoved: BigInt!
