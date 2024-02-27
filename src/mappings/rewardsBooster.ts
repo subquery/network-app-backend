@@ -60,8 +60,20 @@ export async function handleDeploymentBoosterAdded(
     eraIdx: await getCurrentEra(),
     createAt: biToDate(event.block.timestamp),
   });
-
   await booster.save();
+
+  if (project) {
+    const boosters = await DeploymentBooster.getByFields([
+      ['projectId', '=', undefined],
+      ['deploymentCid', '=', deployment?.id],
+      ['consumer', '=', consumer],
+    ]);
+    for (const b of boosters) {
+      b.deploymentId = deployment?.id;
+      b.projectId = project?.id;
+      await b.save();
+    }
+  }
 
   const summaryId = `${deploymentId}:${consumer}`;
   let summary = await DeploymentBoosterSummary.get(summaryId);
@@ -121,6 +133,19 @@ export async function handleDeploymentBoosterRemoved(
     createAt: biToDate(event.block.timestamp),
   });
   await booster.save();
+
+  if (project) {
+    const boosters = await DeploymentBooster.getByFields([
+      ['projectId', '=', undefined],
+      ['deploymentCid', '=', deployment?.id],
+      ['consumer', '=', consumer],
+    ]);
+    for (const b of boosters) {
+      b.deploymentId = deployment?.id;
+      b.projectId = project?.id;
+      await b.save();
+    }
+  }
 
   const summaryId = `${deploymentId}:${consumer}`;
   let summary = await DeploymentBoosterSummary.get(summaryId);
