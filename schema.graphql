@@ -474,7 +474,7 @@ type Cache @entity {
 
 type DeploymentBooster @entity {
   id: ID! # deploymentId:consumer:txHash
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   consumer: String! @index
   amountAdded: BigInt!
@@ -485,7 +485,7 @@ type DeploymentBooster @entity {
 
 type DeploymentBoosterSummary @entity {
   id: ID! # deploymentId:consumer
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   consumer: String! @index
   totalAdded: BigInt!
@@ -497,7 +497,7 @@ type DeploymentBoosterSummary @entity {
 
 type IndexerAllocation @entity {
   id: ID! # deploymentId:indexerId:txHash
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   indexer: Indexer!
   amountAdded: BigInt!
@@ -508,7 +508,7 @@ type IndexerAllocation @entity {
 
 type IndexerAllocationSummary @entity {
   id: ID! # deploymentId:indexerId
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   indexer: Indexer!
   totalAdded: BigInt!
@@ -548,7 +548,7 @@ type IndexerMissedLabor @entity {
 
 type IndexerAllocationReward @entity {
   id: ID! # deploymentId:indexerId:txHash
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   indexer: Indexer!
   reward: BigInt!
@@ -559,7 +559,7 @@ type IndexerAllocationReward @entity {
 
 type IndexerAllocationRewardSummary @entity {
   id: ID! # deploymentId:indexerId
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   indexer: Indexer!
   totalReward: BigInt!
@@ -570,7 +570,7 @@ type IndexerAllocationRewardSummary @entity {
 
 type ConsumerQueryReward @entity {
   id: ID! # deploymentId:consumer:orderType:orderId
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   consumer: String! @index
   orderType: OrderType!
@@ -583,7 +583,7 @@ type ConsumerQueryReward @entity {
 
 type ConsumerQueryRewardSummary @entity {
   id: ID! # deploymentId:consumer:orderType
-  proejct: Project!
+  project: Project!
   deployment: Deployment!
   consumer: String! @index
   orderType: OrderType!

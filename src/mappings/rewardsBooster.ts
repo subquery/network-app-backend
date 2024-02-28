@@ -20,12 +20,22 @@ import {
   IndexerMissedLabor,
   OrderType,
   Project,
+  ProjectType,
   ServiceAgreement,
   StateChannel,
 } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
+
+const preboostedCids = [
+  'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
+  'QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF',
+];
+const preboostedPids: any = {
+  Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9: '0x21',
+  QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF: '0x21',
+};
 
 export async function handleDeploymentBoosterAdded(
   event: EthereumLog<DeploymentBoosterAddedEvent['args']>
@@ -35,10 +45,31 @@ export async function handleDeploymentBoosterAdded(
   const { account: consumer, amount: amountAdded } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
-  const deployment = await Deployment.get(deploymentId);
+  let deployment = await Deployment.get(deploymentId);
+  if (!deployment && preboostedCids.includes(deploymentId)) {
+    deployment = Deployment.create({
+      id: deploymentId,
+      metadata: '',
+      projectId: preboostedPids[deploymentId],
+      createdTimestamp: new Date(),
+    });
+  }
   assert(deployment, `Deployment ${deploymentId} not found`);
 
-  const project = await Project.get(deployment.projectId);
+  let project = await Project.get(deployment.projectId);
+  if (!project && preboostedCids.includes(deploymentId)) {
+    project = Project.create({
+      id: deployment.projectId,
+      owner: '',
+      type: ProjectType.SUBQUERY,
+      metadata: '',
+      deploymentId: '',
+      deploymentMetadata: '',
+      updatedTimestamp: new Date(),
+      createdTimestamp: new Date(),
+      totalReward: BigInt(0),
+    });
+  }
   assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
@@ -48,15 +79,14 @@ export async function handleDeploymentBoosterAdded(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    proejctId: project.id,
-    deploymentId,
+    projectId: project.id,
+    deploymentId: deployment.id,
     consumer,
     amountAdded: amountAdded.toBigInt(),
     amountRemoved: BigInt(0),
     eraIdx: await getCurrentEra(),
     createAt: biToDate(event.block.timestamp),
   });
-
   await booster.save();
 
   const summaryId = `${deploymentId}:${consumer}`;
@@ -64,8 +94,8 @@ export async function handleDeploymentBoosterAdded(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
-      deploymentId,
+      projectId: project.id,
+      deploymentId: deployment.id,
       consumer,
       totalAdded: amountAdded.toBigInt(),
       totalRemoved: BigInt(0),
@@ -101,8 +131,8 @@ export async function handleDeploymentBoosterRemoved(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    proejctId: project.id,
-    deploymentId,
+    projectId: project.id,
+    deploymentId: deployment.id,
     consumer: consumer,
     amountAdded: BigInt(0),
     amountRemoved: amountRemoved.toBigInt(),
@@ -116,8 +146,8 @@ export async function handleDeploymentBoosterRemoved(
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
-      deploymentId,
+      projectId: project.id,
+      deploymentId: deployment.id,
       consumer: consumer,
       totalAdded: BigInt(0),
       totalRemoved: amountRemoved.toBigInt(),
@@ -176,7 +206,7 @@ export async function handleAllocationRewardsGiven(
 
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
-    proejctId: project.id,
+    projectId: project.id,
     deploymentId,
     indexerId,
     reward: reward.toBigInt(),
@@ -191,7 +221,7 @@ export async function handleAllocationRewardsGiven(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalReward: reward.toBigInt(),
@@ -225,7 +255,7 @@ export async function handleAllocationRewardsBurnt(
   if (!allocationReward) {
     allocationReward = IndexerAllocationReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       indexerId,
       reward: BigInt(0),
@@ -244,7 +274,7 @@ export async function handleAllocationRewardsBurnt(
   if (!summary) {
     summary = IndexerAllocationRewardSummary.create({
       id: summaryId,
-      proejctId: deployment.projectId,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalReward: BigInt(0),
@@ -296,7 +326,7 @@ export async function handleQueryRewardsSpent(
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -317,7 +347,7 @@ export async function handleQueryRewardsSpent(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -370,7 +400,7 @@ export async function handleQueryRewardsRefunded(
   if (!queryReward) {
     queryReward = ConsumerQueryReward.create({
       id: rewardId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,
@@ -391,7 +421,7 @@ export async function handleQueryRewardsRefunded(
   if (!summary) {
     summary = ConsumerQueryRewardSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       consumer,
       orderType,

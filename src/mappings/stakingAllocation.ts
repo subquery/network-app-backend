@@ -37,7 +37,7 @@ export async function handleStakeAllocationAdded(
 
   allocation = IndexerAllocation.create({
     id: allocationId,
-    proejctId: project.id,
+    projectId: project.id,
     deploymentId,
     indexerId,
     amountAdded: amountAdded.toBigInt(),
@@ -52,7 +52,7 @@ export async function handleStakeAllocationAdded(
   if (!summary) {
     summary = IndexerAllocationSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalAdded: amountAdded.toBigInt(),
@@ -89,7 +89,7 @@ export async function handleStakeAllocationRemoved(
 
   allocation = IndexerAllocation.create({
     id: allocationId,
-    proejctId: project.id,
+    projectId: project.id,
     deploymentId,
     indexerId,
     amountAdded: BigInt(0),
@@ -104,7 +104,7 @@ export async function handleStakeAllocationRemoved(
   if (!summary) {
     summary = IndexerAllocationSummary.create({
       id: summaryId,
-      proejctId: project.id,
+      projectId: project.id,
       deploymentId,
       indexerId,
       totalAdded: BigInt(0),
