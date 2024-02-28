@@ -20,6 +20,7 @@ import {
   IndexerMissedLabor,
   OrderType,
   Project,
+  ProjectType,
   ServiceAgreement,
   StateChannel,
 } from '../types';
@@ -35,10 +36,40 @@ export async function handleDeploymentBoosterAdded(
   const { account: consumer, amount: amountAdded } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
-  const deployment = await Deployment.get(deploymentId);
+  const preboostedCids = [
+    'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
+    'QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF',
+  ];
+  const preboostedPids: any = {
+    Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9: '0x21',
+    QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF: '0x21',
+  };
+
+  let deployment = await Deployment.get(deploymentId);
+  if (!deployment && preboostedCids.includes(deploymentId)) {
+    deployment = Deployment.create({
+      id: deploymentId,
+      metadata: '',
+      projectId: preboostedPids[deploymentId],
+      createdTimestamp: new Date(),
+    });
+  }
   assert(deployment, `Deployment ${deploymentId} not found`);
 
-  const project = await Project.get(deployment.projectId);
+  let project = await Project.get(deployment.projectId);
+  if (!project && preboostedCids.includes(deploymentId)) {
+    project = Project.create({
+      id: deployment.projectId,
+      owner: '',
+      type: ProjectType.SUBQUERY,
+      metadata: '',
+      deploymentId: '',
+      deploymentMetadata: '',
+      updatedTimestamp: new Date(),
+      createdTimestamp: new Date(),
+      totalReward: BigInt(0),
+    });
+  }
   assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
