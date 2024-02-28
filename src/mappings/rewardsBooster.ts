@@ -36,13 +36,10 @@ export async function handleDeploymentBoosterAdded(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
-  // assert(deployment, `Deployment ${deploymentId} not found`);
+  assert(deployment, `Deployment ${deploymentId} not found`);
 
-  let project;
-  if (deployment) {
-    project = await Project.get(deployment.projectId);
-    assert(project, `Project ${deployment.projectId} not found`);
-  }
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
 
@@ -51,9 +48,8 @@ export async function handleDeploymentBoosterAdded(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    projectId: project?.id,
-    deploymentId: deployment?.id,
-    deploymentCid: deploymentId,
+    projectId: project.id,
+    deploymentId: deployment.id,
     consumer,
     amountAdded: amountAdded.toBigInt(),
     amountRemoved: BigInt(0),
@@ -62,27 +58,13 @@ export async function handleDeploymentBoosterAdded(
   });
   await booster.save();
 
-  if (project) {
-    const boosters = await DeploymentBooster.getByFields([
-      ['projectId', '=', undefined],
-      ['deploymentCid', '=', deployment?.id],
-      ['consumer', '=', consumer],
-    ]);
-    for (const b of boosters) {
-      b.deploymentId = deployment?.id;
-      b.projectId = project?.id;
-      await b.save();
-    }
-  }
-
   const summaryId = `${deploymentId}:${consumer}`;
   let summary = await DeploymentBoosterSummary.get(summaryId);
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      projectId: project?.id,
-      deploymentId: deployment?.id,
-      deploymentCid: deploymentId,
+      projectId: project.id,
+      deploymentId: deployment.id,
       consumer,
       totalAdded: amountAdded.toBigInt(),
       totalRemoved: BigInt(0),
@@ -91,8 +73,6 @@ export async function handleDeploymentBoosterAdded(
       updateAt: biToDate(event.block.timestamp),
     });
   } else {
-    summary.projectId = project?.id;
-    summary.deploymentId = deployment?.id;
     summary.totalAdded += amountAdded.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
@@ -109,13 +89,10 @@ export async function handleDeploymentBoosterRemoved(
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
-  // assert(deployment, `Deployment ${deploymentId} not found`);
+  assert(deployment, `Deployment ${deploymentId} not found`);
 
-  let project;
-  if (deployment) {
-    project = await Project.get(deployment.projectId);
-    assert(project, `Project ${deployment.projectId} not found`);
-  }
+  const project = await Project.get(deployment.projectId);
+  assert(project, `Project ${deployment.projectId} not found`);
 
   const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
   let booster = await DeploymentBooster.get(boosterId);
@@ -123,9 +100,8 @@ export async function handleDeploymentBoosterRemoved(
 
   booster = DeploymentBooster.create({
     id: boosterId,
-    projectId: project?.id,
-    deploymentId: deployment?.id,
-    deploymentCid: deploymentId,
+    projectId: project.id,
+    deploymentId: deployment.id,
     consumer: consumer,
     amountAdded: BigInt(0),
     amountRemoved: amountRemoved.toBigInt(),
@@ -134,27 +110,13 @@ export async function handleDeploymentBoosterRemoved(
   });
   await booster.save();
 
-  if (project) {
-    const boosters = await DeploymentBooster.getByFields([
-      ['projectId', '=', undefined],
-      ['deploymentCid', '=', deployment?.id],
-      ['consumer', '=', consumer],
-    ]);
-    for (const b of boosters) {
-      b.deploymentId = deployment?.id;
-      b.projectId = project?.id;
-      await b.save();
-    }
-  }
-
   const summaryId = `${deploymentId}:${consumer}`;
   let summary = await DeploymentBoosterSummary.get(summaryId);
   if (!summary) {
     summary = DeploymentBoosterSummary.create({
       id: summaryId,
-      projectId: project?.id,
-      deploymentId: deployment?.id,
-      deploymentCid: deploymentId,
+      projectId: project.id,
+      deploymentId: deployment.id,
       consumer: consumer,
       totalAdded: BigInt(0),
       totalRemoved: amountRemoved.toBigInt(),
@@ -163,8 +125,6 @@ export async function handleDeploymentBoosterRemoved(
       updateAt: biToDate(event.block.timestamp),
     });
   } else {
-    summary.projectId = project?.id;
-    summary.deploymentId = deployment?.id;
     summary.totalRemoved += amountRemoved.toBigInt();
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
@@ -215,7 +175,7 @@ export async function handleAllocationRewardsGiven(
 
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
-    projectId: project?.id,
+    projectId: project.id,
     deploymentId,
     indexerId,
     reward: reward.toBigInt(),
