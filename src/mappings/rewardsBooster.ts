@@ -28,6 +28,15 @@ import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
 
+const preboostedCids = [
+  'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
+  'QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF',
+];
+const preboostedPids: any = {
+  Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9: '0x21',
+  QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF: '0x21',
+};
+
 export async function handleDeploymentBoosterAdded(
   event: EthereumLog<DeploymentBoosterAddedEvent['args']>
 ): Promise<void> {
@@ -35,15 +44,6 @@ export async function handleDeploymentBoosterAdded(
   assert(event.args, 'No event args');
   const { account: consumer, amount: amountAdded } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
-
-  const preboostedCids = [
-    'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
-    'QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF',
-  ];
-  const preboostedPids: any = {
-    Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9: '0x21',
-    QmeBTNuhahUo2EhTRxV3qVAVf5bC8zVQRrrHd3SUDXgtbF: '0x21',
-  };
 
   let deployment = await Deployment.get(deploymentId);
   if (!deployment && preboostedCids.includes(deploymentId)) {
