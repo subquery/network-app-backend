@@ -51,6 +51,7 @@
     "@subql/types-ethereum": "^3.2.1",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
+    "bignumber.js": "^9.1.2",
     "bs58": "^4.0.1",
     "ethers": "^5.7.2",
     "pino": "^7.8.0"

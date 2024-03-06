@@ -10,16 +10,22 @@ import {
   UnclaimedReward,
   EraReward,
   EraRewardClaimed,
+  Era,
 } from '../types';
-import { RewardsDistributor__factory } from '@subql/contract-sdk';
+import {
+  EraManager__factory,
+  RewardsDistributor__factory,
+  ServiceAgreementRegistry__factory,
+} from '@subql/contract-sdk';
 import {
   ClaimRewardsEvent,
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/contracts/RewardsDistributor';
-import { biToDate, Contracts, getContractAddress } from './utils';
+import { biToDate, bnToDate, Contracts, getContractAddress } from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from '@ethersproject/bignumber';
+import BignumberJs from 'bignumber.js';
 import { getCurrentEra } from './eraManager';
 import {
   AgreementRewardsEvent,
@@ -229,121 +235,281 @@ async function updateEraRewardClaimed(
 export async function handleRewardsUpdated(
   event: EthereumLog<RewardsChangedEvent['args']>
 ): Promise<void> {
-  logger.info('handleRewardsUpdated');
-  assert(event.args, 'No event args');
-
-  const { runner, eraIdx, additions, removals } = event.args;
-
-  const prevEraRewards = await IndexerReward.get(
-    getPrevIndexerRewardId(runner, eraIdx)
-  );
-  const prevAmount = prevEraRewards?.amount ?? BigInt(0);
-
-  const id = getIndexerRewardId(runner, eraIdx);
-  let eraRewards = await IndexerReward.get(id);
-  // Hook for `additions` equal to zero
-  const additionValue = additions.eq(0)
-    ? BigNumber.from(eraRewards?.additions ?? 0)
-    : additions;
-  if (!eraRewards) {
-    eraRewards = IndexerReward.create({
-      id,
-      indexerId: runner,
-      eraIdx: eraIdx.toHexString(),
-      eraId: eraIdx.toBigInt(),
-      additions: additionValue.toBigInt(),
-      removals: removals.toBigInt(),
-      amount: BigInt(0), // Updated below
-      createdBlock: event.blockNumber,
-    });
-  } else {
-    eraRewards.additions = additionValue.toBigInt();
-    eraRewards.removals = removals.toBigInt();
-    eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
-  }
-
-  eraRewards.amount =
-    prevAmount + additionValue.toBigInt() - removals.toBigInt();
-
-  await eraRewards.save();
-
-  const lastEraIdx = await upsertIndexerLastRewardEra(
-    runner,
-    eraIdx,
-    event.blockNumber
-  );
-
-  /* Rewards changed events don't come in in order and may not be the latest set era */
-  await updateFutureRewards(runner, lastEraIdx, eraRewards, event.blockNumber);
+  // logger.info('handleRewardsUpdated');
+  // assert(event.args, 'No event args');
+  // const { runner, eraIdx, additions, removals } = event.args;
+  // const prevEraRewards = await IndexerReward.get(
+  //   getPrevIndexerRewardId(runner, eraIdx)
+  // );
+  // const prevAmount = prevEraRewards?.amount ?? BigInt(0);
+  // const id = getIndexerRewardId(runner, eraIdx);
+  // let eraRewards = await IndexerReward.get(id);
+  // // Hook for `additions` equal to zero
+  // const additionValue = additions.eq(0)
+  //   ? BigNumber.from(eraRewards?.additions ?? 0)
+  //   : additions;
+  // if (!eraRewards) {
+  //   eraRewards = IndexerReward.create({
+  //     id,
+  //     indexerId: runner,
+  //     eraIdx: eraIdx.toHexString(),
+  //     eraId: eraIdx.toBigInt(),
+  //     additions: additionValue.toBigInt(),
+  //     removals: removals.toBigInt(),
+  //     amount: BigInt(0), // Updated below
+  //     createdBlock: event.blockNumber,
+  //   });
+  // } else {
+  //   eraRewards.additions = additionValue.toBigInt();
+  //   eraRewards.removals = removals.toBigInt();
+  //   eraRewards.lastEvent = `handleRewardsUpdated:${event.blockNumber}`;
+  // }
+  // eraRewards.amount =
+  //   prevAmount + additionValue.toBigInt() - removals.toBigInt();
+  // await eraRewards.save();
+  // const lastEraIdx = await upsertIndexerLastRewardEra(
+  //   runner,
+  //   eraIdx,
+  //   event.blockNumber
+  // );
+  // // Rewards changed events don't come in in order and may not be the latest set era
+  // await updateFutureRewards(runner, lastEraIdx, eraRewards, event.blockNumber);
 }
 
-async function upsertIndexerLastRewardEra(
-  indexerAddress: string,
+// async function upsertIndexerLastRewardEra(
+//   indexerAddress: string,
+//   eraIdx: BigNumber,
+//   eventBlock: number
+// ): Promise<BigNumber> {
+//   const indexer = await Indexer.get(indexerAddress);
+
+//   assert(indexer, "Indexer Doesn't exist");
+
+//   const lastRewardedEra = indexer.lastRewardedEra
+//     ? BigNumber.from(indexer.lastRewardedEra)
+//     : undefined;
+
+//   if (!lastRewardedEra || lastRewardedEra.lt(eraIdx)) {
+//     indexer.lastRewardedEra = eraIdx.toHexString();
+//     indexer.lastEvent = `handleRewardsUpdated:upsertIndexerLastRewardEra:${eventBlock}`;
+
+//     await indexer.save();
+
+//     return eraIdx;
+//   } else {
+//     return lastRewardedEra;
+//   }
+// }
+
+// async function updateFutureRewards(
+//   indexer: string,
+//   lastRewardedEra: BigNumber,
+//   prevEraRewards: Readonly<IndexerReward>,
+//   eventBlock: number
+// ) {
+//   let prev = prevEraRewards;
+//   let prevEraId = BigNumber.from(prevEraRewards.eraIdx);
+
+//   // Recalc all rewards until we get to the lastRewardedEra
+//   while (prevEraId.lte(lastRewardedEra)) {
+//     const eraId = BigNumber.from(prev.eraIdx).add(1);
+//     const id = getIndexerRewardId(indexer, eraId);
+
+//     let eraReward = await IndexerReward.get(id);
+
+//     if (eraReward) {
+//       eraReward.amount = prev.amount + eraReward.additions - eraReward.removals;
+//       eraReward.lastEvent = `handleRewardsUpdated:updateFutureRewards:${eventBlock}`;
+//     } else {
+//       eraReward = IndexerReward.create({
+//         id,
+//         indexerId: indexer,
+//         eraId: eraId.toBigInt(),
+//         eraIdx: eraId.toHexString(),
+//         additions: BigInt(0),
+//         removals: BigInt(0),
+//         amount: prev.amount,
+//         createdBlock: eventBlock,
+//       });
+//     }
+//     await eraReward.save();
+
+//     prev = eraReward;
+//     prevEraId = eraId;
+//   }
+// }
+
+const updateOrCreateIndexerReward = async (
+  id: string,
+  amount: BigNumber,
+  runner: string,
   eraIdx: BigNumber,
-  eventBlock: number
-): Promise<BigNumber> {
-  const indexer = await Indexer.get(indexerAddress);
-
-  assert(indexer, "Indexer Doesn't exist");
-
-  const lastRewardedEra = indexer.lastRewardedEra
-    ? BigNumber.from(indexer.lastRewardedEra)
-    : undefined;
-
-  if (!lastRewardedEra || lastRewardedEra.lt(eraIdx)) {
-    indexer.lastRewardedEra = eraIdx.toHexString();
-    indexer.lastEvent = `handleRewardsUpdated:upsertIndexerLastRewardEra:${eventBlock}`;
-
-    await indexer.save();
-
-    return eraIdx;
-  } else {
-    return lastRewardedEra;
+  blockNumber: number,
+  lastEventString: string
+) => {
+  const existIndexerRewards = await IndexerReward.get(id);
+  if (existIndexerRewards) {
+    existIndexerRewards.amount += amount.toBigInt();
+    await existIndexerRewards.save();
+    return;
   }
-}
 
-async function updateFutureRewards(
-  indexer: string,
-  lastRewardedEra: BigNumber,
-  prevEraRewards: Readonly<IndexerReward>,
-  eventBlock: number
-) {
-  let prev = prevEraRewards;
-  let prevEraId = BigNumber.from(prevEraRewards.eraIdx);
+  const newIndexerRewards = IndexerReward.create({
+    id,
+    indexerId: runner,
+    eraIdx: eraIdx.toHexString(),
+    eraId: eraIdx.toBigInt(),
+    amount: amount.toBigInt(),
+    createdBlock: blockNumber,
+    lastEvent: `${lastEventString}:${blockNumber}`,
+  });
 
-  // Recalc all rewards until we get to the lastRewardedEra
-  while (prevEraId.lte(lastRewardedEra)) {
-    const eraId = BigNumber.from(prev.eraIdx).add(1);
-    const id = getIndexerRewardId(indexer, eraId);
-
-    let eraReward = await IndexerReward.get(id);
-
-    if (eraReward) {
-      eraReward.amount = prev.amount + eraReward.additions - eraReward.removals;
-      eraReward.lastEvent = `handleRewardsUpdated:updateFutureRewards:${eventBlock}`;
-    } else {
-      eraReward = IndexerReward.create({
-        id,
-        indexerId: indexer,
-        eraId: eraId.toBigInt(),
-        eraIdx: eraId.toHexString(),
-        additions: BigInt(0),
-        removals: BigInt(0),
-        amount: prev.amount,
-        createdBlock: eventBlock,
-      });
-    }
-    await eraReward.save();
-
-    prev = eraReward;
-    prevEraId = eraId;
-  }
-}
+  await newIndexerRewards.save();
+};
 
 export async function handleInstantRewards(
   event: EthereumLog<InstantRewardsEvent['args']>
-): Promise<void> {}
+): Promise<void> {
+  logger.info('handleInstantRewardsUpdated');
+  assert(event.args, 'No event args');
+
+  const { runner, eraIdx, token: amount } = event.args;
+  const id = getIndexerRewardId(runner, eraIdx);
+  await updateOrCreateIndexerReward(
+    id,
+    amount,
+    runner,
+    eraIdx,
+    event.blockNumber,
+    'handleInstantRewards'
+  );
+}
 
 export async function handleAgreementRewards(
   event: EthereumLog<AgreementRewardsEvent['args']>
-): Promise<void> {}
+): Promise<void> {
+  logger.info('handleAgreementRewardsUpdated');
+  assert(event.args, 'No event args');
+
+  const { runner, agreementId, token: amount } = event.args;
+
+  const network = await api.getNetwork();
+  const serviceAgreementContract = ServiceAgreementRegistry__factory.connect(
+    getContractAddress(network.chainId, Contracts.SA_REGISTRY_ADDRESS),
+    api
+  );
+
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
+
+  const currentEra = await getCurrentEra();
+  const currentEraInfo = await Era.get(
+    BigNumber.from(currentEra).toHexString()
+  );
+
+  if (!currentEraInfo) {
+    logger.error(`current era not found in records: ${currentEra}`);
+    return;
+  }
+
+  const currentEraStartDate = new Date(currentEraInfo.startTime);
+
+  const eraPeriod = await eraManager.eraPeriod();
+  const { startDate, period } =
+    await serviceAgreementContract.getClosedServiceAgreement(agreementId);
+
+  const agreementStartDate = bnToDate(startDate);
+
+  const agreementFirstEraRate = BignumberJs(1).minus(
+    BignumberJs(agreementStartDate.getTime() - currentEraStartDate.getTime())
+      .div(1000)
+      .div(eraPeriod.toString())
+  );
+
+  const agreementLastEraNumbers = BignumberJs(period.toString()).div(
+    eraPeriod.toString()
+  );
+  const everyEraAmount = BignumberJs(amount.toString()).div(
+    agreementLastEraNumbers.toString()
+  );
+
+  // split the agreement to first ... last
+  // first amount should be calculated by the rate of the first era
+  const agreementFirstEraAmount = everyEraAmount.multipliedBy(
+    agreementFirstEraRate
+  );
+
+  // this agreement only have one era
+  if (agreementLastEraNumbers.lte(1)) {
+    await updateOrCreateIndexerReward(
+      getIndexerRewardId(runner, BigNumber.from(currentEra)),
+      BigNumber.from(amount.toString()),
+      runner,
+      BigNumber.from(currentEra),
+      event.blockNumber,
+      'handleServicesAgreementRewards'
+    );
+    return;
+  } else {
+    await updateOrCreateIndexerReward(
+      getIndexerRewardId(runner, BigNumber.from(currentEra)),
+      BigNumber.from(agreementFirstEraAmount.toFixed(0)),
+      runner,
+      BigNumber.from(currentEra),
+      event.blockNumber,
+      'handleServicesAgreementRewards'
+    );
+  }
+
+  // minus first rate and then less than 1 indicates this agreements only have two era
+  if (agreementLastEraNumbers.minus(agreementFirstEraRate).lte(1)) {
+    const eraId = BigNumber.from(currentEra + 1);
+    const leftAmount = BignumberJs(amount.toString()).minus(
+      agreementFirstEraAmount
+    );
+    await updateOrCreateIndexerReward(
+      getIndexerRewardId(runner, eraId),
+      BigNumber.from(leftAmount.toFixed(0)),
+      runner,
+      eraId,
+      event.blockNumber,
+      'handleServicesAgreementRewards'
+    );
+    return;
+  }
+
+  // if the agreement has more than 2 era
+  const leftEra = agreementLastEraNumbers.minus(agreementFirstEraRate);
+  const integerPart = leftEra.integerValue(BignumberJs.ROUND_DOWN);
+  const decimalPart = leftEra.minus(integerPart);
+  const decimalPartAmount = everyEraAmount.multipliedBy(decimalPart);
+  const lastEra = leftEra.integerValue(BignumberJs.ROUND_CEIL);
+
+  await Promise.all([
+    ...new Array(integerPart.toNumber()).fill(0).map((i, index) => {
+      return updateOrCreateIndexerReward(
+        getIndexerRewardId(runner, BigNumber.from(currentEra + index + 1)),
+        BigNumber.from(everyEraAmount.toFixed(0)),
+        runner,
+        BigNumber.from(currentEra + index + 1),
+        event.blockNumber,
+        'handleServicesAgreementRewards'
+      );
+    }),
+    updateOrCreateIndexerReward(
+      getIndexerRewardId(
+        runner,
+        BigNumber.from(currentEra + lastEra.toNumber())
+      ),
+      BigNumber.from(decimalPartAmount.toFixed(0)),
+      runner,
+      BigNumber.from(currentEra + lastEra.toNumber()),
+      event.blockNumber,
+      'handleServicesAgreementRewards'
+    ),
+  ]);
+
+  logger.info(runner);
+}
