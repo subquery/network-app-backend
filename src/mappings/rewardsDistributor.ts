@@ -423,6 +423,8 @@ export async function handleAgreementRewards(
   const agreementStartDate = bnToDate(startDate);
 
   const agreementFirstEraRate = BignumberJs(1).minus(
+    // the agreement start - era start is the time passed, these time they shouldn't get tokens
+    // then / eraPeriod to get the rate.
     BignumberJs(agreementStartDate.getTime() - currentEraStartDate.getTime())
       .div(1000)
       .div(eraPeriod.toString())
@@ -441,27 +443,34 @@ export async function handleAgreementRewards(
     agreementFirstEraRate
   );
 
-  // this agreement only have one era
+  // this agreement less than 1 era
   if (agreementLastEraNumbers.lte(1)) {
-    await updateOrCreateIndexerReward(
-      getIndexerRewardId(runner, BigNumber.from(currentEra)),
-      BigNumber.from(amount.toString()),
-      runner,
-      BigNumber.from(currentEra),
-      event.blockNumber,
-      'handleServicesAgreementRewards'
-    );
-    return;
-  } else {
-    await updateOrCreateIndexerReward(
-      getIndexerRewardId(runner, BigNumber.from(currentEra)),
-      BigNumber.from(agreementFirstEraAmount.toFixed(0)),
-      runner,
-      BigNumber.from(currentEra),
-      event.blockNumber,
-      'handleServicesAgreementRewards'
-    );
+    // if the agreement less than 1 era and will end before the next era
+    if (
+      +bnToDate(startDate.add(period)) <
+      +currentEraInfo.startTime + eraPeriod.mul(1000).toNumber()
+    ) {
+      await updateOrCreateIndexerReward(
+        getIndexerRewardId(runner, BigNumber.from(currentEra)),
+        BigNumber.from(amount.toString()),
+        runner,
+        BigNumber.from(currentEra),
+        event.blockNumber,
+        'handleServicesAgreementRewards'
+      );
+      return;
+    }
+    // otherwise can use same process as the agreement has more than 1 era
   }
+
+  await updateOrCreateIndexerReward(
+    getIndexerRewardId(runner, BigNumber.from(currentEra)),
+    BigNumber.from(agreementFirstEraAmount.toFixed(0)),
+    runner,
+    BigNumber.from(currentEra),
+    event.blockNumber,
+    'handleServicesAgreementRewards'
+  );
 
   // minus first rate and then less than 1 indicates this agreements only have two era
   if (agreementLastEraNumbers.minus(agreementFirstEraRate).lte(1)) {
