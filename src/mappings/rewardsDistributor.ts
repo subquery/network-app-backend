@@ -472,7 +472,7 @@ export async function handleAgreementRewards(
     'handleServicesAgreementRewards'
   );
 
-  // minus first rate and then less than 1 indicates this agreements only have two era
+  // minus first rate and then less than 1 indicates this agreement only have two era
   if (agreementLastEraNumbers.minus(agreementFirstEraRate).lte(1)) {
     const eraId = BigNumber.from(currentEra + 1);
     const leftAmount = BignumberJs(amount.toString()).minus(
