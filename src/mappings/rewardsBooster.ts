@@ -234,6 +234,9 @@ export async function handleAllocationRewardsGiven(
     summary.updateAt = biToDate(event.block.timestamp);
   }
   await summary.save();
+
+  project.totalReward += reward.toBigInt();
+  await project.save();
 }
 
 export async function handleAllocationRewardsBurnt(
