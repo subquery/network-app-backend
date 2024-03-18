@@ -212,7 +212,13 @@ async function updateIndexerCommissionRate(
     eraIdx: eraIdx,
     commissionRate,
   }).save();
-  await IndexerCommissionRate.remove(next1EraId);
+  await IndexerCommissionRate.create({
+    id: next1EraId,
+    indexerId,
+    eraId: (eraIdx + 1).toString(16),
+    eraIdx: eraIdx + 1,
+    commissionRate: nextCommissionRate,
+  }).save();
   await IndexerCommissionRate.create({
     id: next2EraId,
     indexerId,
