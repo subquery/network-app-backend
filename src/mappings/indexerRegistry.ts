@@ -190,24 +190,35 @@ export async function handleSetCommissionRate(
 
   await updateIndexerCommissionRate(
     indexer.id,
-    BigNumber.from(indexer.commission.era).toHexString(),
     indexer.commission.era,
-    Number(BigInt.fromJSONType(indexer.commission.value))
+    Number(BigInt.fromJSONType(indexer.commission.value)),
+    Number(BigInt.fromJSONType(indexer.commission.valueAfter))
   );
 }
 
 async function updateIndexerCommissionRate(
   indexerId: string,
-  eraId: string,
   eraIdx: number,
-  commissionRate: number
+  commissionRate: number,
+  nextCommissionRate: number
 ): Promise<void> {
+  const currentEraId = `${indexerId}:${eraIdx.toString(16)}`;
+  const next1EraId = `${indexerId}:${(eraIdx + 1).toString(16)}`;
+  const next2EraId = `${indexerId}:${(eraIdx + 2).toString(16)}`;
   await IndexerCommissionRate.create({
-    id: `${indexerId}:${eraId}`,
+    id: currentEraId,
     indexerId,
-    eraId,
+    eraId: eraIdx.toString(16),
     eraIdx: eraIdx,
     commissionRate,
+  }).save();
+  await IndexerCommissionRate.remove(next1EraId);
+  await IndexerCommissionRate.create({
+    id: next2EraId,
+    indexerId,
+    eraId: (eraIdx + 2).toString(16),
+    eraIdx: eraIdx + 2,
+    commissionRate: nextCommissionRate,
   }).save();
 }
 
