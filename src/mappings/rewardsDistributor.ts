@@ -5,7 +5,6 @@ import assert from 'assert';
 import {
   Delegation,
   IndexerReward,
-  Indexer,
   Reward,
   UnclaimedReward,
   EraReward,
@@ -14,7 +13,6 @@ import {
 } from '../types';
 import {
   EraManager__factory,
-  RewardsDistributor__factory,
   ServiceAgreementRegistry__factory,
 } from '@subql/contract-sdk';
 import {
@@ -52,67 +50,64 @@ export async function handleRewardsDistributed(
   );
   assert(event.args, 'No event args');
 
-  const { runner, eraIdx, commission } = event.args;
-  const delegators = await Delegation.getByIndexerId(runner);
-  if (!delegators) return;
+  const { runner, eraIdx, rewards: totalRewards, commission } = event.args;
+  const delegations = await Delegation.getByIndexerId(runner);
+  if (!delegations) return;
 
-  const network = await api.getNetwork();
-  const rewardsDistributor = RewardsDistributor__factory.connect(
-    getContractAddress(network.chainId, Contracts.REWARD_DIST_ADDRESS),
-    api
-  );
+  let totalDelegation: BigNumber = BigNumber.from(0);
+  for (const delegation of delegations) {
+    const delegationAmount = eraIdx.gt(delegation.amount.era)
+      ? delegation.amount.valueAfter.value
+      : delegation.amount.value.value;
+    totalDelegation.add(delegationAmount);
+  }
 
-  for (const delegator of delegators.sort((a, b) =>
-    a.delegatorId.localeCompare(b.delegatorId)
-  )) {
-    const rewards = await rewardsDistributor.userRewards(
-      runner,
-      delegator.delegatorId
-    );
-    const id = buildRewardId(runner, delegator.delegatorId);
+  for (const delegation of delegations) {
+    const delegationAmount = eraIdx.gt(delegation.amount.era)
+      ? delegation.amount.valueAfter.value
+      : delegation.amount.value.value;
+    const estimatedRewards = totalRewards
+      .sub(commission)
+      .mul(delegationAmount)
+      .div(totalDelegation);
 
+    const id = buildRewardId(runner, delegation.delegatorId);
     let reward = await UnclaimedReward.get(id);
-    let rewardChanged = false;
-    let rewardOld = BigInt(0);
     if (!reward) {
       reward = UnclaimedReward.create({
         id,
-        delegatorAddress: delegator.delegatorId,
-        delegatorId: delegator.delegatorId,
+        delegatorAddress: delegation.delegatorId,
+        delegatorId: delegation.delegatorId,
         indexerAddress: runner,
-        amount: rewards.toBigInt(),
+        amount: estimatedRewards.toBigInt(),
         createdBlock: event.blockNumber,
       });
-      rewardChanged = rewards.gt(0);
     } else {
-      rewardChanged = reward.amount !== rewards.toBigInt();
-      if (rewardChanged) {
-        rewardOld = reward.amount;
-        reward.amount = rewards.toBigInt();
-        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
-      }
+      reward.amount += estimatedRewards.toBigInt();
+      reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
     }
-
     await reward.save();
 
-    if (delegator.exitEra && delegator.exitEra <= eraIdx.toNumber()) {
+    if (delegation.exitEra && delegation.exitEra <= eraIdx.toNumber()) {
       assert(
-        !rewardChanged,
-        `exited delegator should not have reward changed: ${delegator.id} / ${reward.indexerAddress}, ${rewardOld} -> ${reward.amount}`
+        estimatedRewards.eq(0),
+        `exited delegator should not have reward changed: ${delegation.id} / ${
+          reward.indexerAddress
+        }, ${estimatedRewards.toNumber()}`
       );
-      logger.info(`Delegation remove: ${delegator.id}`);
-      await Delegation.remove(delegator.id);
+      logger.info(`Delegation remove: ${delegation.id}`);
+      await Delegation.remove(delegation.id);
     }
 
-    if (rewards.gt(0) && rewardChanged) {
+    if (estimatedRewards.gt(0)) {
       await createEraReward({
         indexerId: runner,
-        delegatorId: delegator.delegatorId,
+        delegatorId: delegation.delegatorId,
         eraId: eraIdx.toHexString(),
         eraIdx: eraIdx.toNumber(),
         isCommission: false,
         claimed: false,
-        amount: rewards.toBigInt() - rewardOld,
+        amount: estimatedRewards.toBigInt(),
         createdBlock: event.blockNumber,
         createdTimestamp: biToDate(event.block.timestamp),
       });
