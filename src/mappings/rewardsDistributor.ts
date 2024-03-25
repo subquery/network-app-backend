@@ -56,16 +56,12 @@ export async function handleRewardsDistributed(
 
   let totalDelegation: BigNumber = BigNumber.from(0);
   for (const delegation of delegations) {
-    const delegationAmount = eraIdx.gt(delegation.amount.era)
-      ? delegation.amount.valueAfter.value
-      : delegation.amount.value.value;
-    totalDelegation.add(delegationAmount);
+    const delegationAmount = getEraDelegationAmount(delegation, eraIdx);
+    totalDelegation = totalDelegation.add(delegationAmount);
   }
 
   for (const delegation of delegations) {
-    const delegationAmount = eraIdx.gt(delegation.amount.era)
-      ? delegation.amount.valueAfter.value
-      : delegation.amount.value.value;
+    const delegationAmount = getEraDelegationAmount(delegation, eraIdx);
     const estimatedRewards = totalRewards
       .sub(commission)
       .mul(delegationAmount)
@@ -127,6 +123,15 @@ export async function handleRewardsDistributed(
       createdTimestamp: biToDate(event.block.timestamp),
     });
   }
+}
+
+function getEraDelegationAmount(
+  delegation: Delegation,
+  eraIdx: BigNumber
+): BigNumber {
+  const value = BigNumber.from(delegation.amount.value.value);
+  const valueAfter = BigNumber.from(delegation.amount.valueAfter.value);
+  return eraIdx.gt(delegation.amount.era) ? valueAfter : value;
 }
 
 export async function handleRewardsClaimed(
