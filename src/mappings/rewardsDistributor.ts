@@ -59,36 +59,28 @@ export async function handleRewardsDistributed(
   assert(event.args, 'No event args');
 
   const { runner, eraIdx, rewards: totalRewards, commission } = event.args;
-  const delegations = (
+  const eraIndexerDelegator =
     (await EraIndexerDelegator.get(`${runner}:${eraIdx.toHexString()}`)) ||
-    (await EraIndexerDelegator.get(runner))
-  )?.delegators;
-  if (!delegations) return;
-
-  let totalDelegation: BigNumber = BigNumber.from(0);
-  for (const delegationFrom of delegations) {
-    totalDelegation = totalDelegation.add(
-      toBigInt(delegationFrom.amount.toString())
-    );
-  }
+    (await EraIndexerDelegator.get(runner));
+  if (!eraIndexerDelegator) return;
+  const delegations = eraIndexerDelegator?.delegators;
+  const totalDelegation = eraIndexerDelegator.totalStake;
 
   for (const delegationFrom of delegations) {
     const delegationId = getDelegationId(delegationFrom.delegator, runner);
-    const delegation = await Delegation.get(delegationId);
-    assert(delegation, `delegation not found: ${delegationId}`);
-    const delegationAmount = getEraDelegationAmount(delegation, eraIdx);
+    const delegationAmount = toBigInt(delegationFrom.amount.toString());
     const estimatedRewards = totalRewards
       .sub(commission)
       .mul(delegationAmount)
       .div(totalDelegation);
 
-    const id = buildRewardId(runner, delegation.delegatorId);
+    const id = buildRewardId(runner, delegationFrom.delegator);
     let reward = await UnclaimedReward.get(id);
     if (!reward) {
       reward = UnclaimedReward.create({
         id,
-        delegatorAddress: delegation.delegatorId,
-        delegatorId: delegation.delegatorId,
+        delegatorAddress: delegationFrom.delegator,
+        delegatorId: delegationFrom.delegator,
         indexerAddress: runner,
         amount: estimatedRewards.toBigInt(),
         createdBlock: event.blockNumber,
@@ -99,6 +91,8 @@ export async function handleRewardsDistributed(
     }
     await reward.save();
 
+    const delegation = await Delegation.get(delegationId);
+    assert(delegation, `delegation not found: ${delegationId}`);
     if (delegation.exitEra && delegation.exitEra <= eraIdx.toNumber()) {
       assert(
         estimatedRewards.eq(0),
@@ -113,7 +107,7 @@ export async function handleRewardsDistributed(
     if (estimatedRewards.gt(0)) {
       await createEraReward({
         indexerId: runner,
-        delegatorId: delegation.delegatorId,
+        delegatorId: delegationFrom.delegator,
         eraId: eraIdx.toHexString(),
         eraIdx: eraIdx.toNumber(),
         isCommission: false,
