@@ -10,6 +10,7 @@ import {
   EraReward,
   EraRewardClaimed,
   Era,
+  EraIndexerDelegator,
 } from '../types';
 import {
   EraManager__factory,
@@ -20,7 +21,14 @@ import {
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/contracts/RewardsDistributor';
-import { biToDate, bnToDate, Contracts, getContractAddress } from './utils';
+import {
+  biToDate,
+  bnToDate,
+  Contracts,
+  getContractAddress,
+  getDelegationId,
+  toBigInt,
+} from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from '@ethersproject/bignumber';
 import BignumberJs from 'bignumber.js';
@@ -51,16 +59,23 @@ export async function handleRewardsDistributed(
   assert(event.args, 'No event args');
 
   const { runner, eraIdx, rewards: totalRewards, commission } = event.args;
-  const delegations = await Delegation.getByIndexerId(runner);
+  const delegations = (
+    (await EraIndexerDelegator.get(`${runner}:${eraIdx.toHexString()}`)) ||
+    (await EraIndexerDelegator.get(runner))
+  )?.delegators;
   if (!delegations) return;
 
   let totalDelegation: BigNumber = BigNumber.from(0);
-  for (const delegation of delegations) {
-    const delegationAmount = getEraDelegationAmount(delegation, eraIdx);
-    totalDelegation = totalDelegation.add(delegationAmount);
+  for (const delegationFrom of delegations) {
+    totalDelegation = totalDelegation.add(
+      toBigInt(delegationFrom.amount.toString())
+    );
   }
 
-  for (const delegation of delegations) {
+  for (const delegationFrom of delegations) {
+    const delegationId = getDelegationId(delegationFrom.delegator, runner);
+    const delegation = await Delegation.get(delegationId);
+    assert(delegation, `delegation not found: ${delegationId}`);
     const delegationAmount = getEraDelegationAmount(delegation, eraIdx);
     const estimatedRewards = totalRewards
       .sub(commission)

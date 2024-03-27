@@ -15,6 +15,8 @@ import {
 import assert from 'assert';
 import {
   Delegation,
+  EraDelegatorIndexer,
+  EraIndexerDelegator,
   EraStake,
   EraStakeUpdate,
   IndexerStake,
@@ -30,6 +32,7 @@ import {
   getDelegationId,
   getWithdrawlId,
   reportException,
+  toBigInt,
   updateIndexerCapacity,
   updateMaxUnstakeAmount,
   updateTotalDelegation,
@@ -92,21 +95,11 @@ export async function handleAddDelegation(
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
+  const applyInstantly = runner === source && !delegation;
 
-  await updateTotalDelegation(
-    source,
-    amountBn,
-    'add',
-    runner === source && !delegation
-  );
+  await updateTotalDelegation(source, amountBn, 'add', applyInstantly);
 
-  await updateTotalStake(
-    runner,
-    amountBn,
-    'add',
-    event,
-    runner === source && !delegation
-  );
+  await updateTotalStake(runner, amountBn, 'add', event, applyInstantly);
 
   if (!delegation) {
     // Indexers first stake is effective immediately
@@ -114,7 +107,7 @@ export async function handleAddDelegation(
       undefined,
       amountBn,
       'add',
-      runner === source
+      applyInstantly
     );
 
     delegation = Delegation.create({
@@ -136,6 +129,21 @@ export async function handleAddDelegation(
   await updateIndexerCapacity(runner, event);
   await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryAdded(event);
+  if (applyInstantly) {
+    await addToEraDelegation(
+      delegation.amount.era,
+      runner,
+      source,
+      amount.toBigInt()
+    );
+  } else {
+    await addToEraDelegation(
+      delegation.amount.era + 1,
+      runner,
+      source,
+      amount.toBigInt()
+    );
+  }
 }
 
 export async function handleRemoveDelegation(
@@ -169,6 +177,197 @@ export async function handleRemoveDelegation(
   await updateIndexerCapacity(runner, event);
   await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryRemoved(event);
+  await removeFromEraDelegation(
+    delegation.amount.era + 1,
+    runner,
+    source,
+    amount.toBigInt()
+  );
+}
+
+async function addToEraDelegation(
+  era: number,
+  indexer: string,
+  delegator: string,
+  amount: bigint
+) {
+  let latestIndexerD = await EraIndexerDelegator.get(indexer);
+  if (!latestIndexerD) {
+    latestIndexerD = EraIndexerDelegator.create({
+      id: indexer,
+      indexer,
+      era,
+      delegators: [],
+      totalStake: BigInt(0),
+    });
+  }
+  const latestIndexerDEra = latestIndexerD.era;
+  latestIndexerD.era = era;
+  const delegationFrom = latestIndexerD.delegators.find(
+    (d) => d.delegator === delegator
+  );
+  if (delegationFrom) {
+    logger.info(`Adding ${amount} to ${delegationFrom.amount}`);
+    delegationFrom.amount = toBigInt(delegationFrom.amount.toString()) + amount;
+  } else {
+    latestIndexerD.delegators.push({ delegator, amount });
+  }
+  latestIndexerD.totalStake += amount;
+  await latestIndexerD.save();
+
+  await fillUpEraIndexerDelegator(latestIndexerDEra, latestIndexerD);
+
+  let latestDelegatorD = await EraDelegatorIndexer.get(delegator);
+  if (!latestDelegatorD) {
+    latestDelegatorD = EraDelegatorIndexer.create({
+      id: delegator,
+      delegator,
+      era,
+      indexers: [],
+      totalStake: BigInt(0),
+    });
+  }
+  const latestDelegatorDEra = latestDelegatorD.era;
+  latestDelegatorD.era = era;
+  const delegationTo = latestDelegatorD.indexers.find(
+    (i) => i.indexer === indexer
+  );
+  if (delegationTo) {
+    logger.info(`Adding ${amount} to ${delegationTo.amount}`);
+    delegationTo.amount = toBigInt(delegationTo.amount.toString()) + amount;
+  } else {
+    latestDelegatorD.indexers.push({ indexer, amount });
+  }
+  latestDelegatorD.totalStake += amount;
+  await latestDelegatorD.save();
+
+  await fillUpEraDelegatorIndexer(latestDelegatorDEra, latestDelegatorD);
+}
+
+async function removeFromEraDelegation(
+  era: number,
+  indexer: string,
+  delegator: string,
+  amount: bigint
+) {
+  let latestIndexerD = await EraIndexerDelegator.get(indexer);
+  assert(latestIndexerD, `Indexer ${indexer} not found in EraIndexerDelegator`);
+
+  const latestIndexerDEra = latestIndexerD.era;
+  latestIndexerD.era = era;
+  latestIndexerD.delegators = latestIndexerD.delegators.map((d) => {
+    if (d.delegator === delegator) {
+      d.amount = toBigInt(d.amount.toString()) - amount;
+    }
+    return d;
+  });
+  latestIndexerD.delegators = latestIndexerD.delegators.filter(
+    (d) => !(d.delegator === delegator && d.amount <= BigInt(0))
+  );
+  latestIndexerD.totalStake -= amount;
+  await latestIndexerD.save();
+
+  await fillUpEraIndexerDelegator(latestIndexerDEra, latestIndexerD);
+
+  let latestDelegatorD = await EraDelegatorIndexer.get(delegator);
+  assert(
+    latestDelegatorD,
+    `Delegator ${delegator} not found in EraDelegatorIndexer`
+  );
+
+  const latestDelegatorDEra = latestDelegatorD.era;
+  latestDelegatorD.era = era;
+  latestDelegatorD.indexers = latestDelegatorD.indexers.map((i) => {
+    if (i.indexer === indexer) {
+      i.amount = toBigInt(i.amount.toString()) - amount;
+    }
+    return i;
+  });
+  latestDelegatorD.indexers = latestDelegatorD.indexers.filter(
+    (i) => !(i.indexer === indexer && i.amount <= BigInt(0))
+  );
+  latestDelegatorD.totalStake -= amount;
+  await latestDelegatorD.save();
+
+  await fillUpEraDelegatorIndexer(latestDelegatorDEra, latestDelegatorD);
+}
+
+async function fillUpEraIndexerDelegator(
+  latestEra: number,
+  indexerD: EraIndexerDelegator
+) {
+  let latestEraIndexerD = await EraIndexerDelegator.get(
+    `${indexerD.indexer}:${BigNumber.from(latestEra).toHexString()}`
+  );
+  if (!latestEraIndexerD) {
+    if (latestEra === indexerD.era) {
+      latestEraIndexerD = EraIndexerDelegator.create({
+        ...indexerD,
+        id: `${indexerD.indexer}:${BigNumber.from(latestEra).toHexString()}`,
+      });
+      await latestEraIndexerD.save();
+    } else {
+      throw new Error(
+        `latest EraIndexerDelegator not found for ${
+          indexerD.indexer
+        }:${BigNumber.from(latestEra).toHexString()}`
+      );
+    }
+  }
+
+  for (let i = latestEra + 1; i < indexerD.era; i++) {
+    await EraIndexerDelegator.create({
+      ...latestEraIndexerD,
+      era: i,
+      id: `${indexerD.indexer}:${BigNumber.from(i).toHexString()}`,
+    }).save();
+  }
+
+  await EraIndexerDelegator.create({
+    ...indexerD,
+    id: `${indexerD.indexer}:${BigNumber.from(indexerD.era).toHexString()}`,
+  }).save();
+}
+
+async function fillUpEraDelegatorIndexer(
+  latestEra: number,
+  delegatorD: EraDelegatorIndexer
+) {
+  let latestEraDelegatorD = await EraDelegatorIndexer.get(
+    `${delegatorD.delegator}:${BigNumber.from(latestEra).toHexString()}`
+  );
+  if (!latestEraDelegatorD) {
+    if (latestEra === delegatorD.era) {
+      latestEraDelegatorD = EraDelegatorIndexer.create({
+        ...delegatorD,
+        id: `${delegatorD.delegator}:${BigNumber.from(
+          latestEra
+        ).toHexString()}`,
+      });
+      await latestEraDelegatorD.save();
+    } else {
+      throw new Error(
+        `latest EraDelegatorIndexer not found for ${
+          delegatorD.delegator
+        }:${BigNumber.from(latestEra).toHexString()}`
+      );
+    }
+  }
+
+  for (let i = latestEra + 1; i < delegatorD.era; i++) {
+    await EraDelegatorIndexer.create({
+      ...latestEraDelegatorD,
+      era: i,
+      id: `${delegatorD.delegator}:${BigNumber.from(i).toHexString()}`,
+    }).save();
+  }
+
+  await EraDelegatorIndexer.create({
+    ...delegatorD,
+    id: `${delegatorD.delegator}:${BigNumber.from(
+      delegatorD.era
+    ).toHexString()}`,
+  }).save();
 }
 
 export async function handleWithdrawRequested(
