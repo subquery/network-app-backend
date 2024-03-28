@@ -63,11 +63,17 @@ export async function handleRewardsDistributed(
     (await EraIndexerDelegator.get(`${runner}:${eraIdx.toHexString()}`)) ||
     (await EraIndexerDelegator.get(runner));
   if (!eraIndexerDelegator) return;
+  if (eraIndexerDelegator.era > eraIdx.toNumber()) {
+    throw new Error(
+      `EraIndexerDelegator era is greater than the current era: ${
+        eraIndexerDelegator.era
+      } > ${eraIdx.toNumber()}`
+    );
+  }
   const delegations = eraIndexerDelegator?.delegators;
   const totalDelegation = eraIndexerDelegator.totalStake;
 
   for (const delegationFrom of delegations) {
-    const delegationId = getDelegationId(delegationFrom.delegator, runner);
     const delegationAmount = toBigInt(delegationFrom.amount.toString());
     const estimatedRewards = totalRewards
       .sub(commission)
@@ -91,6 +97,7 @@ export async function handleRewardsDistributed(
     }
     await reward.save();
 
+    const delegationId = getDelegationId(delegationFrom.delegator, runner);
     const delegation = await Delegation.get(delegationId);
     assert(delegation, `delegation not found: ${delegationId}`);
     if (delegation.exitEra && delegation.exitEra <= eraIdx.toNumber()) {

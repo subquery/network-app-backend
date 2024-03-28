@@ -191,9 +191,9 @@ async function addToEraDelegation(
   delegator: string,
   amount: bigint
 ) {
-  let latestIndexerD = await EraIndexerDelegator.get(indexer);
-  if (!latestIndexerD) {
-    latestIndexerD = EraIndexerDelegator.create({
+  let indexerD = await EraIndexerDelegator.get(indexer);
+  if (!indexerD) {
+    indexerD = EraIndexerDelegator.create({
       id: indexer,
       indexer,
       era,
@@ -201,25 +201,25 @@ async function addToEraDelegation(
       totalStake: BigInt(0),
     });
   }
-  const latestIndexerDEra = latestIndexerD.era;
-  latestIndexerD.era = era;
-  const delegationFrom = latestIndexerD.delegators.find(
+  const latestIndexerDEra = indexerD.era;
+  indexerD.era = era;
+  const delegationFrom = indexerD.delegators.find(
     (d) => d.delegator === delegator
   );
   if (delegationFrom) {
     logger.info(`Adding ${amount} to ${delegationFrom.amount}`);
     delegationFrom.amount = toBigInt(delegationFrom.amount.toString()) + amount;
   } else {
-    latestIndexerD.delegators.push({ delegator, amount });
+    indexerD.delegators.push({ delegator, amount });
   }
-  latestIndexerD.totalStake += amount;
-  await latestIndexerD.save();
+  indexerD.totalStake += amount;
+  await indexerD.save();
 
-  await fillUpEraIndexerDelegator(latestIndexerDEra, latestIndexerD);
+  await fillUpEraIndexerDelegator(latestIndexerDEra, indexerD);
 
-  let latestDelegatorD = await EraDelegatorIndexer.get(delegator);
-  if (!latestDelegatorD) {
-    latestDelegatorD = EraDelegatorIndexer.create({
+  let delegatorD = await EraDelegatorIndexer.get(delegator);
+  if (!delegatorD) {
+    delegatorD = EraDelegatorIndexer.create({
       id: delegator,
       delegator,
       era,
@@ -227,21 +227,19 @@ async function addToEraDelegation(
       totalStake: BigInt(0),
     });
   }
-  const latestDelegatorDEra = latestDelegatorD.era;
-  latestDelegatorD.era = era;
-  const delegationTo = latestDelegatorD.indexers.find(
-    (i) => i.indexer === indexer
-  );
+  const latestDelegatorDEra = delegatorD.era;
+  delegatorD.era = era;
+  const delegationTo = delegatorD.indexers.find((i) => i.indexer === indexer);
   if (delegationTo) {
     logger.info(`Adding ${amount} to ${delegationTo.amount}`);
     delegationTo.amount = toBigInt(delegationTo.amount.toString()) + amount;
   } else {
-    latestDelegatorD.indexers.push({ indexer, amount });
+    delegatorD.indexers.push({ indexer, amount });
   }
-  latestDelegatorD.totalStake += amount;
-  await latestDelegatorD.save();
+  delegatorD.totalStake += amount;
+  await delegatorD.save();
 
-  await fillUpEraDelegatorIndexer(latestDelegatorDEra, latestDelegatorD);
+  await fillUpEraDelegatorIndexer(latestDelegatorDEra, delegatorD);
 }
 
 async function removeFromEraDelegation(
@@ -250,46 +248,43 @@ async function removeFromEraDelegation(
   delegator: string,
   amount: bigint
 ) {
-  let latestIndexerD = await EraIndexerDelegator.get(indexer);
-  assert(latestIndexerD, `Indexer ${indexer} not found in EraIndexerDelegator`);
+  let indexerD = await EraIndexerDelegator.get(indexer);
+  assert(indexerD, `Indexer ${indexer} not found in EraIndexerDelegator`);
 
-  const latestIndexerDEra = latestIndexerD.era;
-  latestIndexerD.era = era;
-  latestIndexerD.delegators = latestIndexerD.delegators.map((d) => {
+  const latestIndexerDEra = indexerD.era;
+  indexerD.era = era;
+  indexerD.delegators = indexerD.delegators.map((d) => {
     if (d.delegator === delegator) {
       d.amount = toBigInt(d.amount.toString()) - amount;
     }
     return d;
   });
-  latestIndexerD.delegators = latestIndexerD.delegators.filter(
+  indexerD.delegators = indexerD.delegators.filter(
     (d) => !(d.delegator === delegator && d.amount <= BigInt(0))
   );
-  latestIndexerD.totalStake -= amount;
-  await latestIndexerD.save();
+  indexerD.totalStake -= amount;
+  await indexerD.save();
 
-  await fillUpEraIndexerDelegator(latestIndexerDEra, latestIndexerD);
+  await fillUpEraIndexerDelegator(latestIndexerDEra, indexerD);
 
-  let latestDelegatorD = await EraDelegatorIndexer.get(delegator);
-  assert(
-    latestDelegatorD,
-    `Delegator ${delegator} not found in EraDelegatorIndexer`
-  );
+  let delegatorD = await EraDelegatorIndexer.get(delegator);
+  assert(delegatorD, `Delegator ${delegator} not found in EraDelegatorIndexer`);
 
-  const latestDelegatorDEra = latestDelegatorD.era;
-  latestDelegatorD.era = era;
-  latestDelegatorD.indexers = latestDelegatorD.indexers.map((i) => {
+  const latestDelegatorDEra = delegatorD.era;
+  delegatorD.era = era;
+  delegatorD.indexers = delegatorD.indexers.map((i) => {
     if (i.indexer === indexer) {
       i.amount = toBigInt(i.amount.toString()) - amount;
     }
     return i;
   });
-  latestDelegatorD.indexers = latestDelegatorD.indexers.filter(
+  delegatorD.indexers = delegatorD.indexers.filter(
     (i) => !(i.indexer === indexer && i.amount <= BigInt(0))
   );
-  latestDelegatorD.totalStake -= amount;
-  await latestDelegatorD.save();
+  delegatorD.totalStake -= amount;
+  await delegatorD.save();
 
-  await fillUpEraDelegatorIndexer(latestDelegatorDEra, latestDelegatorD);
+  await fillUpEraDelegatorIndexer(latestDelegatorDEra, delegatorD);
 }
 
 async function fillUpEraIndexerDelegator(
@@ -304,6 +299,7 @@ async function fillUpEraIndexerDelegator(
       latestEraIndexerD = EraIndexerDelegator.create({
         ...indexerD,
         id: `${indexerD.indexer}:${BigNumber.from(latestEra).toHexString()}`,
+        delegators: JSON.parse(JSON.stringify(indexerD.delegators)),
       });
       await latestEraIndexerD.save();
     } else {
@@ -320,12 +316,14 @@ async function fillUpEraIndexerDelegator(
       ...latestEraIndexerD,
       era: i,
       id: `${indexerD.indexer}:${BigNumber.from(i).toHexString()}`,
+      delegators: JSON.parse(JSON.stringify(latestEraIndexerD.delegators)),
     }).save();
   }
 
   await EraIndexerDelegator.create({
     ...indexerD,
     id: `${indexerD.indexer}:${BigNumber.from(indexerD.era).toHexString()}`,
+    delegators: JSON.parse(JSON.stringify(indexerD.delegators)),
   }).save();
 }
 
@@ -343,6 +341,7 @@ async function fillUpEraDelegatorIndexer(
         id: `${delegatorD.delegator}:${BigNumber.from(
           latestEra
         ).toHexString()}`,
+        indexers: JSON.parse(JSON.stringify(delegatorD.indexers)),
       });
       await latestEraDelegatorD.save();
     } else {
@@ -359,6 +358,7 @@ async function fillUpEraDelegatorIndexer(
       ...latestEraDelegatorD,
       era: i,
       id: `${delegatorD.delegator}:${BigNumber.from(i).toHexString()}`,
+      indexers: JSON.parse(JSON.stringify(latestEraDelegatorD.indexers)),
     }).save();
   }
 
@@ -367,6 +367,7 @@ async function fillUpEraDelegatorIndexer(
     id: `${delegatorD.delegator}:${BigNumber.from(
       delegatorD.era
     ).toHexString()}`,
+    indexers: JSON.parse(JSON.stringify(delegatorD.indexers)),
   }).save();
 }
 
