@@ -202,27 +202,27 @@ async function updateIndexerCommissionRate(
   commissionRate: number,
   nextCommissionRate: number
 ): Promise<void> {
-  const currentEraId = `${indexerId}:${eraIdx.toString(16)}`;
-  const next1EraId = `${indexerId}:${(eraIdx + 1).toString(16)}`;
-  const next2EraId = `${indexerId}:${(eraIdx + 2).toString(16)}`;
+  const currentEraId = `${indexerId}:${BigNumber.from(eraIdx).toHexString()}`;
+  const next1EraId = `${indexerId}:${BigNumber.from(eraIdx + 1).toHexString()}`;
+  const next2EraId = `${indexerId}:${BigNumber.from(eraIdx + 2).toHexString()}`;
   await IndexerCommissionRate.create({
     id: currentEraId,
     indexerId,
-    eraId: eraIdx.toString(16),
+    eraId: BigNumber.from(eraIdx).toHexString(),
     eraIdx: eraIdx,
     commissionRate,
   }).save();
   await IndexerCommissionRate.create({
     id: next1EraId,
     indexerId,
-    eraId: (eraIdx + 1).toString(16),
+    eraId: BigNumber.from(eraIdx + 1).toHexString(),
     eraIdx: eraIdx + 1,
     commissionRate,
   }).save();
   await IndexerCommissionRate.create({
     id: next2EraId,
     indexerId,
-    eraId: (eraIdx + 2).toString(16),
+    eraId: BigNumber.from(eraIdx + 2).toHexString(),
     eraIdx: eraIdx + 2,
     commissionRate: nextCommissionRate,
   }).save();

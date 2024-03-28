@@ -155,6 +155,9 @@ export async function reportException(
 export const toBigNumber = (amount: BigNumberish): BigNumber =>
   BigNumber.from(amount.toString());
 
+export const toBigInt = (amount: string): bigint =>
+  BigInt(amount.replace('n', ''));
+
 // airdropper
 export const upsertAirdropper = async (
   address: string,

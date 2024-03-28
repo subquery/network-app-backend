@@ -5,16 +5,15 @@ import assert from 'assert';
 import {
   Delegation,
   IndexerReward,
-  Indexer,
   Reward,
   UnclaimedReward,
   EraReward,
   EraRewardClaimed,
   Era,
+  EraIndexerDelegator,
 } from '../types';
 import {
   EraManager__factory,
-  RewardsDistributor__factory,
   ServiceAgreementRegistry__factory,
 } from '@subql/contract-sdk';
 import {
@@ -22,7 +21,14 @@ import {
   DistributeRewardsEvent,
   RewardsChangedEvent,
 } from '@subql/contract-sdk/typechain/contracts/RewardsDistributor';
-import { biToDate, bnToDate, Contracts, getContractAddress } from './utils';
+import {
+  biToDate,
+  bnToDate,
+  Contracts,
+  getContractAddress,
+  getDelegationId,
+  toBigInt,
+} from './utils';
 import { EthereumLog } from '@subql/types-ethereum';
 import { BigNumber } from '@ethersproject/bignumber';
 import BignumberJs from 'bignumber.js';
@@ -52,67 +58,68 @@ export async function handleRewardsDistributed(
   );
   assert(event.args, 'No event args');
 
-  const { runner, eraIdx, commission } = event.args;
-  const delegators = await Delegation.getByIndexerId(runner);
-  if (!delegators) return;
-
-  const network = await api.getNetwork();
-  const rewardsDistributor = RewardsDistributor__factory.connect(
-    getContractAddress(network.chainId, Contracts.REWARD_DIST_ADDRESS),
-    api
-  );
-
-  for (const delegator of delegators.sort((a, b) =>
-    a.delegatorId.localeCompare(b.delegatorId)
-  )) {
-    const rewards = await rewardsDistributor.userRewards(
-      runner,
-      delegator.delegatorId
+  const { runner, eraIdx, rewards: totalRewards, commission } = event.args;
+  const eraIndexerDelegator =
+    (await EraIndexerDelegator.get(`${runner}:${eraIdx.toHexString()}`)) ||
+    (await EraIndexerDelegator.get(runner));
+  if (!eraIndexerDelegator) return;
+  if (eraIndexerDelegator.era > eraIdx.toNumber()) {
+    throw new Error(
+      `EraIndexerDelegator era is greater than the current era: ${
+        eraIndexerDelegator.era
+      } > ${eraIdx.toNumber()}`
     );
-    const id = buildRewardId(runner, delegator.delegatorId);
+  }
+  const delegations = eraIndexerDelegator?.delegators;
+  const totalDelegation = eraIndexerDelegator.totalStake;
 
+  for (const delegationFrom of delegations) {
+    const delegationAmount = toBigInt(delegationFrom.amount.toString());
+    const estimatedRewards = totalRewards
+      .sub(commission)
+      .mul(delegationAmount)
+      .div(totalDelegation);
+
+    const id = buildRewardId(runner, delegationFrom.delegator);
     let reward = await UnclaimedReward.get(id);
-    let rewardChanged = false;
-    let rewardOld = BigInt(0);
     if (!reward) {
       reward = UnclaimedReward.create({
         id,
-        delegatorAddress: delegator.delegatorId,
-        delegatorId: delegator.delegatorId,
+        delegatorAddress: delegationFrom.delegator,
+        delegatorId: delegationFrom.delegator,
         indexerAddress: runner,
-        amount: rewards.toBigInt(),
+        amount: estimatedRewards.toBigInt(),
         createdBlock: event.blockNumber,
       });
-      rewardChanged = rewards.gt(0);
     } else {
-      rewardChanged = reward.amount !== rewards.toBigInt();
-      if (rewardChanged) {
-        rewardOld = reward.amount;
-        reward.amount = rewards.toBigInt();
-        reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
-      }
+      reward.amount += estimatedRewards.toBigInt();
+      reward.lastEvent = `handleRewardsDistributed:${event.blockNumber}`;
     }
-
     await reward.save();
 
-    if (delegator.exitEra && delegator.exitEra <= eraIdx.toNumber()) {
+    const delegationId = getDelegationId(delegationFrom.delegator, runner);
+    const delegation = await Delegation.get(delegationId);
+    assert(delegation, `delegation not found: ${delegationId}`);
+    if (delegation.exitEra && delegation.exitEra <= eraIdx.toNumber()) {
       assert(
-        !rewardChanged,
-        `exited delegator should not have reward changed: ${delegator.id} / ${reward.indexerAddress}, ${rewardOld} -> ${reward.amount}`
+        estimatedRewards.eq(0),
+        `exited delegator should not have reward changed: ${delegation.id} / ${
+          reward.indexerAddress
+        }, ${estimatedRewards.toNumber()}`
       );
-      logger.info(`Delegation remove: ${delegator.id}`);
-      await Delegation.remove(delegator.id);
+      logger.info(`Delegation remove: ${delegation.id}`);
+      await Delegation.remove(delegation.id);
     }
 
-    if (rewards.gt(0) && rewardChanged) {
+    if (estimatedRewards.gt(0)) {
       await createEraReward({
         indexerId: runner,
-        delegatorId: delegator.delegatorId,
+        delegatorId: delegationFrom.delegator,
         eraId: eraIdx.toHexString(),
         eraIdx: eraIdx.toNumber(),
         isCommission: false,
         claimed: false,
-        amount: rewards.toBigInt() - rewardOld,
+        amount: estimatedRewards.toBigInt(),
         createdBlock: event.blockNumber,
         createdTimestamp: biToDate(event.block.timestamp),
       });
@@ -132,6 +139,15 @@ export async function handleRewardsDistributed(
       createdTimestamp: biToDate(event.block.timestamp),
     });
   }
+}
+
+function getEraDelegationAmount(
+  delegation: Delegation,
+  eraIdx: BigNumber
+): BigNumber {
+  const value = BigNumber.from(delegation.amount.value.value);
+  const valueAfter = BigNumber.from(delegation.amount.valueAfter.value);
+  return eraIdx.gt(delegation.amount.era) ? valueAfter : value;
 }
 
 export async function handleRewardsClaimed(
