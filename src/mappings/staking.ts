@@ -199,6 +199,7 @@ async function addToEraDelegation(
       era,
       delegators: [],
       totalStake: BigInt(0),
+      selfStake: BigInt(0),
     });
   }
   const latestIndexerDEra = indexerD.era;
@@ -213,6 +214,9 @@ async function addToEraDelegation(
     indexerD.delegators.push({ delegator, amount });
   }
   indexerD.totalStake += amount;
+  if (indexer === delegator) {
+    indexerD.selfStake += amount;
+  }
   await indexerD.save();
 
   await fillUpEraIndexerDelegator(latestIndexerDEra, indexerD);
@@ -225,6 +229,7 @@ async function addToEraDelegation(
       era,
       indexers: [],
       totalStake: BigInt(0),
+      selfStake: BigInt(0),
     });
   }
   const latestDelegatorDEra = delegatorD.era;
@@ -237,6 +242,9 @@ async function addToEraDelegation(
     delegatorD.indexers.push({ indexer, amount });
   }
   delegatorD.totalStake += amount;
+  if (indexer === delegator) {
+    delegatorD.selfStake += amount;
+  }
   await delegatorD.save();
 
   await fillUpEraDelegatorIndexer(latestDelegatorDEra, delegatorD);
@@ -263,6 +271,9 @@ async function removeFromEraDelegation(
     (d) => !(d.delegator === delegator && d.amount <= BigInt(0))
   );
   indexerD.totalStake -= amount;
+  if (indexer === delegator) {
+    indexerD.selfStake -= amount;
+  }
   await indexerD.save();
 
   await fillUpEraIndexerDelegator(latestIndexerDEra, indexerD);
@@ -282,6 +293,9 @@ async function removeFromEraDelegation(
     (i) => !(i.indexer === indexer && i.amount <= BigInt(0))
   );
   delegatorD.totalStake -= amount;
+  if (indexer === delegator) {
+    delegatorD.selfStake -= amount;
+  }
   await delegatorD.save();
 
   await fillUpEraDelegatorIndexer(latestDelegatorDEra, delegatorD);

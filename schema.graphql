@@ -189,6 +189,7 @@ type EraIndexerDelegator @entity {
   era: Int!
   delegators: [DelegationFrom!]!
   totalStake: BigInt!
+  selfStake: BigInt!
 }
 
 type EraDelegatorIndexer @entity {
@@ -197,6 +198,7 @@ type EraDelegatorIndexer @entity {
   era: Int!
   indexers: [DelegationTo!]!
   totalStake: BigInt!
+  selfStake: BigInt!
 }
 
 type Withdrawl @entity {
