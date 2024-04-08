@@ -173,6 +173,34 @@ type Delegation @entity {
   lastEvent: String #topicHandler:blockNumber
 }
 
+type DelegationFrom @jsonField {
+  delegator: String!
+  amount: BigInt!
+}
+
+type DelegationTo @jsonField {
+  indexer: String!
+  amount: BigInt!
+}
+
+type EraIndexerDelegator @entity {
+  id: ID! # indexer! + era! or indexer! for latest data
+  indexer: String!
+  era: Int!
+  delegators: [DelegationFrom!]!
+  totalStake: BigInt!
+  selfStake: BigInt!
+}
+
+type EraDelegatorIndexer @entity {
+  id: ID! # delegator! + era! or delegator! for latest data
+  delegator: String!
+  era: Int!
+  indexers: [DelegationTo!]!
+  totalStake: BigInt!
+  selfStake: BigInt!
+}
+
 type Withdrawl @entity {
   id: ID! # nominator + index
   index: BigInt! # Index of the withdrawl
