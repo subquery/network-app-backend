@@ -192,3 +192,14 @@ export const upsertAirdropper = async (
     await newAidropAmount.save();
   }
 };
+
+export function calcApr(reward: bigint, stake: bigint): bigint {
+  if (stake === BigInt(0)) {
+    return BigInt(0);
+  }
+
+  return (
+    (((reward * BigInt('1000000000000000000')) / BigInt(7)) * BigInt(365)) /
+    stake
+  );
+}

@@ -15,6 +15,7 @@ import {
   Deployment,
   DeploymentBooster,
   DeploymentBoosterSummary,
+  EraIndexerDeploymentAPR,
   IndexerAllocationReward,
   IndexerAllocationRewardSummary,
   IndexerMissedLabor,
@@ -438,4 +439,28 @@ export async function handleQueryRewardsRefunded(
     summary.updateAt = biToDate(event.block.timestamp);
   }
   await summary.save();
+}
+
+async function upsertEraIndexerDeploymentApr(
+  indexerId: string,
+  deploymentId: string,
+  eraIdx: number,
+  add: bigint,
+  remove: bigint,
+  updateAt: Date
+) {
+  const aprId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  let apr = await EraIndexerDeploymentAPR.get(aprId);
+  if (!apr) {
+    apr = EraIndexerDeploymentAPR.create({
+      id: aprId,
+      indexerId,
+      deploymentId,
+      eraIdx,
+      apr: BigInt(0),
+      createAt: updateAt,
+      updateAt: updateAt,
+    });
+  } else {
+  }
 }
