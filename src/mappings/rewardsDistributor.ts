@@ -11,6 +11,10 @@ import {
   EraRewardClaimed,
   Era,
   EraIndexerDelegator,
+  EraIndexerAPR,
+  EraDelegatorIndexerAPR,
+  EraDelegatorAPR,
+  EraDelegatorIndexer,
 } from '../types';
 import {
   EraManager__factory,
@@ -24,6 +28,7 @@ import {
 import {
   biToDate,
   bnToDate,
+  calcApr,
   Contracts,
   getContractAddress,
   getDelegationId,
@@ -112,7 +117,7 @@ export async function handleRewardsDistributed(
     }
 
     if (estimatedRewards.gt(0)) {
-      await createEraReward({
+      const eraReward = await createEraReward({
         indexerId: runner,
         delegatorId: delegationFrom.delegator,
         eraId: eraIdx.toHexString(),
@@ -123,11 +128,12 @@ export async function handleRewardsDistributed(
         createdBlock: event.blockNumber,
         createdTimestamp: biToDate(event.block.timestamp),
       });
+      await upsertEraApr(eraReward);
     }
   }
 
   if (commission.gt(0)) {
-    await createEraReward({
+    const eraReward = await createEraReward({
       indexerId: runner,
       delegatorId: runner,
       eraId: eraIdx.toHexString(),
@@ -138,6 +144,7 @@ export async function handleRewardsDistributed(
       createdBlock: event.blockNumber,
       createdTimestamp: biToDate(event.block.timestamp),
     });
+    await upsertEraApr(eraReward);
   }
 }
 
@@ -180,13 +187,13 @@ interface EraRewardData {
   eraIdx: number;
   isCommission: boolean;
   claimed: boolean;
-  amount?: bigint;
-  createdBlock?: number;
-  createdTimestamp?: Date;
+  amount: bigint;
+  createdBlock: number;
+  createdTimestamp: Date;
 }
 
 // once each era
-async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
+async function createEraReward(data: EraRewardData): Promise<EraReward> {
   logger.info('updateEraReward', data);
 
   const id = `${data.indexerId}:${data.delegatorId}:${data.eraId}${
@@ -202,9 +209,9 @@ async function createEraReward(data: EraRewardData): Promise<EraReward | null> {
     isIndexer: data.indexerId === data.delegatorId,
     isCommission: data.isCommission,
     claimed: data.claimed,
-    amount: data.amount ?? BigInt(0),
+    amount: data.amount,
     createdBlock: data.createdBlock,
-    createdTimestamp: data.createdTimestamp ?? new Date(),
+    createdTimestamp: data.createdTimestamp,
   });
 
   await eraReward.save();
@@ -246,6 +253,108 @@ async function updateEraRewardClaimed(
     eraRewardClaimed.lastClaimedEra = lastClaimedEra;
     await eraRewardClaimed.save();
   }
+}
+
+async function upsertEraApr(eraReward: EraReward) {
+  await upsertEraIndexerApr(eraReward);
+  if (!eraReward.isIndexer) {
+    await upsertEraDelegatorApr(eraReward);
+  }
+}
+
+async function upsertEraIndexerApr(eraReward: EraReward) {
+  const eraIndexerAprId = `${eraReward.indexerId}:${eraReward.eraId}`;
+  let eraIndexerApr = await EraIndexerAPR.get(eraIndexerAprId);
+  if (!eraIndexerApr) {
+    eraIndexerApr = EraIndexerAPR.create({
+      id: eraIndexerAprId,
+      indexerId: eraReward.indexerId,
+      eraIdx: eraReward.eraIdx,
+      indexerReward: BigInt(0),
+      indexerApr: BigInt(0),
+      delegatorReward: BigInt(0),
+      delegatorApr: BigInt(0),
+      createAt: eraReward.createdTimestamp,
+      updateAt: eraReward.createdTimestamp,
+    });
+  }
+
+  const eraIndexerDelegator =
+    (await EraIndexerDelegator.get(
+      `${eraReward.indexerId}:${eraReward.eraId}`
+    )) || (await EraIndexerDelegator.get(eraReward.indexerId));
+  assert(eraIndexerDelegator, 'EraIndexerDelegator not found');
+  const selfStake = eraIndexerDelegator.selfStake;
+  const delegatorStake = eraIndexerDelegator.totalStake - selfStake;
+
+  if (eraReward.isIndexer) {
+    eraIndexerApr.indexerReward += eraReward.amount;
+    eraIndexerApr.indexerApr = calcApr(eraIndexerApr.indexerReward, selfStake);
+  } else {
+    eraIndexerApr.delegatorReward += eraReward.amount;
+    eraIndexerApr.delegatorApr = calcApr(
+      eraIndexerApr.delegatorReward,
+      delegatorStake
+    );
+  }
+  eraIndexerApr.updateAt = eraReward.createdTimestamp;
+  await eraIndexerApr.save();
+}
+
+async function upsertEraDelegatorApr(eraReward: EraReward) {
+  const eraDelegatorAprId = `${eraReward.delegatorId}:${eraReward.eraId}`;
+  let eraDelegatorApr = await EraDelegatorAPR.get(eraDelegatorAprId);
+  if (!eraDelegatorApr) {
+    eraDelegatorApr = EraDelegatorAPR.create({
+      id: eraDelegatorAprId,
+      delegatorId: eraReward.delegatorId,
+      eraIdx: eraReward.eraIdx,
+      reward: BigInt(0),
+      apr: BigInt(0),
+      createAt: eraReward.createdTimestamp,
+      updateAt: eraReward.createdTimestamp,
+    });
+  }
+
+  const eraDelegatorIndexer =
+    (await EraDelegatorIndexer.get(
+      `${eraReward.delegatorId}:${eraReward.indexerId}`
+    )) || (await EraDelegatorIndexer.get(eraReward.delegatorId));
+  assert(eraDelegatorIndexer, 'EraDelegatorIndexer not found');
+
+  eraDelegatorApr.reward += eraReward.amount;
+  eraDelegatorApr.apr = calcApr(
+    eraDelegatorApr.reward,
+    eraDelegatorIndexer.totalStake - eraDelegatorIndexer.selfStake
+  );
+  eraDelegatorApr.updateAt = eraReward.createdTimestamp;
+  await eraDelegatorApr.save();
+
+  const eraDelegatorIndxerAprId = `${eraReward.delegatorId}:${eraReward.indexerId}:${eraReward.eraId}`;
+  let eraDelegatorIndexerApr = await EraDelegatorIndexerAPR.get(
+    eraDelegatorIndxerAprId
+  );
+  if (!eraDelegatorIndexerApr) {
+    eraDelegatorIndexerApr = EraDelegatorIndexerAPR.create({
+      id: eraDelegatorIndxerAprId,
+      eraIdx: eraReward.eraIdx,
+      delegatorId: eraReward.delegatorId,
+      indexerId: eraReward.indexerId,
+      reward: BigInt(0),
+      apr: BigInt(0),
+      createAt: eraReward.createdTimestamp,
+      updateAt: eraReward.createdTimestamp,
+    });
+  }
+
+  eraDelegatorIndexerApr.reward += eraReward.amount;
+  eraDelegatorIndexerApr.apr = calcApr(
+    eraDelegatorIndexerApr.reward,
+    eraDelegatorIndexer.indexers.find((i) => i.indexer === eraReward.indexerId)
+      ?.amount ?? BigInt(0)
+  );
+  eraDelegatorIndexerApr.updateAt = eraReward.createdTimestamp;
+  await eraDelegatorIndexerApr.save();
 }
 
 export async function handleRewardsUpdated(
