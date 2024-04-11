@@ -14,6 +14,9 @@ import assert from 'assert';
 import { logger, utils } from 'ethers';
 import { ChannelStatus, Deployment, Project, StateChannel } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
+import { upsertEraIndexerDeploymentApr } from './rewardsDistributor';
+import { RewardType } from './utils/enums';
+import { getCurrentEra } from './eraManager';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -114,6 +117,16 @@ export async function handleChannelCheckpoint(
     assert(project, `project ${deployment.projectId} not found`);
     project.totalReward += diff;
     await project.save();
+
+    await upsertEraIndexerDeploymentApr(
+      sc.indexer,
+      sc.deploymentId,
+      await getCurrentEra(),
+      RewardType.FLEX_PLAN,
+      diff,
+      BigInt(0),
+      biToDate(event.block.timestamp)
+    );
   }
 }
 

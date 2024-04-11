@@ -680,6 +680,9 @@ type EraIndexerDeploymentAPR @entity {
   eraIdx: Int!
   indexer: Indexer!
   deployment: Deployment!
+  agreementReward: BigInt!
+  flexPlanReward: BigInt!
+  allocationReward: BigInt!
   apr: BigInt!
   createAt: Date!
   updateAt: Date!

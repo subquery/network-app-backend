@@ -15,6 +15,8 @@ import {
   EraDelegatorIndexerAPR,
   EraDelegatorAPR,
   EraDelegatorIndexer,
+  EraIndexerDeploymentAPR,
+  IndexerAllocationSummary,
 } from '../types';
 import {
   EraManager__factory,
@@ -42,6 +44,7 @@ import {
   AgreementRewardsEvent,
   InstantRewardsEvent,
 } from '../types/contracts/RewardsDistributor';
+import { RewardType } from './utils/enums';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -357,6 +360,51 @@ async function upsertEraDelegatorApr(eraReward: EraReward) {
   await eraDelegatorIndexerApr.save();
 }
 
+export async function upsertEraIndexerDeploymentApr(
+  indexerId: string,
+  deploymentId: string,
+  eraIdx: number,
+  rewardType: RewardType,
+  add: bigint,
+  remove: bigint,
+  updateAt: Date
+) {
+  const aprId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  let apr = await EraIndexerDeploymentAPR.get(aprId);
+  if (!apr) {
+    apr = EraIndexerDeploymentAPR.create({
+      id: aprId,
+      indexerId,
+      deploymentId,
+      eraIdx,
+      agreementReward: BigInt(0),
+      flexPlanReward: BigInt(0),
+      allocationReward: BigInt(0),
+      apr: BigInt(0),
+      createAt: updateAt,
+      updateAt: updateAt,
+    });
+  }
+  switch (rewardType) {
+    case RewardType.AGREEMENT:
+      apr.agreementReward += add - remove;
+      break;
+    case RewardType.FLEX_PLAN:
+      apr.flexPlanReward += add - remove;
+      break;
+    case RewardType.ALLOCATION: {
+      apr.allocationReward += add - remove;
+      const allocation =
+        (await IndexerAllocationSummary.get(`${deploymentId}:${indexerId}`))
+          ?.totalAmount || BigInt(0);
+      apr.apr = calcApr(apr.allocationReward, allocation);
+      break;
+    }
+  }
+  apr.updateAt = updateAt;
+  await apr.save();
+}
+
 export async function handleRewardsUpdated(
   event: EthereumLog<RewardsChangedEvent['args']>
 ): Promise<void> {}
@@ -439,7 +487,7 @@ export async function handleAgreementRewards(
   const currentEraStartDate = new Date(currentEraInfo.startTime);
 
   const eraPeriod = await eraManager.eraPeriod();
-  const { startDate, period } =
+  const { startDate, period, deploymentId } =
     await serviceAgreementContract.getClosedServiceAgreement(agreementId);
 
   const agreementStartDate = bnToDate(startDate);
@@ -480,6 +528,15 @@ export async function handleAgreementRewards(
         event.blockNumber,
         'handleServicesAgreementRewards'
       );
+      await upsertEraIndexerDeploymentApr(
+        runner,
+        deploymentId,
+        currentEra,
+        RewardType.AGREEMENT,
+        amount.toBigInt(),
+        BigInt(0),
+        biToDate(event.block.timestamp)
+      );
       return;
     }
     // otherwise can use same process as the agreement has more than 1 era
@@ -492,6 +549,15 @@ export async function handleAgreementRewards(
     BigNumber.from(currentEra),
     event.blockNumber,
     'handleServicesAgreementRewards'
+  );
+  await upsertEraIndexerDeploymentApr(
+    runner,
+    deploymentId,
+    currentEra,
+    RewardType.AGREEMENT,
+    BigInt(agreementFirstEraAmount.toFixed(0)),
+    BigInt(0),
+    biToDate(event.block.timestamp)
   );
 
   // minus first rate and then less than 1 indicates this agreement only have two era
@@ -507,6 +573,15 @@ export async function handleAgreementRewards(
       eraId,
       event.blockNumber,
       'handleServicesAgreementRewards'
+    );
+    await upsertEraIndexerDeploymentApr(
+      runner,
+      deploymentId,
+      eraId.toNumber(),
+      RewardType.AGREEMENT,
+      BigInt(leftAmount.toFixed(0)),
+      BigInt(0),
+      biToDate(event.block.timestamp)
     );
     return;
   }
@@ -527,6 +602,15 @@ export async function handleAgreementRewards(
       event.blockNumber,
       'handleServicesAgreementRewards'
     );
+    await upsertEraIndexerDeploymentApr(
+      runner,
+      deploymentId,
+      currentEra + index + 1,
+      RewardType.AGREEMENT,
+      BigInt(everyEraAmount.toFixed(0)),
+      BigInt(0),
+      biToDate(event.block.timestamp)
+    );
   }
   await updateOrCreateIndexerReward(
     getIndexerRewardId(runner, BigNumber.from(currentEra + lastEra.toNumber())),
@@ -535,5 +619,14 @@ export async function handleAgreementRewards(
     BigNumber.from(currentEra + lastEra.toNumber()),
     event.blockNumber,
     'handleServicesAgreementRewards'
+  );
+  await upsertEraIndexerDeploymentApr(
+    runner,
+    deploymentId,
+    currentEra + lastEra.toNumber(),
+    RewardType.AGREEMENT,
+    BigInt(decimalPartAmount.toFixed(0)),
+    BigInt(0),
+    biToDate(event.block.timestamp)
   );
 }

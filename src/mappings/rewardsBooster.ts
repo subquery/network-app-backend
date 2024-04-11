@@ -15,7 +15,6 @@ import {
   Deployment,
   DeploymentBooster,
   DeploymentBoosterSummary,
-  EraIndexerDeploymentAPR,
   IndexerAllocationReward,
   IndexerAllocationRewardSummary,
   IndexerMissedLabor,
@@ -28,6 +27,8 @@ import {
 import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
+import { upsertEraIndexerDeploymentApr } from './rewardsDistributor';
+import { RewardType } from './utils/enums';
 
 const preboostedCids = [
   'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
@@ -205,6 +206,8 @@ export async function handleAllocationRewardsGiven(
   let allocationReward = await IndexerAllocationReward.get(rewardId);
   assert(!allocationReward, 'Allocation reward already exists');
 
+  const eraIdx = await getCurrentEra();
+
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
     projectId: project.id,
@@ -212,7 +215,7 @@ export async function handleAllocationRewardsGiven(
     indexerId,
     reward: reward.toBigInt(),
     burnt: BigInt(0),
-    eraIdx: await getCurrentEra(),
+    eraIdx,
     createAt: biToDate(event.block.timestamp),
   });
   await allocationReward.save();
@@ -238,6 +241,16 @@ export async function handleAllocationRewardsGiven(
 
   project.totalReward += reward.toBigInt();
   await project.save();
+
+  await upsertEraIndexerDeploymentApr(
+    indexerId,
+    deploymentId,
+    eraIdx,
+    RewardType.ALLOCATION,
+    reward.toBigInt(),
+    BigInt(0),
+    biToDate(event.block.timestamp)
+  );
 }
 
 export async function handleAllocationRewardsBurnt(
@@ -439,28 +452,4 @@ export async function handleQueryRewardsRefunded(
     summary.updateAt = biToDate(event.block.timestamp);
   }
   await summary.save();
-}
-
-async function upsertEraIndexerDeploymentApr(
-  indexerId: string,
-  deploymentId: string,
-  eraIdx: number,
-  add: bigint,
-  remove: bigint,
-  updateAt: Date
-) {
-  const aprId = `${indexerId}:${deploymentId}:${eraIdx}`;
-  let apr = await EraIndexerDeploymentAPR.get(aprId);
-  if (!apr) {
-    apr = EraIndexerDeploymentAPR.create({
-      id: aprId,
-      indexerId,
-      deploymentId,
-      eraIdx,
-      apr: BigInt(0),
-      createAt: updateAt,
-      updateAt: updateAt,
-    });
-  } else {
-  }
 }
