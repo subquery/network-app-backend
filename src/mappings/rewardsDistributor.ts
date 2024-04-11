@@ -409,29 +409,22 @@ export async function handleAgreementRewards(
   const decimalPartAmount = everyEraAmount.multipliedBy(decimalPart);
   const lastEra = leftEra.integerValue(BignumberJs.ROUND_CEIL);
 
-  await Promise.all([
-    ...new Array(integerPart.toNumber()).fill(0).map((i, index) => {
-      return updateOrCreateIndexerReward(
-        getIndexerRewardId(runner, BigNumber.from(currentEra + index + 1)),
-        BigNumber.from(everyEraAmount.toFixed(0)),
-        runner,
-        BigNumber.from(currentEra + index + 1),
-        event.blockNumber,
-        'handleServicesAgreementRewards'
-      );
-    }),
-    updateOrCreateIndexerReward(
-      getIndexerRewardId(
-        runner,
-        BigNumber.from(currentEra + lastEra.toNumber())
-      ),
-      BigNumber.from(decimalPartAmount.toFixed(0)),
+  for (let index = 0; index < integerPart.toNumber(); index++) {
+    await updateOrCreateIndexerReward(
+      getIndexerRewardId(runner, BigNumber.from(currentEra + index + 1)),
+      BigNumber.from(everyEraAmount.toFixed(0)),
       runner,
-      BigNumber.from(currentEra + lastEra.toNumber()),
+      BigNumber.from(currentEra + index + 1),
       event.blockNumber,
       'handleServicesAgreementRewards'
-    ),
-  ]);
-
-  logger.info(runner);
+    );
+  }
+  await updateOrCreateIndexerReward(
+    getIndexerRewardId(runner, BigNumber.from(currentEra + lastEra.toNumber())),
+    BigNumber.from(decimalPartAmount.toFixed(0)),
+    runner,
+    BigNumber.from(currentEra + lastEra.toNumber()),
+    event.blockNumber,
+    'handleServicesAgreementRewards'
+  );
 }
