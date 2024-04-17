@@ -11,12 +11,13 @@ import {
   EraRewardClaimed,
   Era,
   EraIndexerDelegator,
-  EraIndexerAPR,
-  EraDelegatorIndexerAPR,
-  EraDelegatorAPR,
+  EraIndexerApy,
+  EraDelegatorIndexerApy,
+  EraDelegatorApy,
   EraDelegatorIndexer,
-  EraIndexerDeploymentAPR,
+  EraIndexerDeploymentApy,
   IndexerAllocationSummary,
+  IndexerApySummary,
 } from '../types';
 import {
   EraManager__factory,
@@ -30,7 +31,7 @@ import {
 import {
   biToDate,
   bnToDate,
-  calcApr,
+  calcApy,
   Contracts,
   getContractAddress,
   getDelegationId,
@@ -131,7 +132,7 @@ export async function handleRewardsDistributed(
         createdBlock: event.blockNumber,
         createdTimestamp: biToDate(event.block.timestamp),
       });
-      await upsertEraApr(eraReward);
+      await upsertEraApy(eraReward);
     }
   }
 
@@ -147,7 +148,7 @@ export async function handleRewardsDistributed(
       createdBlock: event.blockNumber,
       createdTimestamp: biToDate(event.block.timestamp),
     });
-    await upsertEraApr(eraReward);
+    await upsertEraApy(eraReward);
   }
 }
 
@@ -258,25 +259,25 @@ async function updateEraRewardClaimed(
   }
 }
 
-async function upsertEraApr(eraReward: EraReward) {
-  await upsertEraIndexerApr(eraReward);
+async function upsertEraApy(eraReward: EraReward) {
+  await upsertEraIndexerApy(eraReward);
   if (!eraReward.isIndexer) {
-    await upsertEraDelegatorApr(eraReward);
+    await upsertEraDelegatorApy(eraReward);
   }
 }
 
-async function upsertEraIndexerApr(eraReward: EraReward) {
-  const eraIndexerAprId = `${eraReward.indexerId}:${eraReward.eraId}`;
-  let eraIndexerApr = await EraIndexerAPR.get(eraIndexerAprId);
-  if (!eraIndexerApr) {
-    eraIndexerApr = EraIndexerAPR.create({
-      id: eraIndexerAprId,
+async function upsertEraIndexerApy(eraReward: EraReward) {
+  const eraIndexerApyId = `${eraReward.indexerId}:${eraReward.eraId}`;
+  let eraIndexerApy = await EraIndexerApy.get(eraIndexerApyId);
+  if (!eraIndexerApy) {
+    eraIndexerApy = EraIndexerApy.create({
+      id: eraIndexerApyId,
       indexerId: eraReward.indexerId,
       eraIdx: eraReward.eraIdx,
       indexerReward: BigInt(0),
-      indexerApr: BigInt(0),
+      indexerApy: BigInt(0),
       delegatorReward: BigInt(0),
-      delegatorApr: BigInt(0),
+      delegatorApy: BigInt(0),
       createAt: eraReward.createdTimestamp,
       updateAt: eraReward.createdTimestamp,
     });
@@ -291,29 +292,41 @@ async function upsertEraIndexerApr(eraReward: EraReward) {
   const delegatorStake = eraIndexerDelegator.totalStake - selfStake;
 
   if (eraReward.isIndexer) {
-    eraIndexerApr.indexerReward += eraReward.amount;
-    eraIndexerApr.indexerApr = calcApr(eraIndexerApr.indexerReward, selfStake);
+    eraIndexerApy.indexerReward += eraReward.amount;
+    eraIndexerApy.indexerApy = calcApy(eraIndexerApy.indexerReward, selfStake);
   } else {
-    eraIndexerApr.delegatorReward += eraReward.amount;
-    eraIndexerApr.delegatorApr = calcApr(
-      eraIndexerApr.delegatorReward,
+    eraIndexerApy.delegatorReward += eraReward.amount;
+    eraIndexerApy.delegatorApy = calcApy(
+      eraIndexerApy.delegatorReward,
       delegatorStake
     );
   }
-  eraIndexerApr.updateAt = eraReward.createdTimestamp;
-  await eraIndexerApr.save();
+  eraIndexerApy.updateAt = eraReward.createdTimestamp;
+  await eraIndexerApy.save();
+
+  await IndexerApySummary.create({
+    id: `${eraReward.indexerId}`,
+    indexerId: eraIndexerApy.indexerId,
+    eraIdx: eraIndexerApy.eraIdx,
+    indexerReward: eraIndexerApy.indexerReward,
+    indexerApy: eraIndexerApy.indexerApy,
+    delegatorReward: eraIndexerApy.delegatorReward,
+    delegatorApy: eraIndexerApy.delegatorApy,
+    createAt: eraIndexerApy.createAt,
+    updateAt: eraIndexerApy.updateAt,
+  }).save();
 }
 
-async function upsertEraDelegatorApr(eraReward: EraReward) {
-  const eraDelegatorAprId = `${eraReward.delegatorId}:${eraReward.eraId}`;
-  let eraDelegatorApr = await EraDelegatorAPR.get(eraDelegatorAprId);
-  if (!eraDelegatorApr) {
-    eraDelegatorApr = EraDelegatorAPR.create({
-      id: eraDelegatorAprId,
+async function upsertEraDelegatorApy(eraReward: EraReward) {
+  const eraDelegatorApyId = `${eraReward.delegatorId}:${eraReward.eraId}`;
+  let eraDelegatorApy = await EraDelegatorApy.get(eraDelegatorApyId);
+  if (!eraDelegatorApy) {
+    eraDelegatorApy = EraDelegatorApy.create({
+      id: eraDelegatorApyId,
       delegatorId: eraReward.delegatorId,
       eraIdx: eraReward.eraIdx,
       reward: BigInt(0),
-      apr: BigInt(0),
+      apy: BigInt(0),
       createAt: eraReward.createdTimestamp,
       updateAt: eraReward.createdTimestamp,
     });
@@ -325,42 +338,49 @@ async function upsertEraDelegatorApr(eraReward: EraReward) {
     )) || (await EraDelegatorIndexer.get(eraReward.delegatorId));
   assert(eraDelegatorIndexer, 'EraDelegatorIndexer not found');
 
-  eraDelegatorApr.reward += eraReward.amount;
-  eraDelegatorApr.apr = calcApr(
-    eraDelegatorApr.reward,
+  eraDelegatorApy.reward += eraReward.amount;
+  eraDelegatorApy.apy = calcApy(
+    eraDelegatorApy.reward,
     eraDelegatorIndexer.totalStake - eraDelegatorIndexer.selfStake
   );
-  eraDelegatorApr.updateAt = eraReward.createdTimestamp;
-  await eraDelegatorApr.save();
+  eraDelegatorApy.updateAt = eraReward.createdTimestamp;
+  await eraDelegatorApy.save();
 
-  const eraDelegatorIndxerAprId = `${eraReward.delegatorId}:${eraReward.indexerId}:${eraReward.eraId}`;
-  let eraDelegatorIndexerApr = await EraDelegatorIndexerAPR.get(
-    eraDelegatorIndxerAprId
+  const eraDelegatorIndxerApyId = `${eraReward.delegatorId}:${eraReward.indexerId}:${eraReward.eraId}`;
+  let eraDelegatorIndexerApy = await EraDelegatorIndexerApy.get(
+    eraDelegatorIndxerApyId
   );
-  if (!eraDelegatorIndexerApr) {
-    eraDelegatorIndexerApr = EraDelegatorIndexerAPR.create({
-      id: eraDelegatorIndxerAprId,
+  if (!eraDelegatorIndexerApy) {
+    eraDelegatorIndexerApy = EraDelegatorIndexerApy.create({
+      id: eraDelegatorIndxerApyId,
       eraIdx: eraReward.eraIdx,
       delegatorId: eraReward.delegatorId,
       indexerId: eraReward.indexerId,
       reward: BigInt(0),
-      apr: BigInt(0),
+      stake: BigInt(0),
+      apy: BigInt(0),
       createAt: eraReward.createdTimestamp,
       updateAt: eraReward.createdTimestamp,
     });
   }
 
-  eraDelegatorIndexerApr.reward += eraReward.amount;
-  eraDelegatorIndexerApr.apr = calcApr(
-    eraDelegatorIndexerApr.reward,
-    eraDelegatorIndexer.indexers.find((i) => i.indexer === eraReward.indexerId)
-      ?.amount ?? BigInt(0)
+  eraDelegatorIndexerApy.reward += eraReward.amount;
+  eraDelegatorIndexerApy.stake =
+    toBigInt(
+      eraDelegatorIndexer.indexers
+        .find((i) => i.indexer === eraReward.indexerId)
+        ?.amount?.toString()
+    ) ?? BigInt(0);
+
+  eraDelegatorIndexerApy.apy = calcApy(
+    eraDelegatorIndexerApy.reward,
+    eraDelegatorIndexerApy.stake
   );
-  eraDelegatorIndexerApr.updateAt = eraReward.createdTimestamp;
-  await eraDelegatorIndexerApr.save();
+  eraDelegatorIndexerApy.updateAt = eraReward.createdTimestamp;
+  await eraDelegatorIndexerApy.save();
 }
 
-export async function upsertEraIndexerDeploymentApr(
+export async function upsertEraIndexerDeploymentApy(
   indexerId: string,
   deploymentId: string,
   eraIdx: number,
@@ -369,40 +389,40 @@ export async function upsertEraIndexerDeploymentApr(
   remove: bigint,
   updateAt: Date
 ) {
-  const aprId = `${indexerId}:${deploymentId}:${eraIdx}`;
-  let apr = await EraIndexerDeploymentAPR.get(aprId);
-  if (!apr) {
-    apr = EraIndexerDeploymentAPR.create({
-      id: aprId,
+  const apyId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  let apy = await EraIndexerDeploymentApy.get(apyId);
+  if (!apy) {
+    apy = EraIndexerDeploymentApy.create({
+      id: apyId,
       indexerId,
       deploymentId,
       eraIdx,
       agreementReward: BigInt(0),
       flexPlanReward: BigInt(0),
       allocationReward: BigInt(0),
-      apr: BigInt(0),
+      apy: BigInt(0),
       createAt: updateAt,
       updateAt: updateAt,
     });
   }
   switch (rewardType) {
     case RewardType.AGREEMENT:
-      apr.agreementReward += add - remove;
+      apy.agreementReward += add - remove;
       break;
     case RewardType.FLEX_PLAN:
-      apr.flexPlanReward += add - remove;
+      apy.flexPlanReward += add - remove;
       break;
     case RewardType.ALLOCATION: {
-      apr.allocationReward += add - remove;
+      apy.allocationReward += add - remove;
       const allocation =
         (await IndexerAllocationSummary.get(`${deploymentId}:${indexerId}`))
           ?.totalAmount || BigInt(0);
-      apr.apr = calcApr(apr.allocationReward, allocation);
+      apy.apy = calcApy(apy.allocationReward, allocation);
       break;
     }
   }
-  apr.updateAt = updateAt;
-  await apr.save();
+  apy.updateAt = updateAt;
+  await apy.save();
 }
 
 export async function handleRewardsUpdated(
@@ -528,7 +548,7 @@ export async function handleAgreementRewards(
         event.blockNumber,
         'handleServicesAgreementRewards'
       );
-      await upsertEraIndexerDeploymentApr(
+      await upsertEraIndexerDeploymentApy(
         runner,
         deploymentId,
         currentEra,
@@ -550,7 +570,7 @@ export async function handleAgreementRewards(
     event.blockNumber,
     'handleServicesAgreementRewards'
   );
-  await upsertEraIndexerDeploymentApr(
+  await upsertEraIndexerDeploymentApy(
     runner,
     deploymentId,
     currentEra,
@@ -574,7 +594,7 @@ export async function handleAgreementRewards(
       event.blockNumber,
       'handleServicesAgreementRewards'
     );
-    await upsertEraIndexerDeploymentApr(
+    await upsertEraIndexerDeploymentApy(
       runner,
       deploymentId,
       eraId.toNumber(),
@@ -602,7 +622,7 @@ export async function handleAgreementRewards(
       event.blockNumber,
       'handleServicesAgreementRewards'
     );
-    await upsertEraIndexerDeploymentApr(
+    await upsertEraIndexerDeploymentApy(
       runner,
       deploymentId,
       currentEra + index + 1,
@@ -620,7 +640,7 @@ export async function handleAgreementRewards(
     event.blockNumber,
     'handleServicesAgreementRewards'
   );
-  await upsertEraIndexerDeploymentApr(
+  await upsertEraIndexerDeploymentApy(
     runner,
     deploymentId,
     currentEra + lastEra.toNumber(),

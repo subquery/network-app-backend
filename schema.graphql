@@ -118,6 +118,7 @@ type Indexer @entity {
   controller: String # Controller address for the indexer
   commission: EraValue!
   totalStake: EraValue!
+  selfStake: EraValue!
   capacity: EraValue!
   maxUnstakeAmount: JSONBigInt!
 
@@ -342,7 +343,7 @@ type IndexerStakeSummary @entity {
 }
 
 type IndexerStake @entity {
-  id: ID! # indexer address + era id
+  id: ID! # indexer address + era id or era id for all indexers
   indexer: Indexer!
   era: Era!
   eraIdx: Int!
@@ -663,19 +664,31 @@ type Withdraw @entity @compositeIndexes(fields: [["sender", "blockheight"]]) {
   blockheight: Int!
 }
 
-type EraIndexerAPR @entity {
+type EraIndexerApy @entity {
   id: ID! # indexerId:eraId
   eraIdx: Int!
   indexer: Indexer!
   indexerReward: BigInt!
-  indexerApr: BigInt!
+  indexerApy: BigInt!
   delegatorReward: BigInt!
-  delegatorApr: BigInt!
+  delegatorApy: BigInt!
   createAt: Date!
   updateAt: Date!
 }
 
-type EraIndexerDeploymentAPR @entity {
+type IndexerApySummary @entity {
+  id: ID! # indexerId
+  eraIdx: Int!
+  indexer: Indexer!
+  indexerReward: BigInt!
+  indexerApy: BigInt!
+  delegatorReward: BigInt!
+  delegatorApy: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type EraIndexerDeploymentApy @entity {
   id: ID! # indexerId:deploymentId:eraId
   eraIdx: Int!
   indexer: Indexer!
@@ -683,28 +696,29 @@ type EraIndexerDeploymentAPR @entity {
   agreementReward: BigInt!
   flexPlanReward: BigInt!
   allocationReward: BigInt!
-  apr: BigInt!
+  apy: BigInt!
   createAt: Date!
   updateAt: Date!
 }
 
-type EraDelegatorIndexerAPR @entity {
+type EraDelegatorIndexerApy @entity {
   id: ID! # delegatorId:indexerId:eraId
   eraIdx: Int!
   delegator: Delegator!
   indexer: Indexer!
   reward: BigInt!
-  apr: BigInt!
+  stake: BigInt!
+  apy: BigInt!
   createAt: Date!
   updateAt: Date!
 }
 
-type EraDelegatorAPR @entity {
+type EraDelegatorApy @entity {
   id: ID! # delegatorId:eraId
   eraIdx: Int!
   delegator: Delegator!
   reward: BigInt!
-  apr: BigInt!
+  apy: BigInt!
   createAt: Date!
   updateAt: Date!
 }

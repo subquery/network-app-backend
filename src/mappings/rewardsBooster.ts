@@ -27,7 +27,7 @@ import {
 import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
-import { upsertEraIndexerDeploymentApr } from './rewardsDistributor';
+import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
 
 const preboostedCids = [
@@ -242,7 +242,7 @@ export async function handleAllocationRewardsGiven(
   project.totalReward += reward.toBigInt();
   await project.save();
 
-  await upsertEraIndexerDeploymentApr(
+  await upsertEraIndexerDeploymentApy(
     indexerId,
     deploymentId,
     eraIdx,

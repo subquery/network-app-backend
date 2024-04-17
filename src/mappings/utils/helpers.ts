@@ -155,8 +155,8 @@ export async function reportException(
 export const toBigNumber = (amount: BigNumberish): BigNumber =>
   BigNumber.from(amount.toString());
 
-export const toBigInt = (amount: string): bigint =>
-  BigInt(amount.replace('n', ''));
+export const toBigInt = (amount: string | undefined | null): bigint =>
+  BigInt((amount || '').replace('n', ''));
 
 // airdropper
 export const upsertAirdropper = async (
@@ -193,7 +193,7 @@ export const upsertAirdropper = async (
   }
 };
 
-export function calcApr(reward: bigint, stake: bigint): bigint {
+export function calcApy(reward: bigint, stake: bigint): bigint {
   if (stake === BigInt(0)) {
     return BigInt(0);
   }

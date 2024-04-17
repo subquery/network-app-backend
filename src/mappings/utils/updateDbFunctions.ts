@@ -13,10 +13,12 @@ import {
   Delegator,
   TotalLock,
   Controller,
+  IndexerApySummary,
 } from '../../types';
 import {
   bigNumberFrom,
   bigNumbertoJSONType,
+  biToDate,
   Contracts,
   getContractAddress,
   getDelegationId,
@@ -35,11 +37,17 @@ export async function createIndexer({
   createdBlock,
   lastEvent,
   controller,
+  event,
 }: CreateIndexerParams): Promise<Indexer> {
   const indexer = Indexer.create({
     id: address,
     metadata,
     capacity: {
+      era: -1,
+      value: BigInt(0).toJSONType(),
+      valueAfter: BigInt(0).toJSONType(),
+    },
+    selfStake: {
       era: -1,
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
@@ -60,8 +68,20 @@ export async function createIndexer({
     createdBlock,
     lastEvent,
   });
-
   await indexer.save();
+
+  await IndexerApySummary.create({
+    id: address,
+    eraIdx: -1,
+    indexerId: address,
+    indexerReward: BigInt(0),
+    indexerApy: BigInt(0),
+    delegatorReward: BigInt(0),
+    delegatorApy: BigInt(0),
+    createAt: biToDate(event.block.timestamp),
+    updateAt: biToDate(event.block.timestamp),
+  }).save();
+
   return indexer;
 }
 
@@ -185,7 +205,8 @@ export async function updateTotalStake(
   amount: bigint,
   operation: keyof typeof operations,
   event: EthereumLog,
-  applyInstantly?: boolean
+  selfStake: boolean,
+  applyInstantly: boolean
 ): Promise<void> {
   const indexer = await Indexer.get(indexerAddress);
 
@@ -196,6 +217,14 @@ export async function updateTotalStake(
       operation,
       applyInstantly
     );
+    if (selfStake) {
+      indexer.selfStake = await upsertEraValue(
+        indexer.selfStake,
+        amount,
+        operation,
+        applyInstantly
+      );
+    }
 
     await indexer.save();
     await updateIndexerCapacity(indexerAddress, event);

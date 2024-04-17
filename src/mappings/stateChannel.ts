@@ -14,7 +14,7 @@ import assert from 'assert';
 import { logger, utils } from 'ethers';
 import { ChannelStatus, Deployment, Project, StateChannel } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
-import { upsertEraIndexerDeploymentApr } from './rewardsDistributor';
+import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
 import { getCurrentEra } from './eraManager';
 
@@ -118,7 +118,7 @@ export async function handleChannelCheckpoint(
     project.totalReward += diff;
     await project.save();
 
-    await upsertEraIndexerDeploymentApr(
+    await upsertEraIndexerDeploymentApy(
       sc.indexer,
       sc.deploymentId,
       await getCurrentEra(),
