@@ -15,7 +15,6 @@ import {
   Contracts,
   createIndexer,
   getContractAddress,
-  reportException,
   reportIndexerNonExistException,
   upsertControllerAccount,
   upsertEraValue,
@@ -48,6 +47,7 @@ export async function handleRegisterIndexer(
       metadata: cid,
       createdBlock: event.blockNumber,
       lastEvent: `handleRegisterIndexer:${event.blockNumber}`,
+      event,
     });
   }
 
@@ -174,6 +174,7 @@ export async function handleSetCommissionRate(
       address,
       lastEvent,
       createdBlock: event.blockNumber,
+      event,
     });
   }
 

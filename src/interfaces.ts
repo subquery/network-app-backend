@@ -24,6 +24,7 @@ export interface CreateIndexerParams {
   createdBlock?: number;
   lastEvent?: string;
   controller?: string;
+  event: EthereumLog;
 }
 
 export interface ISaveIndexerDeployment {

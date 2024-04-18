@@ -35,6 +35,8 @@ export async function handleStakeAllocationAdded(
   let allocation = await IndexerAllocation.get(allocationId);
   assert(!allocation, 'Allocation already exists');
 
+  const eraIdx = await getCurrentEra();
+
   allocation = IndexerAllocation.create({
     id: allocationId,
     projectId: project.id,
@@ -42,7 +44,7 @@ export async function handleStakeAllocationAdded(
     indexerId,
     amountAdded: amountAdded.toBigInt(),
     amountRemoved: BigInt(0),
-    eraIdx: await getCurrentEra(),
+    eraIdx,
     createAt: biToDate(event.block.timestamp),
   });
   await allocation.save();
@@ -87,6 +89,8 @@ export async function handleStakeAllocationRemoved(
   let allocation = await IndexerAllocation.get(allocationId);
   assert(!allocation, 'Allocation already exists');
 
+  const eraIdx = await getCurrentEra();
+
   allocation = IndexerAllocation.create({
     id: allocationId,
     projectId: project.id,
@@ -94,7 +98,7 @@ export async function handleStakeAllocationRemoved(
     indexerId,
     amountAdded: BigInt(0),
     amountRemoved: amountRemoved.toBigInt(),
-    eraIdx: await getCurrentEra(),
+    eraIdx,
     createAt: biToDate(event.block.timestamp),
   });
   await allocation.save();

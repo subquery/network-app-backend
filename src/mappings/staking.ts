@@ -95,11 +95,19 @@ export async function handleAddDelegation(
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
+  const selfStake = source === runner;
   const applyInstantly = runner === source && !delegation;
 
   await updateTotalDelegation(source, amountBn, 'add', applyInstantly);
 
-  await updateTotalStake(runner, amountBn, 'add', event, applyInstantly);
+  await updateTotalStake(
+    runner,
+    amountBn,
+    'add',
+    event,
+    selfStake,
+    applyInstantly
+  );
 
   if (!delegation) {
     // Indexers first stake is effective immediately
@@ -169,8 +177,18 @@ export async function handleRemoveDelegation(
     delegation.exitEra = delegation.amount.era + 1;
   }
 
+  const selfStake = source === runner;
+  const applyInstantly = false;
+
   await updateTotalDelegation(source, amount.toBigInt(), 'sub');
-  await updateTotalStake(runner, amount.toBigInt(), 'sub', event);
+  await updateTotalStake(
+    runner,
+    amount.toBigInt(),
+    'sub',
+    event,
+    selfStake,
+    applyInstantly
+  );
   await updateTotalLock(amount.toBigInt(), 'sub', runner === source, event);
 
   await delegation.save();

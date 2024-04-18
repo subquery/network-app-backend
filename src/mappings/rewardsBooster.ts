@@ -27,6 +27,8 @@ import {
 import { biToDate, bytesToIpfsCid } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
+import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
+import { RewardType } from './utils/enums';
 
 const preboostedCids = [
   'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
@@ -204,6 +206,8 @@ export async function handleAllocationRewardsGiven(
   let allocationReward = await IndexerAllocationReward.get(rewardId);
   assert(!allocationReward, 'Allocation reward already exists');
 
+  const eraIdx = await getCurrentEra();
+
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,
     projectId: project.id,
@@ -211,7 +215,7 @@ export async function handleAllocationRewardsGiven(
     indexerId,
     reward: reward.toBigInt(),
     burnt: BigInt(0),
-    eraIdx: await getCurrentEra(),
+    eraIdx,
     createAt: biToDate(event.block.timestamp),
   });
   await allocationReward.save();
@@ -237,6 +241,16 @@ export async function handleAllocationRewardsGiven(
 
   project.totalReward += reward.toBigInt();
   await project.save();
+
+  await upsertEraIndexerDeploymentApy(
+    indexerId,
+    deploymentId,
+    eraIdx,
+    RewardType.ALLOCATION,
+    reward.toBigInt(),
+    BigInt(0),
+    biToDate(event.block.timestamp)
+  );
 }
 
 export async function handleAllocationRewardsBurnt(
