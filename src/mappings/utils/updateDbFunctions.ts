@@ -272,30 +272,30 @@ export async function updateIndexerCapacity(
   event: EthereumLog
 ): Promise<void> {
   const indexer = await Indexer.get(address);
-  const delegationId = getDelegationId(address, address);
-  const delegation = await Delegation.get(delegationId);
-  const network = await api.getNetwork();
-  const staking = Staking__factory.connect(
-    getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
-    api
-  );
-
-  const leverageLimit = await staking.indexerLeverageLimit();
+  const leverageLimit = await getIndexerLeverageLimit();
 
   if (indexer) {
-    const indexerStake = delegation?.amount;
-    const indexerTotalStake = indexer?.totalStake;
-
-    const stakeCurr = bigNumberFrom(indexerStake?.value.value);
-    const stakeAfter = bigNumberFrom(indexerStake?.valueAfter.value);
-
-    const totalStakeCurr = bigNumberFrom(indexerTotalStake?.value.value);
-    const totalStakeAfter = bigNumberFrom(indexerTotalStake?.valueAfter.value);
-
-    const current = stakeCurr.mul(leverageLimit).sub(totalStakeCurr);
-    const after = stakeAfter.mul(leverageLimit).sub(totalStakeAfter);
+    const indexerSelfStake = indexer.selfStake;
+    const indexerTotalStake = indexer.totalStake;
 
     const currentEra = await getCurrentEra();
+
+    const selfStakeCurr = bigNumberFrom(
+      currentEra > indexerSelfStake.era
+        ? indexerSelfStake.valueAfter.value
+        : indexerSelfStake.value.value
+    );
+    const selfStakeAfter = bigNumberFrom(indexerSelfStake.valueAfter.value);
+
+    const totalStakeCurr = bigNumberFrom(
+      currentEra > indexerTotalStake.era
+        ? indexerTotalStake.valueAfter.value
+        : indexerTotalStake.value.value
+    );
+    const totalStakeAfter = bigNumberFrom(indexerTotalStake?.valueAfter.value);
+
+    const current = selfStakeCurr.mul(leverageLimit).sub(totalStakeCurr);
+    const after = selfStakeAfter.mul(leverageLimit).sub(totalStakeAfter);
 
     indexer.capacity = {
       era: currentEra,
