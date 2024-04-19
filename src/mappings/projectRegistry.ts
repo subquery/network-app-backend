@@ -24,6 +24,8 @@ import { biToDate, bytesToIpfsCid } from './utils';
 const projectTypes: Record<number, ProjectType> = {
   0: ProjectType.SUBQUERY,
   1: ProjectType.RPC,
+  2: ProjectType.SQ_DICT,
+  3: ProjectType.SUBGRAPH,
 };
 
 const serviceStatus: Record<number, ServiceStatus> = {

@@ -311,7 +311,7 @@ export async function handleQueryRewardsSpent(
 ): Promise<void> {
   logger.info(`handleQueryRewardsSpent`);
   assert(event.args, 'No event args');
-  const { runner: indexerId, amount: spent, data } = event.args;
+  const { spender: consumer, amount: spent, data } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
@@ -336,8 +336,7 @@ export async function handleQueryRewardsSpent(
     orderId = channel.id;
   }
 
-  const consumer = agreement?.consumerAddress || channel?.consumer || '';
-  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${orderId}`;
+  const rewardId = `${deploymentId}:${consumer}:${orderType}:${orderId}`;
   let queryReward = await ConsumerQueryReward.get(rewardId);
 
   if (!queryReward) {
@@ -385,7 +384,7 @@ export async function handleQueryRewardsRefunded(
 ): Promise<void> {
   logger.info(`handleQueryRewardsRefunded`);
   assert(event.args, 'No event args');
-  const { runner: indexerId, amount: refunded, data } = event.args;
+  const { spender: consumer, amount: refunded, data } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
   const deployment = await Deployment.get(deploymentId);
@@ -410,8 +409,7 @@ export async function handleQueryRewardsRefunded(
     orderId = channel.id;
   }
 
-  const consumer = agreement?.consumerAddress || channel?.consumer || '';
-  const rewardId = `${deploymentId}:${indexerId}:${orderType}:${orderId}`;
+  const rewardId = `${deploymentId}:${consumer}:${orderType}:${orderId}`;
   let queryReward = await ConsumerQueryReward.get(rewardId);
 
   if (!queryReward) {
