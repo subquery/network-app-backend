@@ -1,6 +1,8 @@
 enum ProjectType {
   SUBQUERY
   RPC
+  SQ_DICT
+  SUBGRAPH
 }
 
 enum OrderType {
