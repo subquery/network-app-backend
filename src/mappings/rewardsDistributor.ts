@@ -334,7 +334,7 @@ async function upsertEraDelegatorApy(eraReward: EraReward) {
 
   const eraDelegatorIndexer =
     (await EraDelegatorIndexer.get(
-      `${eraReward.delegatorId}:${eraReward.indexerId}`
+      `${eraReward.delegatorId}:${eraReward.eraId}`
     )) || (await EraDelegatorIndexer.get(eraReward.delegatorId));
   assert(eraDelegatorIndexer, 'EraDelegatorIndexer not found');
 
