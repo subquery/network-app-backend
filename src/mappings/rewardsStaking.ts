@@ -1,30 +1,16 @@
-import { TypedEvent } from '@subql/contract-sdk/typechain/common';
-import { EthereumLog, EthereumResult } from '@subql/types-ethereum';
-import { BigNumber } from 'ethers';
+import assert from 'assert';
+import { EthereumLog } from '@subql/types-ethereum';
 import { IndexerStakeWeight } from '../types';
 import { biToDate } from './utils';
 import { getCurrentEra } from './eraManager';
-
-// TODO: this is a temporary solution to avoid type errors
-export interface RunnerWeightAppliedEventObject {
-  runner: string;
-  weight: BigNumber;
-}
-export declare type RunnerWeightAppliedEvent = TypedEvent<
-  [string, BigNumber],
-  RunnerWeightAppliedEventObject
-> extends EthereumResult
-  ? RunnerWeightAppliedEventObject
-  : never;
+import { RunnerWeightAppliedEvent } from '@subql/contract-sdk/typechain/contracts/RewardsStaking';
 
 export async function handleRunnerWeightApplied(
-  event: EthereumLog<RunnerWeightAppliedEvent>
+  event: EthereumLog<RunnerWeightAppliedEvent['args']>
 ) {
   logger.info(`handleRunnerWeightApplied`);
-  // TODO: this is a temporary solution to avoid type errors
-  // const { runner: indexer, weight } = event.args;
-  const indexer = '';
-  const weight = BigInt(0);
+  assert(event.args, 'No event args');
+  const { runner: indexer, weight } = event.args;
 
   const eraIdx = await getCurrentEra();
 
@@ -34,13 +20,13 @@ export async function handleRunnerWeightApplied(
       id: indexer,
       indexerId: indexer,
       eraIdx,
-      weight,
+      weight: weight.toBigInt(),
       createAt: biToDate(event.block.timestamp),
       updateAt: biToDate(event.block.timestamp),
     });
   }
   indexerStakeWeight.eraIdx = eraIdx;
-  indexerStakeWeight.weight = weight;
+  indexerStakeWeight.weight = weight.toBigInt();
   indexerStakeWeight.updateAt = biToDate(event.block.timestamp);
   await indexerStakeWeight.save();
 }
