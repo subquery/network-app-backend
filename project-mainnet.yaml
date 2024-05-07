@@ -43,6 +43,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
     rewardsDistributor:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributor.sol/RewardsDistributor.json
+    rewardsStaking:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsStaking.sol/RewardsStaking.json
     stateChannel:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/StateChannel.sol/StateChannel.json
     disputeManager:
@@ -276,6 +278,18 @@ dataSources:
           filter:
             topics:
               - AgreementRewards(address indexed runner, uint256 agreementId, uint256 token);
+  - <<: *ethereum
+    options:
+      abi: rewardsStaking
+      address: '0x1c285c5513f2135f8AD12A930E6473dA47581BE8'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRunnerWeightApplied
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - RunnerWeightApplied(address indexed runner, uint256 weight)
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket

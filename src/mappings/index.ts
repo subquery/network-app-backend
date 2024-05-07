@@ -10,6 +10,7 @@ export * from './projectRegistry';
 export * from './purchaseOffer';
 export * from './rewardsBooster';
 export * from './rewardsDistributor';
+export * from './rewardsStaking';
 export * from './serviceAgreement';
 export * from './staking';
 export * from './stakingAllocation';

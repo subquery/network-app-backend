@@ -18,6 +18,7 @@ import {
   EraIndexerDeploymentApy,
   IndexerAllocationSummary,
   IndexerApySummary,
+  IndexerStakeWeight,
 } from '../types';
 import {
   EraManager__factory,
@@ -46,6 +47,7 @@ import {
   InstantRewardsEvent,
 } from '../types/contracts/RewardsDistributor';
 import { RewardType } from './utils/enums';
+import { PER_MILL } from './utils/constants';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -84,10 +86,21 @@ export async function handleRewardsDistributed(
 
   for (const delegationFrom of delegations) {
     const delegationAmount = toBigInt(delegationFrom.amount.toString());
+    let calculatedDelegationAmount = delegationAmount;
+    let calculatedTotalDelegation = totalDelegation;
+    if (delegationFrom.delegator === runner) {
+      const indexerStakeWeight = await IndexerStakeWeight.get(runner);
+      const weight = indexerStakeWeight?.weight || PER_MILL;
+      if (weight !== PER_MILL) {
+        calculatedDelegationAmount = (delegationAmount * weight) / PER_MILL;
+        calculatedTotalDelegation =
+          totalDelegation - delegationAmount + calculatedDelegationAmount;
+      }
+    }
     const estimatedRewards = totalRewards
       .sub(commission)
-      .mul(delegationAmount)
-      .div(totalDelegation);
+      .mul(calculatedDelegationAmount)
+      .div(calculatedTotalDelegation);
 
     const id = buildRewardId(runner, delegationFrom.delegator);
     let reward = await UnclaimedReward.get(id);

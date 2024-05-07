@@ -724,3 +724,12 @@ type EraDelegatorApy @entity {
   createAt: Date!
   updateAt: Date!
 }
+
+type IndexerStakeWeight @entity {
+  id: ID! # indexerId
+  indexer: Indexer!
+  eraIdx: Int!
+  weight: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
