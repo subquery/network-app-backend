@@ -227,7 +227,7 @@ export async function updateTotalStake(
     }
 
     await indexer.save();
-    await updateIndexerCapacity(indexerAddress, event);
+    // await updateIndexerCapacity(indexerAddress, event);
   } else {
     await reportIndexerNonExistException(
       'updateTotalStake',
@@ -243,6 +243,7 @@ export async function updateTotalDelegation(
   operation: keyof typeof operations = 'add',
   applyInstantly?: boolean
 ): Promise<void> {
+  const currentEra = await getCurrentEra();
   let delegator = await Delegator.get(delegatorAddress);
 
   if (!delegator) {
@@ -254,6 +255,8 @@ export async function updateTotalDelegation(
         operation,
         applyInstantly
       ),
+      startEra: applyInstantly ? currentEra : currentEra + 1,
+      exitEra: -1,
     });
   } else {
     delegator.totalDelegations = await upsertEraValue(
@@ -262,6 +265,9 @@ export async function updateTotalDelegation(
       operation,
       applyInstantly
     );
+    if (BigNumber.from(delegator.totalDelegations.valueAfter.value).lte(0)) {
+      delegator.exitEra = currentEra + 1;
+    }
   }
 
   await delegator.save();
@@ -292,7 +298,7 @@ export async function updateIndexerCapacity(
         ? indexerTotalStake.valueAfter.value
         : indexerTotalStake.value.value
     );
-    const totalStakeAfter = bigNumberFrom(indexerTotalStake?.valueAfter.value);
+    const totalStakeAfter = bigNumberFrom(indexerTotalStake.valueAfter.value);
 
     const current = selfStakeCurr.mul(leverageLimit).sub(totalStakeCurr);
     const after = selfStakeAfter.mul(leverageLimit).sub(totalStakeAfter);
