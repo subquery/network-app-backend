@@ -267,6 +267,12 @@ export async function updateTotalDelegation(
     );
     if (BigNumber.from(delegator.totalDelegations.valueAfter.value).lte(0)) {
       delegator.exitEra = currentEra + 1;
+    } else {
+      const prevExitEra = delegator.exitEra;
+      delegator.exitEra = -1;
+      if (prevExitEra != -1 && currentEra >= prevExitEra) {
+        delegator.startEra = applyInstantly ? currentEra : currentEra + 1;
+      }
     }
   }
 
