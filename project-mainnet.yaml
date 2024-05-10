@@ -503,3 +503,13 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
+  - kind: ethereum/Runtime
+    startBlock: 12750283
+    endBlock: 12750283
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleBlock_12750283
+          kind: ethereum/BlockHandler
+          filter:
+            modulo: 1
