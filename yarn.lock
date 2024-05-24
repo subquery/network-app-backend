@@ -2476,13 +2476,13 @@
   optionalDependencies:
     sodium-native "^4.0.10"
 
-"@subql/cli@^4.4.1":
-  version "4.5.2"
-  resolved "https://registry.yarnpkg.com/@subql/cli/-/cli-4.5.2.tgz#ec5731135dc4a4dd749b6a6ac26643bb0249b44b"
-  integrity sha512-blaJrJcOuH3L2OBkSzl5IsMrPGUMWMjzHME/rL56y98uvY2FAwYdaER7295yiFa2dGu3LdJjE7l0ZwHubxoo5w==
+"@subql/cli@^4.5.2":
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/@subql/cli/-/cli-4.7.0.tgz#3433e34b78cec94ef5d22870765486f29235f28b"
+  integrity sha512-gSyPeYFSPN9SHaJaJMizMraphQpFe21L4jyadOO+PJLZPJ3SKLUlZD2zUGrJFT3t/xv1eYSYP/ABuRp6qhtXhA==
   dependencies:
     "@oclif/core" "^2.15.0"
-    "@subql/common" "3.5.0"
+    "@subql/common" "3.5.1"
     "@subql/common-algorand" "^3.3.0"
     "@subql/common-concordium" "^3.5.1"
     "@subql/common-cosmos" "^4.2.0"
@@ -2490,12 +2490,12 @@
     "@subql/common-flare" "^3.5.0"
     "@subql/common-near" "^3.4.0"
     "@subql/common-stellar" "^3.4.1"
-    "@subql/common-substrate" "3.4.0"
-    "@subql/utils" "2.9.1"
+    "@subql/common-substrate" "3.5.0"
+    "@subql/utils" "2.9.2"
     algosdk "^1.19.0"
     boxen "5.1.2"
     cli-ux "^6.0.9"
-    ejs "^3.1.6"
+    ejs "^3.1.10"
     ethers "^5.7.0"
     fuzzy "^0.1.3"
     inquirer "^8.2.0"
@@ -2614,17 +2614,33 @@
     reflect-metadata "^0.1.13"
     stellar-sdk "^11.2.0"
 
-"@subql/common-substrate@3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-substrate/-/common-substrate-3.4.0.tgz#4f277dbba1096c34a4ff98380b9ab5506fdf213d"
-  integrity sha512-7x/7cRquVjZc1y3T2xpmWCpLCupO/GRBg2ZZ+CxKPsjg6IdrdXXEzbc1Jyoq+SzTFMZvufcQt6zPOUA5KLnDDg==
+"@subql/common-substrate@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-substrate/-/common-substrate-3.5.0.tgz#36ae6f1b94a42a9af75a63fe2256cbd813d22075"
+  integrity sha512-hSrQakWynZ0SKoBXWkLmFamQ4/EO1jY6o5AOSk7/Ldm438D6PJLDbPgy7dqXOl0cbG8j7lxYBDT1O4P8+uKLeg==
   dependencies:
-    "@subql/common" "3.5.0"
-    "@subql/types" "3.4.0"
+    "@subql/common" "3.5.1"
+    "@subql/types" "3.5.0"
     js-yaml "^4.1.0"
     reflect-metadata "^0.1.13"
 
-"@subql/common@3.5.0", "@subql/common@^3.5.0":
+"@subql/common@3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@subql/common/-/common-3.5.1.tgz#a4e16195f23687f7a5e574f1e53aff59ba141de2"
+  integrity sha512-mZ6tCegGvCwHuiiTGNygzmqiEycWNs5ojW65/4o2QAUD5sk25Rp8SmPEIMfxiWRznp0cV1XOVeS5eJz+QTuJEA==
+  dependencies:
+    "@subql/types-core" "0.7.0"
+    axios "^0.28.0"
+    class-transformer "^0.5.1"
+    class-validator "^0.14.0"
+    fs-extra "^10.1.0"
+    ipfs-http-client "56"
+    js-yaml "^4.1.0"
+    reflect-metadata "^0.1.13"
+    semver "^7.5.2"
+    update-notifier "5.1.0"
+
+"@subql/common@^3.5.0":
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@subql/common/-/common-3.5.0.tgz#9bf94f327c1e0985f548bcbe74961cde322ee5d3"
   integrity sha512-bSrMp+B0vTw4XQUBq8HVtCeDecVGZZZYxA+Oh2leYpIf44HB7ll8Bi2B5Dxh8T8aX81ohd4D2J4q7utsuswEpA==
@@ -2640,10 +2656,10 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
-"@subql/contract-sdk@^1.0.1":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.1.0.tgz#b04e85e96ba8f7fab48a3e78740460e9b09ef73d"
-  integrity sha512-EnP6n1TrksH3zoRn02U7wdihOdbZ6T4G5l4kCrLn6ZJNkSa/QZwTSknJIIoXpxzDR6tNSNV30hhSxJrfEBHU/w==
+"@subql/contract-sdk@^1.1.1-0":
+  version "1.1.1-0"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.1.1-0.tgz#e23435305747de92aa0f0802d48a6e49c0b07c9d"
+  integrity sha512-sXNYsodBWaVfc//UuzLNpjQF0zq2CMYz0mMr55rbkUOx52CbmdxxUsuMl8khQg3oIvxiCQXuD2IgEUZQEVuxfQ==
 
 "@subql/types-algorand@3.2.0":
   version "3.2.0"
@@ -2667,6 +2683,13 @@
   dependencies:
     package-json-type "^1.0.3"
 
+"@subql/types-core@0.7.0", "@subql/types-core@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-core/-/types-core-0.7.0.tgz#f32602d13e3b226c89391f125122d61f3beeb096"
+  integrity sha512-/Is7bqy9x769N3BnRLUQJPx1q4QQZqYt9VwqYJguOEKmPLMFjChlr988hIDwvRCxN6SmemzZvFFnKH0Vmj7gEw==
+  dependencies:
+    package-json-type "^1.0.3"
+
 "@subql/types-cosmos@3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@subql/types-cosmos/-/types-cosmos-3.3.0.tgz#76d22a28d852c471d5aefeeddfc31d715d88379b"
@@ -2677,13 +2700,21 @@
     "@cosmjs/stargate" "^0.32.3"
     "@subql/types-core" "^0.6.0"
 
-"@subql/types-ethereum@3.5.0", "@subql/types-ethereum@^3.2.1":
+"@subql/types-ethereum@3.5.0":
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-3.5.0.tgz#027e549965b827d64ab13f149f47272b68fe0e02"
   integrity sha512-HznYcAo8zbtteSd2x94eGLCt8OAc+orjGBR9ZF3Wn6hzXmhq9sKYQeI2h96aRBl6pUoJ8JVxJmKzjFVJB+zaig==
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
     "@subql/types-core" "^0.6.0"
+
+"@subql/types-ethereum@^3.5.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-3.6.0.tgz#e801109ed643f33f5b511e76bb841ed9bd294b3d"
+  integrity sha512-s8mkWXF8rqRzH6Lzr8ZM6L6fTuQczulz6sKhOVxY/eipV4Z3GQfvrDB2/Ajfi9ilkXmU9F4MjVba8G000zTsKg==
+  dependencies:
+    "@ethersproject/abstract-provider" "^5.6.1"
+    "@subql/types-core" "^0.7.0"
 
 "@subql/types-flare@3.5.0":
   version "3.5.0"
@@ -2710,17 +2741,17 @@
     "@subql/types-core" "^0.6.0"
     stellar-sdk "^11.2.2"
 
-"@subql/types@3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@subql/types/-/types-3.4.0.tgz#5e18ba26cd8d9c4f8df172d824ca883d095febcb"
-  integrity sha512-pEq+cow4XJoWCeUm4zG1XVb5xf2R7OgcUM+UJNuaiUirgcTQvsFBAC1iyJTdOBdKu+vqSk/eABQUiyQRe8p3KQ==
+"@subql/types@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@subql/types/-/types-3.5.0.tgz#a6596a41c28f15e62569087592e9d7a6d6ebc8b4"
+  integrity sha512-tO7124Zw8rxeQvuTHO8FaQqJb1Z2mizLVtAQAg5nfSGP8VaobcJixlCJTxET7a6KtRbwEl1YubQQMbWtLs/rMw==
   dependencies:
-    "@subql/types-core" "0.6.0"
+    "@subql/types-core" "0.7.0"
 
-"@subql/utils@2.9.1":
-  version "2.9.1"
-  resolved "https://registry.yarnpkg.com/@subql/utils/-/utils-2.9.1.tgz#eddaa81472f46e5d550039bafeccede54867df52"
-  integrity sha512-BGNTy3Lrt44Z9uitvCx9Qaxm+G7jnGxTKIUefyJCaFbD8YMFU65zZvaGiIolujJyh42+4uapg9Yv74hdTUysWQ==
+"@subql/utils@2.9.2":
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/@subql/utils/-/utils-2.9.2.tgz#bf41dc4c3b753a04dc7a6728f0f79328d22d2f64"
+  integrity sha512-20pe0754fjgSEtViSckl4BihLdlJLY27NgdJ10d37GzyfJ1Q5NknkKZPXRHyyzHzVq1hlRI3G3IICjuVKdrcfw==
   dependencies:
     "@polkadot/util" "^12.5.1"
     "@polkadot/util-crypto" "^12.5.1"
@@ -4498,6 +4529,13 @@ eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz#696ce2ec0aa0e6ea93a397ffcf24aa7840c827cb"
   integrity sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==
+
+ejs@^3.1.10:
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/ejs/-/ejs-3.1.10.tgz#69ab8358b14e896f80cc39e62087b88500c3ac3b"
+  integrity sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==
+  dependencies:
+    jake "^10.8.5"
 
 ejs@^3.1.6, ejs@^3.1.8:
   version "3.1.9"

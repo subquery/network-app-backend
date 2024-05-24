@@ -18,6 +18,7 @@ import {
   EraIndexerDeploymentApy,
   IndexerAllocationSummary,
   IndexerApySummary,
+  IndexerStakeWeight,
 } from '../types';
 import {
   EraManager__factory,
@@ -46,6 +47,7 @@ import {
   InstantRewardsEvent,
 } from '../types/contracts/RewardsDistributor';
 import { RewardType } from './utils/enums';
+import { PER_MILL } from './utils/constants';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -84,10 +86,21 @@ export async function handleRewardsDistributed(
 
   for (const delegationFrom of delegations) {
     const delegationAmount = toBigInt(delegationFrom.amount.toString());
+    let calculatedDelegationAmount = delegationAmount;
+    let calculatedTotalDelegation = totalDelegation;
+    if (delegationFrom.delegator === runner) {
+      const indexerStakeWeight = await IndexerStakeWeight.get(runner);
+      const weight = indexerStakeWeight?.weight || PER_MILL;
+      if (weight !== PER_MILL) {
+        calculatedDelegationAmount = (delegationAmount * weight) / PER_MILL;
+        calculatedTotalDelegation =
+          totalDelegation - delegationAmount + calculatedDelegationAmount;
+      }
+    }
     const estimatedRewards = totalRewards
       .sub(commission)
-      .mul(delegationAmount)
-      .div(totalDelegation);
+      .mul(calculatedDelegationAmount)
+      .div(calculatedTotalDelegation);
 
     const id = buildRewardId(runner, delegationFrom.delegator);
     let reward = await UnclaimedReward.get(id);
@@ -241,16 +254,19 @@ async function updateEraRewardClaimed(
 
   const currentEra = await getCurrentEra();
   let lastClaimedEra = eraRewardClaimed.lastClaimedEra;
+  let nextClaimEra = lastClaimedEra + 1;
 
-  while (lastClaimedEra + 1 < currentEra) {
-    lastClaimedEra++;
-    const eraRewardId = `${id}:${BigNumber.from(lastClaimedEra).toHexString()}`;
+  while (nextClaimEra < currentEra) {
+    nextClaimEra++;
+    const eraRewardId = `${id}:${BigNumber.from(nextClaimEra).toHexString()}`;
     const eraReward = await EraReward.get(eraRewardId);
 
     if (!eraReward || eraReward.claimed) continue;
 
     eraReward.claimed = true;
     await eraReward.save();
+
+    lastClaimedEra = nextClaimEra;
   }
 
   if (lastClaimedEra > eraRewardClaimed.lastClaimedEra) {
@@ -334,7 +350,7 @@ async function upsertEraDelegatorApy(eraReward: EraReward) {
 
   const eraDelegatorIndexer =
     (await EraDelegatorIndexer.get(
-      `${eraReward.delegatorId}:${eraReward.indexerId}`
+      `${eraReward.delegatorId}:${eraReward.eraId}`
     )) || (await EraDelegatorIndexer.get(eraReward.delegatorId));
   assert(eraDelegatorIndexer, 'EraDelegatorIndexer not found');
 

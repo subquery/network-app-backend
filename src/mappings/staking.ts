@@ -927,7 +927,7 @@ async function getLastStakeAmount(
   const updateRecordId = `${indexer}:${delegator}`;
   let updateRecord = await EraStakeUpdate.get(updateRecordId);
   if (!updateRecord) {
-    updateRecord = await EraStakeUpdate.create({
+    updateRecord = EraStakeUpdate.create({
       id: updateRecordId,
       lastUpdateEraId: eraId,
     });
@@ -949,18 +949,22 @@ export async function getIndexerLeverageLimit(): Promise<BigNumber> {
     CacheKey.IndexerLeverageLimit
   );
   if (indexerLeverageLimit === undefined) {
-    const network = await api.getNetwork();
-    const staking = Staking__factory.connect(
-      getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
-      api
-    );
-
-    indexerLeverageLimit = await staking.indexerLeverageLimit();
-    await cacheSet(
-      CacheKey.IndexerLeverageLimit,
-      indexerLeverageLimit.toString()
-    );
+    indexerLeverageLimit = await updateIndexerLeverageLimit();
   }
+  return indexerLeverageLimit;
+}
+
+async function updateIndexerLeverageLimit() {
+  const network = await api.getNetwork();
+  const staking = Staking__factory.connect(
+    getContractAddress(network.chainId, Contracts.STAKING_ADDRESS),
+    api
+  );
+  const indexerLeverageLimit = await staking.indexerLeverageLimit();
+  await cacheSet(
+    CacheKey.IndexerLeverageLimit,
+    indexerLeverageLimit.toString()
+  );
   return indexerLeverageLimit;
 }
 
@@ -972,4 +976,11 @@ export async function handleSetIndexerLeverageLimit(
     const amount = tx.args?.[0] as BigNumber;
     await cacheSet(CacheKey.IndexerLeverageLimit, amount.toString());
   }
+}
+
+export async function handleBlock_12750283(): Promise<void> {
+  const indexerLeverageLimit = await updateIndexerLeverageLimit();
+  logger.info(
+    `IndexerLeverageLimit updated: ${indexerLeverageLimit.toString()}`
+  );
 }
