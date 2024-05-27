@@ -330,7 +330,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)
+              - DisputeFinalized(uint256 indexed disputeId, DisputeState state, uint256 slashAmount, uint256 returnAmount)
   - <<: *ethereum
     options:
       abi: airdropper
