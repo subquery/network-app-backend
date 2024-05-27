@@ -1,7 +1,8 @@
 import { ParameterEvent } from '@subql/contract-sdk/typechain/contracts/Airdropper';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { CacheKey, cacheSet } from './cache';
+import { CacheKey, DecimalCacheKey, cacheSet } from './cache';
+import { BigNumber } from 'ethers';
 
 type HandleParameterEventFunc = (
   event: EthereumLog<ParameterEvent['args']>
@@ -17,6 +18,12 @@ export function genHandleParameterEvent(abi: string): HandleParameterEventFunc {
     assert(event.args, 'No event args');
 
     const { name, value } = event.args;
-    await cacheSet(name as CacheKey, value);
+
+    let cacheValue: string = value;
+    if (DecimalCacheKey.includes(name as CacheKey)) {
+      cacheValue = BigNumber.from(value).toString();
+    }
+
+    await cacheSet(name as CacheKey, cacheValue);
   };
 }

@@ -31,6 +31,12 @@ export enum CacheKey {
   Maintenance = 'maintenance',
 }
 
+export const DecimalCacheKey = [
+  CacheKey.Era,
+  CacheKey.MinimumStakingAmount,
+  CacheKey.IndexerLeverageLimit,
+];
+
 export async function cacheSet(key: CacheKey, value: string) {
   await Cache.create({
     id: key.toString(),
