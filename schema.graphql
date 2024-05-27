@@ -159,6 +159,8 @@ type Delegator @entity {
   delegations: [Delegation] @derivedFrom(field: "delegator")
   claimedRewards: [Reward] @derivedFrom(field: "delegator")
   unclaimedRewards: [UnclaimedReward] @derivedFrom(field: "delegator")
+  startEra: Int!
+  exitEra: Int!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -721,6 +723,15 @@ type EraDelegatorApy @entity {
   delegator: Delegator!
   reward: BigInt!
   apy: BigInt!
+  createAt: Date!
+  updateAt: Date!
+}
+
+type IndexerStakeWeight @entity {
+  id: ID! # indexerId
+  indexer: Indexer!
+  eraIdx: Int!
+  weight: BigInt!
   createAt: Date!
   updateAt: Date!
 }

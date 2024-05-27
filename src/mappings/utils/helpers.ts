@@ -10,6 +10,7 @@ import bs58 from 'bs58';
 import assert from 'assert';
 import { AirdropAmount, Exception, JSONBigInt } from '../../types';
 import { BigNumberish } from 'ethers';
+import { PER_QUINTILL } from './constants';
 
 export enum Contracts {
   ERA_MANAGER_ADDRESS = 'EraManager',
@@ -198,8 +199,5 @@ export function calcApy(reward: bigint, stake: bigint): bigint {
     return BigInt(0);
   }
 
-  return (
-    (((reward * BigInt('1000000000000000000')) / BigInt(7)) * BigInt(365)) /
-    stake
-  );
+  return (((reward * PER_QUINTILL) / BigInt(7)) * BigInt(365)) / stake;
 }
