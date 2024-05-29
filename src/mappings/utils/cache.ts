@@ -31,11 +31,37 @@ export enum CacheKey {
   Maintenance = 'maintenance',
 }
 
-export const DecimalCacheKey = [
-  CacheKey.Era,
-  CacheKey.MinimumStakingAmount,
-  CacheKey.IndexerLeverageLimit,
-];
+export const CacheKeyToParamType = {
+  [CacheKey.Era]: 'uint256',
+  [CacheKey.MinimumStakingAmount]: 'uint256',
+  [CacheKey.IndexerLeverageLimit]: 'uint256',
+  [CacheKey.SettleDestination]: 'address',
+  [CacheKey.FeePerMill]: 'uint256',
+  [CacheKey.MinimumDeposit]: 'uint256',
+  [CacheKey.MinimumCommissionRate]: 'uint256',
+  [CacheKey.TradeLimitation]: 'uint256',
+  [CacheKey.TradeLimitationPerAccount]: 'uint256',
+  [CacheKey.Limit]: 'uint256',
+  [CacheKey.SizeLimit]: 'uint256',
+  [CacheKey.BlockLimit]: 'uint256',
+  [CacheKey.PenaltyRate]: 'uint256',
+  [CacheKey.PenaltyDestination]: 'address',
+  [CacheKey.IssuancePerBlock]: 'uint256',
+  [CacheKey.MinimumDeploymentBooster]: 'uint256',
+  [CacheKey.MaxCommissionFactor]: 'uint256',
+  [CacheKey.MaxRewardFactor]: 'uint256',
+  [CacheKey.AlphaNumerator]: 'uint256',
+  [CacheKey.AlphaDenominator]: 'uint256',
+  [CacheKey.Redeemable]: 'bool',
+  [CacheKey.MaxUnbondingRequest]: 'uint256',
+  [CacheKey.UnbondFeeRate]: 'uint256',
+  [CacheKey.LockPeriod]: 'uint256',
+  [CacheKey.TerminateExpiration]: 'uint256',
+  [CacheKey.EraPeriod]: 'uint256',
+  [CacheKey.Maintenance]: 'bool',
+};
+
+CacheKeyToParamType[CacheKey.Era];
 
 export async function cacheSet(key: CacheKey, value: string) {
   await Cache.create({
