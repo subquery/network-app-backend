@@ -61,8 +61,6 @@ export const CacheKeyToParamType = {
   [CacheKey.Maintenance]: 'bool',
 };
 
-CacheKeyToParamType[CacheKey.Era];
-
 export async function cacheSet(key: CacheKey, value: string) {
   await Cache.create({
     id: key.toString(),
