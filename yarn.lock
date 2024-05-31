@@ -1620,7 +1620,7 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.2":
+"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.7.2":
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.2.tgz#f8b1a4f275d7ce58cf0a2eec222269a08beb18cb"
   integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
@@ -2518,36 +2518,36 @@
     yaml-loader "^0.6.0"
 
 "@subql/common-algorand@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-algorand/-/common-algorand-3.3.0.tgz#5c7eb05fe74855b1cd0d02c60b87046c084a9cd5"
-  integrity sha512-mZBy3duT05isKStvs9Qrl/iJESRJ7+K/w0lsX8fyUsW2QYJRpJ+sd3lMalOFH04rWqy/Hbkwn7c18a8aDj8vXA==
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-algorand/-/common-algorand-3.4.0.tgz#459f2d226ea57e880cfc21eb4efedcb2abc9c33f"
+  integrity sha512-hoF68GbU1Crm4y8w9K+C/fPo1Jp7CtPM5GOZ584mDqL/GR+HmD4ipsghn7SBpa25+ruf/yM22FBz+nHlSZxY6w==
   dependencies:
-    "@subql/common" "^3.5.0"
-    "@subql/types-algorand" "3.2.0"
+    "@subql/common" "^3.5.1"
+    "@subql/types-algorand" "3.3.0"
     class-transformer "^0.5.1"
     class-validator "^0.13.2"
     fs-extra "^10.1.0"
     ipfs-http-client "^52.0.3"
     js-yaml "^4.1.0"
     reflect-metadata "^0.1.13"
-    semver "^7.5.2"
+    semver "^7.5.4"
 
 "@subql/common-concordium@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@subql/common-concordium/-/common-concordium-3.5.1.tgz#7d7d245785cb614492dbf290beb2ec6f34dd3bf0"
-  integrity sha512-9DXPpUbkpP+D1HI0Xf7cnhCArQJXwhC/MYu2tmPTqi253Vee8unijHxknDSWwXhtAtGw1Kr2buLClwMzOAm+2A==
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-concordium/-/common-concordium-3.6.0.tgz#c57293bf44c09d06343c5cf531ae44c86fafd344"
+  integrity sha512-Qe5WaF2H2lt8QHK4WBMrvnWroVgoOx+cHR9PCBhgIZIVNjZYdOXIP0PE+5YEhcd0kSUy3GBvlXzVOuWa0GQvDg==
   dependencies:
     "@concordium/node-sdk" "9.4.0"
-    "@subql/common" "^3.5.0"
-    "@subql/types-concordium" "3.5.1"
+    "@subql/common" "^3.5.1"
+    "@subql/types-concordium" "3.6.0"
     js-yaml "^4.1.0"
     pino "^6.13.3"
     reflect-metadata "^0.1.13"
 
 "@subql/common-cosmos@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-cosmos/-/common-cosmos-4.2.0.tgz#5b75f1f9b2d705070efbf133829b8677f373fd3d"
-  integrity sha512-8MObnKf9QHfLs7tVG0QpbIfP8FkbUVZF3lHpKcpzBlweEHD3ncg/E7VYuni8H7WX7YnTDWUCAS+PpgTM3+852Q==
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-cosmos/-/common-cosmos-4.3.0.tgz#54afc725d14387c70c90b150a0b309e0c4ea8ce2"
+  integrity sha512-SL7fHHRsepTn8NpAyCexKRI9SsSHiEOXOhiDxXDH/+hEYDuOn5wAa+oajUhYRGM2KnRG5qtHSHBfPriw8L7G9g==
   dependencies:
     "@cosmwasm/ts-codegen" "^0.35.7"
     "@protobufs/cosmos" "^0.1.0"
@@ -2557,20 +2557,20 @@
     "@protobufs/google" "^0.0.10"
     "@protobufs/ibc" "^0.1.0"
     "@protobufs/tendermint" "^0.0.10"
-    "@subql/common" "^3.5.0"
-    "@subql/types-cosmos" "3.3.0"
+    "@subql/common" "^3.5.1"
+    "@subql/types-cosmos" "3.4.0"
     "@subql/x-cosmology-telescope" "^1.4.14"
     fs-extra "^11.1.1"
     js-yaml "^4.1.0"
     reflect-metadata "^0.1.13"
 
 "@subql/common-ethereum@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-ethereum/-/common-ethereum-3.5.0.tgz#4fd778850ba1f8b3a0df37ab9aa90c0feda7aaa9"
-  integrity sha512-iiFVjq+/B6yibdCkCNYQRyCFTMehZe/TBsm7qCJgjkqAw/1Tw2ywW/+wdMCI3VK9Ixy5iOuHRY4oVWF9Jyl3xA==
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@subql/common-ethereum/-/common-ethereum-3.6.1.tgz#7673f5b6ffe5bf5407e9c69d30b189ab8a0cd7e6"
+  integrity sha512-iLdqAzeZpoiGPSZ27AGOhY8sc8n6oUkWZlrxQFBAHwl3wEyVRgFy4dSo304P/K6pdWqagl8NK+D5iAxwCPOZGQ==
   dependencies:
-    "@subql/common" "^3.5.0"
-    "@subql/types-ethereum" "3.5.0"
+    "@subql/common" "^3.5.1"
+    "@subql/types-ethereum" "3.6.1"
     "@typechain/ethers-v5" "^11.1.1"
     "@zilliqa-js/crypto" "^3.5.0"
     js-yaml "^4.1.0"
@@ -2579,12 +2579,12 @@
     typechain "^8.3.1"
 
 "@subql/common-flare@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-flare/-/common-flare-3.5.0.tgz#75d591e1f230d5496c6a5efa2bd78b5f452967d6"
-  integrity sha512-ZEzMuiqdTfnKC+uDjAMij0GpGLncFzYWdQP9anQ8FvC81d704DZek1sx95U0fSIen2Pwdb9TCdAB/5XTqqjXTg==
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@subql/common-flare/-/common-flare-3.6.1.tgz#3b33378566f8d0c65e363c99d7e0d4ce4a8c8c68"
+  integrity sha512-fRmeBWncw994N+/sh3VVa+9I9ve8KAH7SvncXIsBlt27g6uagCKPlYIF7rdMxDi9xrQ9tNXfhufk4UOXoe1VWw==
   dependencies:
-    "@subql/common" "^3.5.0"
-    "@subql/types-flare" "3.5.0"
+    "@subql/common" "^3.5.1"
+    "@subql/types-flare" "3.6.1"
     "@typechain/ethers-v5" "^11.1.1"
     "@zilliqa-js/crypto" "^3.5.0"
     js-yaml "^4.1.0"
@@ -2593,22 +2593,22 @@
     typechain "^8.3.1"
 
 "@subql/common-near@^3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@subql/common-near/-/common-near-3.4.0.tgz#9b26b6764000e1296bcc3a744b00325efceaf725"
-  integrity sha512-vxe80KRuVUtInnOunfV6FMtihJ/wTgxlI2+DEfxXCXKXl3LGOmmiKBqbecidXWjv87pcjwu+DUuOAUTJ2Njyiw==
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-near/-/common-near-3.5.0.tgz#7683094a92b4306c8c5924b4eabb9d72441d3b0e"
+  integrity sha512-wERKF3sLXexBcFskACd2lbnlIcGPpSsTYHheHPgGHqeWk+fSKslU1I/ZGbGzfD5Aud7/oR+kz2ILYs7XgSguQw==
   dependencies:
-    "@subql/common" "^3.5.0"
-    "@subql/types-near" "3.2.0"
+    "@subql/common" "^3.5.1"
+    "@subql/types-near" "3.3.0"
     js-yaml "^4.1.0"
     reflect-metadata "^0.1.13"
 
 "@subql/common-stellar@^3.4.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@subql/common-stellar/-/common-stellar-3.4.1.tgz#48fc256ec2b5489d35924c59f57b12ad4d895099"
-  integrity sha512-vJvFjZzYK4ttTJHMQAIU4z1aPjS8t3y+PLH46JEgPoXZl02CM83kX0Qs4jrlsvceCU5+w+e+dAnBvo+gffm1jw==
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@subql/common-stellar/-/common-stellar-3.5.0.tgz#c7f621344ca71b7bb01c35b043aa37877259b340"
+  integrity sha512-INx/vDqcPoWJkDCkap0N5yqsP/bp5twUS6hF74M0XkyjM0OAjAY32W0cCzeN+bBnVKbBMQjw0kByyK8fIbCOVw==
   dependencies:
-    "@subql/common" "^3.5.0"
-    "@subql/types-stellar" "3.3.1"
+    "@subql/common" "^3.5.1"
+    "@subql/types-stellar" "3.4.0"
     js-yaml "^4.1.0"
     pino "^6.13.3"
     reflect-metadata "^0.1.13"
@@ -2640,12 +2640,12 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
-"@subql/common@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/common/-/common-3.5.0.tgz#9bf94f327c1e0985f548bcbe74961cde322ee5d3"
-  integrity sha512-bSrMp+B0vTw4XQUBq8HVtCeDecVGZZZYxA+Oh2leYpIf44HB7ll8Bi2B5Dxh8T8aX81ohd4D2J4q7utsuswEpA==
+"@subql/common@^3.5.1":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@subql/common/-/common-3.6.0.tgz#8877db5d2def1fa90024c5abe4da228c882c0992"
+  integrity sha512-ZOdgwtpOwTxRdB0axZPxXvbmhn8Q1exr1ClP9ExbLbNr7sOxkesfYhclHiouuPUL4LjCyrTi9yzrICmOcAa4hQ==
   dependencies:
-    "@subql/types-core" "0.6.0"
+    "@subql/types-core" "0.7.0"
     axios "^0.28.0"
     class-transformer "^0.5.1"
     class-validator "^0.14.0"
@@ -2656,32 +2656,25 @@
     semver "^7.5.2"
     update-notifier "5.1.0"
 
-"@subql/contract-sdk@^1.1.1-0":
-  version "1.1.1-0"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.1.1-0.tgz#e23435305747de92aa0f0802d48a6e49c0b07c9d"
-  integrity sha512-sXNYsodBWaVfc//UuzLNpjQF0zq2CMYz0mMr55rbkUOx52CbmdxxUsuMl8khQg3oIvxiCQXuD2IgEUZQEVuxfQ==
+"@subql/contract-sdk@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.3.0.tgz#e6474369a2156fd3dfd50a84535d9a2894480198"
+  integrity sha512-vxd8xwtxDtNjv9WXYKx3pD12tdRDJJZ7Cm5yTtyH4piGcvLtJXehENxSBvCKvGtgpvzba8DiwDmbjIMYdomNzA==
 
-"@subql/types-algorand@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-algorand/-/types-algorand-3.2.0.tgz#156c876382ef8aeb00b3461a6d3673ac1910baf2"
-  integrity sha512-fFnZK+TTfFsGMRZiSM1zF7AoLIEyvuBULEYSyyqiqF8f+2KCgg/9lp6C7sQaQaKK0w1Fuj8OQrmrrqNPUbgUoA==
+"@subql/types-algorand@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-algorand/-/types-algorand-3.3.0.tgz#8f772e45b01e456051658db93fb4539b1c7c6665"
+  integrity sha512-INeJTT0GPRZ3mwPN0wcMYMkltfr8A6+Xbwg/FdBycu7wphPtH5blzdTUtE/+b7/gwDs3MqeE083yNjcXvWRxQQ==
   dependencies:
-    "@subql/types-core" "^0.6.0"
+    "@subql/types-core" "^0.7.0"
 
-"@subql/types-concordium@3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@subql/types-concordium/-/types-concordium-3.5.1.tgz#c959b0b51671085a07579055023b552ed6dc5958"
-  integrity sha512-jajf9pylciMFzHiPnHtSZUnAIYspBxrOI6Qx5lrez6QaWp363Rd8jlMgOF407+tUyZf5QpbrnWTj7MRN42d6TA==
+"@subql/types-concordium@3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-concordium/-/types-concordium-3.6.0.tgz#9b42eae7f3dd1c05467089e8c22f1e87ae7e3878"
+  integrity sha512-CVqGK7eFjjHuVDZupjKoR5lF20W3XfEBOsvAL6JNIrMxjdKgt+a8qvsPzy3m9sL/ZzqXruM0w6NvI8HurWG1Nw==
   dependencies:
     "@concordium/node-sdk" "9.4.0"
-    "@subql/types-core" "^0.6.0"
-
-"@subql/types-core@0.6.0", "@subql/types-core@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-core/-/types-core-0.6.0.tgz#93d42110116dfde1199fa23726e6cc2efda8ebee"
-  integrity sha512-32dMTzOhU0hj3ByMeFyZOvoOvoYh5WtA3AVEd+gO1U9aTdkhYG1djeal3Hma/dYp1nThTpjSEeOllDrPip699Q==
-  dependencies:
-    package-json-type "^1.0.3"
+    "@subql/types-core" "^0.7.0"
 
 "@subql/types-core@0.7.0", "@subql/types-core@^0.7.0":
   version "0.7.0"
@@ -2690,23 +2683,24 @@
   dependencies:
     package-json-type "^1.0.3"
 
-"@subql/types-cosmos@3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-cosmos/-/types-cosmos-3.3.0.tgz#76d22a28d852c471d5aefeeddfc31d715d88379b"
-  integrity sha512-bQFTCz8ywMno/ax9aZEHfhqsBA8lhYwWgLKjPMqNOGFTLttx+6mnT5LgReV6aBjnmaNEN+AbbSvBKPpYjNCiMw==
+"@subql/types-cosmos@3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-cosmos/-/types-cosmos-3.4.0.tgz#e728866551724d10e57c5760ef6d47ab0c5823f2"
+  integrity sha512-hLitUipz/CIU/82Gg0briqNeFjE6fHvOK3oHdO2g+3WBW2ehWvP3wks+4S4WE5Vjx1zHmnw9hc/nYQw0EVwWvg==
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.3"
     "@cosmjs/proto-signing" "^0.32.3"
     "@cosmjs/stargate" "^0.32.3"
-    "@subql/types-core" "^0.6.0"
+    "@subql/types-core" "^0.7.0"
 
-"@subql/types-ethereum@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-3.5.0.tgz#027e549965b827d64ab13f149f47272b68fe0e02"
-  integrity sha512-HznYcAo8zbtteSd2x94eGLCt8OAc+orjGBR9ZF3Wn6hzXmhq9sKYQeI2h96aRBl6pUoJ8JVxJmKzjFVJB+zaig==
+"@subql/types-ethereum@3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@subql/types-ethereum/-/types-ethereum-3.6.1.tgz#8cd33869ebc1d1bed5e4b2ed339c0e0df2089aeb"
+  integrity sha512-FAaeJX9pzDRFcLtbq4hZ/kSehoLMKUtqP18SFND+1CgYezuZiQMW7sR3xN4pavSggqCGadO2+k/fstb1m4Yt9w==
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
-    "@subql/types-core" "^0.6.0"
+    "@ethersproject/providers" "^5.7.2"
+    "@subql/types-core" "^0.7.0"
 
 "@subql/types-ethereum@^3.5.0":
   version "3.6.0"
@@ -2716,29 +2710,30 @@
     "@ethersproject/abstract-provider" "^5.6.1"
     "@subql/types-core" "^0.7.0"
 
-"@subql/types-flare@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-flare/-/types-flare-3.5.0.tgz#327627e35c9ee83a8d9f3551f9027458aae4faa8"
-  integrity sha512-nKrVoTKYnG8O8R/ewfxcXwo/q9OhofaedpnemroIknjh73ZvMAiuOwapOHbp1bcoMFErmtSgo0q/A0LVde+TKg==
+"@subql/types-flare@3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@subql/types-flare/-/types-flare-3.6.1.tgz#2ce9256c6d7d04285186e36fd4688c9d39f6e829"
+  integrity sha512-ovCmQnylrFlk5X0ePCroQ23AypYBAGltU+6lYDlqayUbgQQO5QDBDCv1YvK7rljylE0vjP+mn9OR+TPb+n17ew==
   dependencies:
     "@ethersproject/abstract-provider" "^5.6.1"
-    "@subql/types-core" "^0.6.0"
+    "@ethersproject/providers" "^5.7.2"
+    "@subql/types-core" "^0.7.0"
 
-"@subql/types-near@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@subql/types-near/-/types-near-3.2.0.tgz#9454f6ec0d8a03ff0852ab165b638c9cdbfd721e"
-  integrity sha512-dcYsebWh85+msJ6UWI0hjbK6FSNVnEFKGN7QZ/yr1lOaNQrv0kG4BH/ARZ/YGaokZxap2VHAThD69GmwjpFceA==
+"@subql/types-near@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-near/-/types-near-3.3.0.tgz#c15c483f409e2c56f003264ce25851ad44ec3477"
+  integrity sha512-huOr0PS+5HUyI7lzBEyUiy/JXPEg++U2ybrastpgGCmLPti0QZ76MutPJlfMLt0eMFHfW0VaiZybBZx/G1/PZw==
   dependencies:
-    "@subql/types-core" "^0.6.0"
+    "@subql/types-core" "^0.7.0"
     bn.js "5.2.1"
     near-api-js "^1.1.0"
 
-"@subql/types-stellar@3.3.1":
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/@subql/types-stellar/-/types-stellar-3.3.1.tgz#7271defeedf54fa97c2b0f08c0f8f06d497477ee"
-  integrity sha512-UippL4TNifgFZahhZ0JChDDZ3M5CmU0th8Bi2dHMNhvruIBHxvA/c0mtIi//SnKWHoeLU2EsJZj7cAp0sLAzCQ==
+"@subql/types-stellar@3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@subql/types-stellar/-/types-stellar-3.4.0.tgz#7cd504d8ef91d6ad78ac2ec1fe9c8370a17f97ff"
+  integrity sha512-Ls869pkRZIx7eQ+58vYuhrJhG18kfe/EhNqe1KVNyd4Z7h8Lleul5pUhQOCumOBGZwfyICZOeBhIuwS8PkAyqA==
   dependencies:
-    "@subql/types-core" "^0.6.0"
+    "@subql/types-core" "^0.7.0"
     stellar-sdk "^11.2.2"
 
 "@subql/types@3.5.0":

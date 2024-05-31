@@ -75,6 +75,11 @@ dataSources:
           filter:
             topics:
               - NewEraStart(uint256 indexed era, address caller)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: indexerRegistry
@@ -111,6 +116,11 @@ dataSources:
           kind: ethereum/TransactionHandler
           filter:
             function: setminimumStakingAmount(uint256 amount)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: staking
@@ -147,6 +157,11 @@ dataSources:
           kind: ethereum/TransactionHandler
           filter:
             function: setIndexerLeverageLimit(uint256 _indexerLeverageLimit)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: sqtoken
@@ -229,6 +244,11 @@ dataSources:
           filter:
             topics:
               - PlanRemoved(uint256 indexed planId)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: serviceAgreementRegistry
@@ -278,6 +298,11 @@ dataSources:
           filter:
             topics:
               - AgreementRewards(address indexed runner, uint256 agreementId, uint256 token);
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: rewardsStaking
@@ -312,6 +337,11 @@ dataSources:
           filter:
             topics:
               - OfferAccepted(address indexed indexer, uint256 offerId, uint256 agreementId)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: stateChannel
@@ -349,6 +379,11 @@ dataSources:
           filter:
             topics:
               - ChannelFinalize(uint256 channelId, uint256 total, uint256 remain)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: disputeManager
@@ -366,6 +401,11 @@ dataSources:
           filter:
             topics:
               - DisputeFinalized(uint256 indexed disputeId, uint8 state, uint256 slashAmount, uint256 returnAmount)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: priceOracle
@@ -378,6 +418,11 @@ dataSources:
           filter:
             topics:
               - PricePosted(address assetFrom, address assetTo, uint256 previousPrice, uint256 newPrice);
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: consumerRegistry
@@ -437,6 +482,11 @@ dataSources:
           filter:
             topics:
               - QueryRewardsRefunded(bytes32 indexed deploymentId, address indexed runner, uint256 amount, bytes data)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: stakingAllocation
@@ -491,6 +541,11 @@ dataSources:
           filter:
             topics:
               - RoundSettled(uint256 indexed roundId, address settleDestination, uint256 unclaimAmount)
+        - handler: handleParameterEvent
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Parameter(string name, bytes value)
   - <<: *ethereum
     options:
       abi: l2SQToken
