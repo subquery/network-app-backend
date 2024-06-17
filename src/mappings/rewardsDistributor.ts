@@ -83,19 +83,27 @@ export async function handleRewardsDistributed(
   }
   const delegations = eraIndexerDelegator?.delegators;
   const totalDelegation = eraIndexerDelegator.totalStake;
+  const indexerStakeWeight = await IndexerStakeWeight.get(runner);
+  const weight = indexerStakeWeight?.weight || PER_MILL;
+  const indexerDelegationAmount =
+    delegations.find((d) => d.delegator === runner)?.amount ?? BigInt(0);
+
+  let calculatedTotalDelegation = totalDelegation;
+  let calculatedIndexerDelegationAmount = BigInt(0);
+  if (weight !== PER_MILL) {
+    calculatedIndexerDelegationAmount =
+      (indexerDelegationAmount * weight) / PER_MILL;
+    calculatedTotalDelegation =
+      totalDelegation -
+      indexerDelegationAmount +
+      calculatedIndexerDelegationAmount;
+  }
 
   for (const delegationFrom of delegations) {
     const delegationAmount = toBigInt(delegationFrom.amount.toString());
     let calculatedDelegationAmount = delegationAmount;
-    let calculatedTotalDelegation = totalDelegation;
-    if (delegationFrom.delegator === runner) {
-      const indexerStakeWeight = await IndexerStakeWeight.get(runner);
-      const weight = indexerStakeWeight?.weight || PER_MILL;
-      if (weight !== PER_MILL) {
-        calculatedDelegationAmount = (delegationAmount * weight) / PER_MILL;
-        calculatedTotalDelegation =
-          totalDelegation - delegationAmount + calculatedDelegationAmount;
-      }
+    if (runner === delegationFrom.delegator && weight !== PER_MILL) {
+      calculatedDelegationAmount = calculatedIndexerDelegationAmount;
     }
     const estimatedRewards = totalRewards
       .sub(commission)
