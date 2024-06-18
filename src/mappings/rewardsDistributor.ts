@@ -85,8 +85,9 @@ export async function handleRewardsDistributed(
   const totalDelegation = eraIndexerDelegator.totalStake;
   const indexerStakeWeight = await IndexerStakeWeight.get(runner);
   const weight = indexerStakeWeight?.weight || PER_MILL;
-  const indexerDelegationAmount =
-    delegations.find((d) => d.delegator === runner)?.amount ?? BigInt(0);
+  const indexerDelegationAmount = toBigInt(
+    delegations.find((d) => d.delegator === runner)?.amount?.toString()
+  );
 
   let calculatedTotalDelegation = totalDelegation;
   let calculatedIndexerDelegationAmount = BigInt(0);
