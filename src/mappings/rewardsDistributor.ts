@@ -91,12 +91,14 @@ export async function handleRewardsDistributed(
   let calculatedTotalDelegation = totalDelegation;
   let calculatedIndexerDelegationAmount = BigInt(0);
   if (weight !== PER_MILL) {
-    calculatedIndexerDelegationAmount =
-      (indexerDelegationAmount * weight) / PER_MILL;
-    calculatedTotalDelegation =
-      totalDelegation -
-      indexerDelegationAmount +
-      calculatedIndexerDelegationAmount;
+    calculatedIndexerDelegationAmount = BigNumber.from(indexerDelegationAmount)
+      .mul(weight)
+      .div(PER_MILL)
+      .toBigInt();
+    calculatedTotalDelegation = BigNumber.from(totalDelegation)
+      .sub(indexerDelegationAmount)
+      .add(calculatedIndexerDelegationAmount)
+      .toBigInt();
   }
 
   for (const delegationFrom of delegations) {
