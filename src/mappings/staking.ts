@@ -473,7 +473,7 @@ export async function handleWithdrawClaimed(
 export async function handleWithdrawCancelled(
   event: EthereumLog<UnbondCancelledEvent['args']>
 ): Promise<void> {
-  logger.info('handleWithdrawClaimed');
+  logger.info('handleWithdrawCancelled');
   assert(event.args, 'No event args');
 
   const { source, index } = event.args;
