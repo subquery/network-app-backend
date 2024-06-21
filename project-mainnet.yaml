@@ -4,12 +4,12 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node-ethereum'
-    version: '>= 4.4.2'
+    version: '>= 4.5.2'
     options:
       unfinalizedBlocks: true
   query:
     name: '@subql/query'
-    version: '*'
+    version: '>= 2.10.0'
 description: 'Query registry project for SubQuery Mainnet'
 repository: ''
 schema:
