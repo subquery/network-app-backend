@@ -237,7 +237,7 @@ export async function updateTotalStake(
   }
 }
 
-export async function updateTotalDelegation(
+export async function updateDelegatorDelegation(
   delegatorAddress: string,
   amount: bigint,
   operation: keyof typeof operations = 'add',

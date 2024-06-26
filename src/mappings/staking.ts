@@ -19,6 +19,7 @@ import {
   EraIndexerDelegator,
   EraStake,
   EraStakeUpdate,
+  Indexer,
   IndexerStake,
   IndexerStakeSummary,
   WithdrawalStatus,
@@ -35,7 +36,7 @@ import {
   toBigInt,
   updateIndexerCapacity,
   updateMaxUnstakeAmount,
-  updateTotalDelegation,
+  updateDelegatorDelegation,
   updateTotalLock,
   updateTotalStake,
   upsertEraValue,
@@ -98,7 +99,10 @@ export async function handleAddDelegation(
   const selfStake = source === runner;
   const applyInstantly = runner === source && !delegation;
 
-  await updateTotalDelegation(source, amountBn, 'add', applyInstantly);
+  const indexer = await Indexer.get(source);
+  if (!indexer) {
+    await updateDelegatorDelegation(source, amountBn, 'add', applyInstantly);
+  }
 
   await updateTotalStake(
     runner,
