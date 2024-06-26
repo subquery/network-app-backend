@@ -184,7 +184,7 @@ export async function handleRemoveDelegation(
   const selfStake = source === runner;
   const applyInstantly = false;
 
-  await updateTotalDelegation(source, amount.toBigInt(), 'sub');
+  await updateDelegatorDelegation(source, amount.toBigInt(), 'sub');
   await updateTotalStake(
     runner,
     amount.toBigInt(),
