@@ -16,7 +16,7 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '84532' # base-sepolia
-  endpoint: https://sepolia.base.org
+  endpoint: ''
   dictionary: ''
 
 x-ethereum: &ethereum

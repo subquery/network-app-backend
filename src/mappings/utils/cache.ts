@@ -29,6 +29,7 @@ export enum CacheKey {
   TerminateExpiration = 'terminateExpiration',
   EraPeriod = 'eraPeriod',
   Maintenance = 'maintenance',
+  BoosterQueryRewardRate = 'boosterQueryRewardRate',
 }
 
 export const CacheKeyToParamType = {
@@ -59,6 +60,7 @@ export const CacheKeyToParamType = {
   [CacheKey.TerminateExpiration]: 'uint256',
   [CacheKey.EraPeriod]: 'uint256',
   [CacheKey.Maintenance]: 'bool',
+  [CacheKey.BoosterQueryRewardRate]: 'uint256',
 };
 
 export async function cacheSet(key: CacheKey, value: string) {
