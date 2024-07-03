@@ -9,6 +9,7 @@ export * from './priceOracle';
 export * from './projectRegistry';
 export * from './purchaseOffer';
 export * from './rewardsBooster';
+export * from './rewardsPool';
 export * from './rewardsDistributor';
 export * from './rewardsStaking';
 export * from './serviceAgreement';
