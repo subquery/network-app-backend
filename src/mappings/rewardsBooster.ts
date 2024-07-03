@@ -29,6 +29,7 @@ import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
+import { addOrUpdateEraDeploymentRewards } from './rewardsPool';
 
 const preboostedCids = [
   'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
@@ -207,6 +208,14 @@ export async function handleAllocationRewardsGiven(
   assert(!allocationReward, 'Allocation reward already exists');
 
   const eraIdx = await getCurrentEra();
+
+  // add allocation to era deployment
+  await addOrUpdateEraDeploymentRewards(
+    deploymentId,
+    eraIdx,
+    reward.toBigInt(),
+    reward.toBigInt()
+  );
 
   allocationReward = IndexerAllocationReward.create({
     id: rewardId,

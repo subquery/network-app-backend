@@ -735,3 +735,11 @@ type IndexerStakeWeight @entity {
   createAt: Date!
   updateAt: Date!
 }
+
+type EraDeploymentRewards @entity {
+  id: ID! # deploymentId:eraId
+  deploymentId: String!
+  eraIdx: Int!
+  totalRewards: BigInt!
+  allocationRewards: BigInt!
+}

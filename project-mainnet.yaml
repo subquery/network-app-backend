@@ -43,6 +43,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ConsumerRegistry.sol/ConsumerRegistry.json
     rewardsDistributor:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributor.sol/RewardsDistributor.json
+    rewardsPool:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsPool.sol/RewardsPool.json
     rewardsStaking:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsStaking.sol/RewardsStaking.json
     stateChannel:
@@ -568,3 +570,15 @@ dataSources:
           kind: ethereum/BlockHandler
           filter:
             modulo: 1
+  - <<: *ethereum
+    options:
+      abi: rewardsPool
+      address: '0xd2b00e427e3FE06Be815C20039421308f0487d03'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRewardsPoolCollect
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Collect(bytes32 deploymentId, address runner, uint256 era, uint256 amount)

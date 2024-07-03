@@ -32,6 +32,7 @@ import {
 import {
   biToDate,
   bnToDate,
+  bytesToIpfsCid,
   calcApy,
   Contracts,
   getContractAddress,
@@ -48,6 +49,7 @@ import {
 } from '../types/contracts/RewardsDistributor';
 import { RewardType } from './utils/enums';
 import { PER_MILL } from './utils/constants';
+import { addOrUpdateEraDeploymentRewards } from './rewardsPool';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -561,6 +563,34 @@ export async function handleAgreementRewards(
     agreementFirstEraRate
   );
 
+  async function saveDatas(leftAmount?: BignumberJs, eraId?: BigNumber) {
+    const saveAmount = BigNumber.from(leftAmount?.toFixed(0) || amount);
+    const saveEra = eraId?.toNumber() || currentEra;
+    await updateOrCreateIndexerReward(
+      getIndexerRewardId(runner, BigNumber.from(saveEra)),
+      BigNumber.from(saveAmount.toString()),
+      runner,
+      BigNumber.from(saveEra),
+      event.blockNumber,
+      'handleServicesAgreementRewards'
+    );
+    await upsertEraIndexerDeploymentApy(
+      runner,
+      deploymentId,
+      saveEra,
+      RewardType.AGREEMENT,
+      saveAmount.toBigInt(),
+      BigInt(0),
+      biToDate(event.block.timestamp)
+    );
+    await addOrUpdateEraDeploymentRewards(
+      bytesToIpfsCid(deploymentId),
+      saveEra,
+      saveAmount.toBigInt(),
+      BigInt(0)
+    );
+  }
+
   // this agreement less than 1 era
   if (agreementLastEraNumbers.lte(1)) {
     // if the agreement less than 1 era and will end before the next era
@@ -568,69 +598,20 @@ export async function handleAgreementRewards(
       +bnToDate(startDate.add(period)) <
       +currentEraInfo.startTime + eraPeriod.mul(1000).toNumber()
     ) {
-      await updateOrCreateIndexerReward(
-        getIndexerRewardId(runner, BigNumber.from(currentEra)),
-        BigNumber.from(amount.toString()),
-        runner,
-        BigNumber.from(currentEra),
-        event.blockNumber,
-        'handleServicesAgreementRewards'
-      );
-      await upsertEraIndexerDeploymentApy(
-        runner,
-        deploymentId,
-        currentEra,
-        RewardType.AGREEMENT,
-        amount.toBigInt(),
-        BigInt(0),
-        biToDate(event.block.timestamp)
-      );
+      await saveDatas();
       return;
     }
     // otherwise can use same process as the agreement has more than 1 era
   }
 
-  await updateOrCreateIndexerReward(
-    getIndexerRewardId(runner, BigNumber.from(currentEra)),
-    BigNumber.from(agreementFirstEraAmount.toFixed(0)),
-    runner,
-    BigNumber.from(currentEra),
-    event.blockNumber,
-    'handleServicesAgreementRewards'
-  );
-  await upsertEraIndexerDeploymentApy(
-    runner,
-    deploymentId,
-    currentEra,
-    RewardType.AGREEMENT,
-    BigInt(agreementFirstEraAmount.toFixed(0)),
-    BigInt(0),
-    biToDate(event.block.timestamp)
-  );
-
+  await saveDatas();
   // minus first rate and then less than 1 indicates this agreement only have two era
   if (agreementLastEraNumbers.minus(agreementFirstEraRate).lte(1)) {
     const eraId = BigNumber.from(currentEra + 1);
     const leftAmount = BignumberJs(amount.toString()).minus(
       agreementFirstEraAmount
     );
-    await updateOrCreateIndexerReward(
-      getIndexerRewardId(runner, eraId),
-      BigNumber.from(leftAmount.toFixed(0)),
-      runner,
-      eraId,
-      event.blockNumber,
-      'handleServicesAgreementRewards'
-    );
-    await upsertEraIndexerDeploymentApy(
-      runner,
-      deploymentId,
-      eraId.toNumber(),
-      RewardType.AGREEMENT,
-      BigInt(leftAmount.toFixed(0)),
-      BigInt(0),
-      biToDate(event.block.timestamp)
-    );
+    await saveDatas(leftAmount, eraId);
     return;
   }
 
@@ -642,39 +623,11 @@ export async function handleAgreementRewards(
   const lastEra = leftEra.integerValue(BignumberJs.ROUND_CEIL);
 
   for (let index = 0; index < integerPart.toNumber(); index++) {
-    await updateOrCreateIndexerReward(
-      getIndexerRewardId(runner, BigNumber.from(currentEra + index + 1)),
-      BigNumber.from(everyEraAmount.toFixed(0)),
-      runner,
-      BigNumber.from(currentEra + index + 1),
-      event.blockNumber,
-      'handleServicesAgreementRewards'
-    );
-    await upsertEraIndexerDeploymentApy(
-      runner,
-      deploymentId,
-      currentEra + index + 1,
-      RewardType.AGREEMENT,
-      BigInt(everyEraAmount.toFixed(0)),
-      BigInt(0),
-      biToDate(event.block.timestamp)
-    );
+    await saveDatas(everyEraAmount, BigNumber.from(currentEra + index + 1));
   }
-  await updateOrCreateIndexerReward(
-    getIndexerRewardId(runner, BigNumber.from(currentEra + lastEra.toNumber())),
-    BigNumber.from(decimalPartAmount.toFixed(0)),
-    runner,
-    BigNumber.from(currentEra + lastEra.toNumber()),
-    event.blockNumber,
-    'handleServicesAgreementRewards'
-  );
-  await upsertEraIndexerDeploymentApy(
-    runner,
-    deploymentId,
-    currentEra + lastEra.toNumber(),
-    RewardType.AGREEMENT,
-    BigInt(decimalPartAmount.toFixed(0)),
-    BigInt(0),
-    biToDate(event.block.timestamp)
+
+  await saveDatas(
+    BignumberJs(decimalPartAmount.toFixed(0)),
+    BigNumber.from(currentEra + lastEra.toNumber())
   );
 }
