@@ -29,7 +29,10 @@ import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
-import { addOrUpdateEraDeploymentRewards } from './rewardsPool';
+import {
+  addOrUpdateEraDeploymentRewards,
+  addOrUpdateIndexerEraDeploymentRewards,
+} from './rewardsPool';
 
 const preboostedCids = [
   'Qmc9svij5SxCEGApMZzV9MwWgy8TuMTtGgsrWxR1yaUqZ9',
@@ -211,6 +214,14 @@ export async function handleAllocationRewardsGiven(
 
   // add allocation to era deployment
   await addOrUpdateEraDeploymentRewards(
+    deploymentId,
+    eraIdx,
+    reward.toBigInt(),
+    reward.toBigInt()
+  );
+
+  await addOrUpdateIndexerEraDeploymentRewards(
+    indexerId,
     deploymentId,
     eraIdx,
     reward.toBigInt(),

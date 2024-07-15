@@ -743,3 +743,13 @@ type EraDeploymentRewards @entity {
   totalRewards: BigInt!
   allocationRewards: BigInt!
 }
+
+type IndexerEraDeploymentRewards @entity {
+  id: ID! # indexerId:deploymentId:eraId
+  indexer: Indexer!
+  deploymentId: String!
+  eraIdx: Int!
+  totalRewards: BigInt!
+  allocationRewards: BigInt!
+  queryRewards: BigInt!
+}

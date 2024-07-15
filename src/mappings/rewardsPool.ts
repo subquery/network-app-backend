@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { CollectEvent } from '@subql/contract-sdk/typechain/contracts/RewardsPool';
 import { EthereumLog } from '@subql/types-ethereum';
-import { EraDeploymentRewards } from '../types';
+import { EraDeploymentRewards, IndexerEraDeploymentRewards } from '../types';
 import { BigNumber } from 'ethers';
 import { bytesToIpfsCid } from './utils';
 
@@ -34,14 +34,59 @@ export async function addOrUpdateEraDeploymentRewards(
   await eraDeploymentRewards.save();
 }
 
+export async function addOrUpdateIndexerEraDeploymentRewards(
+  indexerId: string,
+  deploymentId: string,
+  eraIdx: number,
+  totalRewards: bigint,
+  allocationRewards: bigint
+) {
+  logger.info('addOrUpdateIndexerEraDeploymentRewards');
+  assert(deploymentId, 'No deploymentId');
+  assert(eraIdx, 'No eraIdx');
+  assert(indexerId, 'No indexerId');
+
+  const id = `${indexerId}:${deploymentId}:${eraIdx}`;
+  const existingIndexerEraDeploymentRewards =
+    await IndexerEraDeploymentRewards.get(id);
+  if (existingIndexerEraDeploymentRewards) {
+    existingIndexerEraDeploymentRewards.totalRewards += totalRewards;
+    existingIndexerEraDeploymentRewards.allocationRewards += allocationRewards;
+    existingIndexerEraDeploymentRewards.queryRewards =
+      existingIndexerEraDeploymentRewards.totalRewards -
+      existingIndexerEraDeploymentRewards.allocationRewards;
+    await existingIndexerEraDeploymentRewards.save();
+    return;
+  }
+
+  const eraDeploymentRewards = IndexerEraDeploymentRewards.create({
+    id,
+    indexerId,
+    deploymentId,
+    eraIdx,
+    totalRewards,
+    allocationRewards,
+    queryRewards: totalRewards - allocationRewards,
+  });
+  await eraDeploymentRewards.save();
+}
+
 export async function handleRewardsPoolCollect(
   event: EthereumLog<CollectEvent['args']>
 ): Promise<void> {
   logger.info('handleRewardsPoolCollect');
   assert(event.args, 'No event args');
 
-  const { deploymentId, era, amount } = event.args;
+  const { deploymentId, era, amount, runner } = event.args;
   await addOrUpdateEraDeploymentRewards(
+    bytesToIpfsCid(deploymentId),
+    era.toNumber(),
+    amount.toBigInt(),
+    BigNumber.from(0).toBigInt()
+  );
+
+  await addOrUpdateIndexerEraDeploymentRewards(
+    runner,
     bytesToIpfsCid(deploymentId),
     era.toNumber(),
     amount.toBigInt(),
