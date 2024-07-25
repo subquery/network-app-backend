@@ -30,11 +30,12 @@ export async function handleStakeAllocationAdded(
 
   const project = await Project.get(deployment.projectId);
   assert(project, `Project ${deployment.projectId} not found`);
+  let allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
 
-  const allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocation = await IndexerAllocation.get(allocationId);
-  assert(!allocation, 'Allocation already exists');
-
+  if (allocation) {
+    allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}:${event.logIndex}`;
+  }
   const eraIdx = await getCurrentEra();
 
   allocation = IndexerAllocation.create({
@@ -85,9 +86,12 @@ export async function handleStakeAllocationRemoved(
   const project = await Project.get(deployment.projectId);
   assert(project, `Project ${deployment.projectId} not found`);
 
-  const allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+  let allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+
   let allocation = await IndexerAllocation.get(allocationId);
-  assert(!allocation, 'Allocation already exists');
+  if (allocation) {
+    allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}:${event.logIndex}`;
+  }
 
   const eraIdx = await getCurrentEra();
 
