@@ -8,6 +8,7 @@ import {
 import assert from 'assert';
 import {
   Deployment,
+  EraIndexerDeploymentApy,
   IndexerAllocation,
   IndexerAllocationOverflow,
   IndexerAllocationSummary,
@@ -33,7 +34,11 @@ export async function handleStakeAllocationAdded(
 
   const allocationId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
   let allocation = await IndexerAllocation.get(allocationId);
-  assert(!allocation, 'Allocation already exists');
+
+  assert(
+    !allocation,
+    `Allocation already exists:${deploymentId}:${indexerId}:${event.transactionHash}`
+  );
 
   const eraIdx = await getCurrentEra();
 
@@ -69,6 +74,15 @@ export async function handleStakeAllocationAdded(
     summary.updateAt = biToDate(event.block.timestamp);
   }
   await summary.save();
+
+  const apyId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  let apy = await EraIndexerDeploymentApy.get(apyId);
+
+  if (apy) {
+    apy.apyCalcAdded = amountAdded.toBigInt();
+    apy.apyCalcAllocationRecordAt = biToDate(event.block.timestamp);
+    await apy.save();
+  }
 }
 
 export async function handleStakeAllocationRemoved(
@@ -123,6 +137,15 @@ export async function handleStakeAllocationRemoved(
     summary.updateAt = biToDate(event.block.timestamp);
   }
   await summary.save();
+
+  const apyId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  let apy = await EraIndexerDeploymentApy.get(apyId);
+
+  if (apy) {
+    apy.apyCalcRemoval = amountRemoved.toBigInt();
+    apy.apyCalcAllocationRecordAt = biToDate(event.block.timestamp);
+    await apy.save();
+  }
 }
 
 export async function handleOverAllocationStarted(
