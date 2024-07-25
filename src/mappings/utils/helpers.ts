@@ -48,8 +48,17 @@ declare global {
   }
 }
 
+export function cleanInputBigIntValue(value:unknown):unknown{
+  if (typeof value === 'string' && /^-?\d+n$/.test(value)) {
+    const stripedValue = (value.slice(0, -1));
+    return stripedValue;
+  }else {
+    return value;
+  }
+}
+
 BigInt.prototype.toJSON = function (): string {
-  return BigNumber.from(this).toHexString();
+  return `${BigNumber.from(this).toString()}n`;
 };
 
 BigInt.prototype.toJSONType = function () {
@@ -64,13 +73,13 @@ BigInt.fromJSONType = function (value: JSONBigInt): bigint {
     throw new Error('Value is not JSONBigInt');
   }
 
-  return BigNumber.from(value.value).toBigInt();
+  return BigNumber.from(cleanInputBigIntValue(value.value)).toBigInt();
 };
 
 export function bigNumbertoJSONType(value: BigNumber): JSONBigInt {
   return {
     type: 'bigint',
-    value: value.toHexString(),
+    value: `${value.toString()}n`,
   };
 }
 
@@ -115,7 +124,7 @@ export function getWithdrawlId(delegator: string, index: BigNumber): string {
 
 export function bigNumberFrom(value: unknown): BigNumber {
   try {
-    return BigNumber.from(value);
+    return BigNumber.from(cleanInputBigIntValue(value));
   } catch (e) {
     return BigNumber.from(0);
   }
@@ -154,7 +163,7 @@ export async function reportException(
 }
 
 export const toBigNumber = (amount: BigNumberish): BigNumber =>
-  BigNumber.from(amount.toString());
+  BigNumber.from(cleanInputBigIntValue(amount.toString()));
 
 export const toBigInt = (amount: string | undefined | null): bigint =>
   BigInt((amount || '').replace('n', ''));

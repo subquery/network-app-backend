@@ -18,7 +18,7 @@ import {
 import {
   bigNumberFrom,
   bigNumbertoJSONType,
-  biToDate,
+  biToDate, cleanInputBigIntValue,
   Contracts,
   getContractAddress,
   getDelegationId,
@@ -265,7 +265,7 @@ export async function updateDelegatorDelegation(
       operation,
       applyInstantly
     );
-    if (BigNumber.from(delegator.totalDelegations.valueAfter.value).lte(0)) {
+    if (BigNumber.from(cleanInputBigIntValue(delegator.totalDelegations.valueAfter.value)).lte(0)) {
       delegator.exitEra = currentEra + 1;
     } else {
       const prevExitEra = delegator.exitEra;

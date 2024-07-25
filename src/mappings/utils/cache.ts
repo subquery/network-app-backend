@@ -1,5 +1,6 @@
 import { Cache } from '../../types';
 import { BigNumber } from '@ethersproject/bignumber';
+import {cleanInputBigIntValue} from "./helpers";
 
 export enum CacheKey {
   Era = 'era',
@@ -85,5 +86,5 @@ export async function cacheGetBigNumber(
   key: CacheKey
 ): Promise<BigNumber | undefined> {
   const cached = await Cache.get(key.toString());
-  return cached ? BigNumber.from(cached.value) : undefined;
+  return cached ? BigNumber.from(cleanInputBigIntValue(cached.value)) : undefined;
 }
