@@ -202,7 +202,7 @@ export async function handleRewardsClaimed(
   await UnclaimedReward.remove(id);
 
   await Reward.create({
-    id: `${id}:${event.transactionHash}`,
+    id: `${id}:${event.transactionHash}:${event.logIndex}`,
     indexerAddress: event.args.runner,
     delegatorAddress: event.args.delegator,
     delegatorId: event.args.delegator,

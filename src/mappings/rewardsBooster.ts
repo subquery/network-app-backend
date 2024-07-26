@@ -78,7 +78,7 @@ export async function handleDeploymentBoosterAdded(
   }
   assert(project, `Project ${deployment.projectId} not found`);
 
-  const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
+  const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}:${event.logIndex}`;
 
   let booster = await DeploymentBooster.get(boosterId);
   assert(!booster, 'Booster already exists');
@@ -131,7 +131,7 @@ export async function handleDeploymentBoosterRemoved(
   const project = await Project.get(deployment.projectId);
   assert(project, `Project ${deployment.projectId} not found`);
 
-  const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}`;
+  const boosterId = `${deploymentId}:${consumer}:${event.transactionHash}:${event.logIndex}`;
   let booster = await DeploymentBooster.get(boosterId);
   assert(!booster, 'Booster already exists');
 
@@ -177,7 +177,7 @@ export async function handleMissedLabor(
   const { runner: indexerId, labor } = event.args;
   const deploymentId = bytesToIpfsCid(event.args.deploymentId);
 
-  const missedLaborId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+  const missedLaborId = `${deploymentId}:${indexerId}:${event.transactionHash}:${event.logIndex}`;
   let missedLabor = await IndexerMissedLabor.get(missedLaborId);
   assert(!missedLabor, 'Missed labor already exists');
 
@@ -206,7 +206,7 @@ export async function handleAllocationRewardsGiven(
   const project = await Project.get(deployment.projectId);
   assert(project, `Project ${deployment.projectId} not found`);
 
-  const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+  const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}:${event.logIndex}`;
   let allocationReward = await IndexerAllocationReward.get(rewardId);
   assert(!allocationReward, 'Allocation reward already exists');
 
@@ -287,7 +287,7 @@ export async function handleAllocationRewardsBurnt(
   const project = await Project.get(deployment.projectId);
   assert(project, `Project ${deployment.projectId} not found`);
 
-  const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}`;
+  const rewardId = `${deploymentId}:${indexerId}:${event.transactionHash}:${event.logIndex}`;
   let allocationReward = await IndexerAllocationReward.get(rewardId);
   if (!allocationReward) {
     allocationReward = IndexerAllocationReward.create({
