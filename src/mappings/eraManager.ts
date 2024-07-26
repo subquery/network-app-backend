@@ -19,6 +19,13 @@ export async function handleNewEra(
 
   await cacheSet(CacheKey.Era, id.toString());
 
+  const network = await api.getNetwork();
+  const eraManager = EraManager__factory.connect(
+    getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
+    api
+  );
+  const eraPeriod = await eraManager.eraPeriod();
+
   if (id.gt(1)) {
     const previousId = id.sub(1);
     const previousEra = await Era.get(previousId.toHexString());
@@ -27,13 +34,6 @@ export async function handleNewEra(
       previousEra.lastEvent = `handleNewEra:${event.blockNumber}`;
       await previousEra.save();
     } else {
-      const network = await api.getNetwork();
-      const eraManager = EraManager__factory.connect(
-        getContractAddress(network.chainId, Contracts.ERA_MANAGER_ADDRESS),
-        api
-      );
-      const eraPeriod = await eraManager.eraPeriod();
-
       const a = biToDate(event.block.timestamp);
       const startTime = new Date(
         a.getTime() - eraPeriod.toNumber() * 1000 // eraPeriod: seconds unit
@@ -45,6 +45,7 @@ export async function handleNewEra(
         endTime: biToDate(event.block.timestamp),
         forceNext: true,
         createdBlock: event.blockNumber,
+        eraPeriod: (eraPeriod.toNumber() * 1000).toString(),
       });
       await previousEra.save();
     }
@@ -55,6 +56,7 @@ export async function handleNewEra(
     startTime: biToDate(event.block.timestamp),
     forceNext: false,
     createdBlock: event.blockNumber,
+    eraPeriod: (eraPeriod.toNumber() * 1000).toString(),
   });
 
   await era.save();

@@ -421,7 +421,7 @@ export async function handleWithdrawRequested(
   if (getWithdrawalType(_type) === WithdrawalType.MERGE) {
     const deleteRecord = await Withdrawl.get(id);
     assert(deleteRecord, `withdrawl record: ${id} not exist`);
-    deleteRecord.id = `${deleteRecord.id}:${event.transactionHash}`;
+    deleteRecord.id = `${deleteRecord.id}:${event.transactionHash}:${event.logIndex}`;
     deleteRecord.status = CANCELLED;
     deleteRecord.lastEvent = `handleWithdrawRequested: unbondReq merged to new one ${event.blockNumber}`;
     await deleteRecord.save();
@@ -485,7 +485,7 @@ export async function handleWithdrawCancelled(
   const withdrawl = await Withdrawl.get(id);
   assert(withdrawl, `withdrawal record: ${id} not exist`);
   const deleteRecord = withdrawl;
-  deleteRecord.id = `${withdrawl.id}:${event.transactionHash}`;
+  deleteRecord.id = `${withdrawl.id}:${event.transactionHash}:${event.logIndex}`;
   deleteRecord.status = CANCELLED;
   deleteRecord.lastEvent = `handleWithdrawCancelled:${event.blockNumber}`;
   await deleteRecord.save();

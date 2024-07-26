@@ -16,12 +16,10 @@ schema:
   file: ./schema.graphql
 network:
   chainId: '8453' # base
-  endpoint: https://mainnet.base.org
   dictionary: ''
 x-ethereum: &ethereum
   kind: ethereum/Runtime
   startBlock: 10512216
-
   assets:
     eraManager:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/EraManager.sol/EraManager.json

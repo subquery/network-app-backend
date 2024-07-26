@@ -53,6 +53,7 @@ import {
   addOrUpdateEraDeploymentRewards,
   addOrUpdateIndexerEraDeploymentRewards,
 } from './rewardsPool';
+import pino from 'pino';
 
 function buildRewardId(indexer: string, delegator: string): string {
   return `${indexer}:${delegator}`;
@@ -201,7 +202,7 @@ export async function handleRewardsClaimed(
   await UnclaimedReward.remove(id);
 
   await Reward.create({
-    id: `${id}:${event.transactionHash}`,
+    id: `${id}:${event.transactionHash}:${event.logIndex}`,
     indexerAddress: event.args.runner,
     delegatorAddress: event.args.delegator,
     delegatorId: event.args.delegator,
@@ -423,8 +424,14 @@ export async function upsertEraIndexerDeploymentApy(
   updateAt: Date
 ) {
   const apyId = `${indexerId}:${deploymentId}:${eraIdx}`;
+  const eraInfo = await Era.get(BigNumber.from(eraIdx).toHexString());
+  const period = eraInfo?.eraPeriod || '0';
   let apy = await EraIndexerDeploymentApy.get(apyId);
+
   if (!apy) {
+    const currentAllocation =
+      (await IndexerAllocationSummary.get(`${deploymentId}:${indexerId}`))
+        ?.totalAmount || BigInt(0);
     apy = EraIndexerDeploymentApy.create({
       id: apyId,
       indexerId,
@@ -436,8 +443,15 @@ export async function upsertEraIndexerDeploymentApy(
       apy: BigInt(0),
       createAt: updateAt,
       updateAt: updateAt,
+
+      apyCalcAllocation: currentAllocation,
+      apyCalcAdded: BigInt(0),
+      apyCalcRemoval: BigInt(0),
+      apyCalcAllocationRecordAt: eraInfo?.startTime || updateAt, // era start must be exist.
+      apyCalcHistory: '',
     });
   }
+
   switch (rewardType) {
     case RewardType.AGREEMENT:
       apy.agreementReward += add - remove;
@@ -447,10 +461,32 @@ export async function upsertEraIndexerDeploymentApy(
       break;
     case RewardType.ALLOCATION: {
       apy.allocationReward += add - remove;
-      const allocation =
-        (await IndexerAllocationSummary.get(`${deploymentId}:${indexerId}`))
-          ?.totalAmount || BigInt(0);
-      apy.apy = calcApy(apy.allocationReward, allocation);
+
+      const removal = BignumberJs(apy.apyCalcRemoval.toString());
+      const added = BignumberJs(apy.apyCalcAdded.toString());
+
+      const percentage = BignumberJs(1).minus(
+        BignumberJs(+apy.apyCalcAllocationRecordAt)
+          .minus(+(eraInfo?.startTime || 0))
+          .div(period)
+      );
+      if (!removal.isZero()) {
+        apy.apyCalcAllocation -= BigInt(
+          removal.multipliedBy(percentage).toFixed(0)
+        );
+
+        apy.apyCalcRemoval = BigInt(0);
+      }
+
+      if (!added.isZero()) {
+        apy.apyCalcAllocation += BigInt(
+          added.multipliedBy(percentage).toFixed(0)
+        );
+
+        apy.apyCalcAdded = BigInt(0);
+      }
+
+      apy.apy = calcApy(apy.allocationReward, apy.apyCalcAllocation);
       break;
     }
   }

@@ -97,6 +97,7 @@ type Era @entity {
   forceNext: Boolean # True when force save previous Era
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
+  eraPeriod: String
 }
 
 # Necessary without https://github.com/subquery/subql/issues/442
@@ -701,6 +702,11 @@ type EraIndexerDeploymentApy @entity {
   flexPlanReward: BigInt!
   allocationReward: BigInt!
   apy: BigInt!
+  apyCalcAllocation: BigInt!
+  apyCalcRemoval: BigInt!
+  apyCalcAdded: BigInt!
+  apyCalcAllocationRecordAt: Date!
+  apyCalcHistory: String!
   createAt: Date!
   updateAt: Date!
 }

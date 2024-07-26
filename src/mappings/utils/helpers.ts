@@ -140,7 +140,7 @@ export async function reportException(
   error: string,
   event: EthereumLog<any>
 ): Promise<void> {
-  const id = `${event.blockNumber}:${event.transactionHash}`;
+  const id = `${event.blockNumber}:${event.transactionHash}:${event.logIndex}`;
 
   const exception = Exception.create({
     id,
