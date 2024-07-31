@@ -48,14 +48,11 @@ declare global {
   }
 }
 
-BigInt.prototype.toJSON = function (): string {
-  return BigNumber.from(this).toHexString();
-};
 
 BigInt.prototype.toJSONType = function () {
   return {
     type: 'bigint',
-    value: this.toJSON(),
+    value: BigNumber.from(this).toHexString(),
   };
 };
 

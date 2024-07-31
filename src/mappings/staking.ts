@@ -335,7 +335,7 @@ async function fillUpEraIndexerDelegator(
       latestEraIndexerD = EraIndexerDelegator.create({
         ...indexerD,
         id: `${indexerD.indexer}:${BigNumber.from(latestEra).toHexString()}`,
-        delegators: JSON.parse(JSON.stringify(indexerD.delegators)),
+        delegators: indexerD.delegators,
       });
       await latestEraIndexerD.save();
     } else {
@@ -352,14 +352,14 @@ async function fillUpEraIndexerDelegator(
       ...latestEraIndexerD,
       era: i,
       id: `${indexerD.indexer}:${BigNumber.from(i).toHexString()}`,
-      delegators: JSON.parse(JSON.stringify(latestEraIndexerD.delegators)),
+      delegators: latestEraIndexerD.delegators,
     }).save();
   }
 
   await EraIndexerDelegator.create({
     ...indexerD,
     id: `${indexerD.indexer}:${BigNumber.from(indexerD.era).toHexString()}`,
-    delegators: JSON.parse(JSON.stringify(indexerD.delegators)),
+    delegators: indexerD.delegators,
   }).save();
 }
 
@@ -377,7 +377,7 @@ async function fillUpEraDelegatorIndexer(
         id: `${delegatorD.delegator}:${BigNumber.from(
           latestEra
         ).toHexString()}`,
-        indexers: JSON.parse(JSON.stringify(delegatorD.indexers)),
+        indexers: delegatorD.indexers,
       });
       await latestEraDelegatorD.save();
     } else {
@@ -394,7 +394,7 @@ async function fillUpEraDelegatorIndexer(
       ...latestEraDelegatorD,
       era: i,
       id: `${delegatorD.delegator}:${BigNumber.from(i).toHexString()}`,
-      indexers: JSON.parse(JSON.stringify(latestEraDelegatorD.indexers)),
+      indexers: latestEraDelegatorD.indexers,
     }).save();
   }
 
@@ -403,7 +403,7 @@ async function fillUpEraDelegatorIndexer(
     id: `${delegatorD.delegator}:${BigNumber.from(
       delegatorD.era
     ).toHexString()}`,
-    indexers: JSON.parse(JSON.stringify(delegatorD.indexers)),
+    indexers: delegatorD.indexers,
   }).save();
 }
 
