@@ -3,6 +3,7 @@ enum ProjectType {
   RPC
   SQ_DICT
   SUBGRAPH
+  LLM
 }
 
 enum OrderType {
