@@ -130,7 +130,8 @@ type Indexer @entity {
   delegations: [Delegation] @derivedFrom(field: "indexer")
   rewards: [IndexerReward] @derivedFrom(field: "indexer")
 
-  lastRewardedEra: String # hex encoding
+  lastClaimEra: String
+  lastSettledEra: String
   active: Boolean! # @index
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber

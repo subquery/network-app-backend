@@ -318,6 +318,11 @@ dataSources:
           filter:
             topics:
               - RunnerWeightApplied(address indexed runner, uint256 weight)
+        - handler: handleSettledEraUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - SettledEraUpdated(address indexed runner, uint256 era)
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket

@@ -1,9 +1,12 @@
 import assert from 'assert';
 import { EthereumLog } from '@subql/types-ethereum';
-import { IndexerStakeWeight } from '../types';
+import { Indexer, IndexerStakeWeight } from '../types';
 import { biToDate } from './utils';
 import { getCurrentEra } from './eraManager';
-import { RunnerWeightAppliedEvent } from '@subql/contract-sdk/typechain/contracts/RewardsStaking';
+import {
+  RunnerWeightAppliedEvent,
+  SettledEraUpdatedEvent,
+} from '@subql/contract-sdk/typechain/contracts/RewardsStaking';
 
 export async function handleRunnerWeightApplied(
   event: EthereumLog<RunnerWeightAppliedEvent['args']>
@@ -29,4 +32,21 @@ export async function handleRunnerWeightApplied(
   indexerStakeWeight.weight = weight.toBigInt();
   indexerStakeWeight.updateAt = biToDate(event.block.timestamp);
   await indexerStakeWeight.save();
+}
+
+export async function handleSettledEraUpdated(
+  event: EthereumLog<SettledEraUpdatedEvent['args']>
+) {
+  logger.info(`handleSettledEraUpdated`);
+  assert(event.args, 'No event args');
+
+  const { runner, era } = event.args;
+
+  const existIndexer = await Indexer.get(runner);
+  if (!existIndexer) {
+    throw new Error(`Indexer ${runner} not found`);
+  }
+
+  existIndexer.lastSettledEra = era.toString();
+  await existIndexer.save();
 }

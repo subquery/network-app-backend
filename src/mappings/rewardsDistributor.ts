@@ -19,6 +19,7 @@ import {
   IndexerAllocationSummary,
   IndexerApySummary,
   IndexerStakeWeight,
+  Indexer,
 } from '../types';
 import {
   EraManager__factory,
@@ -180,15 +181,12 @@ export async function handleRewardsDistributed(
     });
     await upsertEraApy(eraReward);
   }
-}
 
-function getEraDelegationAmount(
-  delegation: Delegation,
-  eraIdx: BigNumber
-): BigNumber {
-  const value = BigNumber.from(delegation.amount.value.value);
-  const valueAfter = BigNumber.from(delegation.amount.valueAfter.value);
-  return eraIdx.gt(delegation.amount.era) ? valueAfter : value;
+  const existIndexer = await Indexer.get(runner);
+  if (existIndexer) {
+    existIndexer.lastClaimEra = eraIdx.toString();
+    await existIndexer.save();
+  }
 }
 
 export async function handleRewardsClaimed(
