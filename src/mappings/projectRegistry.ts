@@ -26,6 +26,7 @@ const projectTypes: Record<number, ProjectType> = {
   1: ProjectType.RPC,
   2: ProjectType.SQ_DICT,
   3: ProjectType.SUBGRAPH,
+  4: ProjectType.LLM,
 };
 
 const serviceStatus: Record<number, ServiceStatus> = {
