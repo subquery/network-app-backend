@@ -593,3 +593,17 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
+  # this have been deprecated. the new contract will not use it.
+  # keep it to collect historical data.
+  - <<: *ethereum
+    options:
+      abi: rewardsPool
+      address: '0x15b64D7036667695Ee68D6619CEb162aEaFAdbA6'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRewardsPoolCollect
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Collect(bytes32 deploymentId, address runner, uint256 era, uint256 amount)
