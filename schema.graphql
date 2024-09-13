@@ -750,6 +750,7 @@ type EraDeploymentRewards @entity {
   eraIdx: Int!
   totalRewards: BigInt!
   allocationRewards: BigInt!
+  queryRewards: BigInt!
 }
 
 type IndexerEraDeploymentRewards @entity {

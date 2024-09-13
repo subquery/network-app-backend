@@ -6,17 +6,22 @@ import {
   ChannelExtendEvent,
   ChannelFinalizeEvent,
   ChannelFundEvent,
+  ChannelLabor2Event,
   ChannelOpenEvent,
   ChannelTerminateEvent,
 } from '@subql/contract-sdk/typechain/contracts/StateChannel';
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
-import { logger, utils } from 'ethers';
+import { BigNumber, logger, utils } from 'ethers';
 import { ChannelStatus, Deployment, Project, StateChannel } from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
 import { getCurrentEra } from './eraManager';
+import {
+  addOrUpdateEraDeploymentRewards,
+  addOrUpdateIndexerEraDeploymentRewards,
+} from './rewardsPool';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -76,10 +81,12 @@ export async function handleChannelExtend(
   logger.info('handleChannelExtend');
   assert(event.args, 'No event args');
 
-  const { channelId, expiredAt } = event.args;
+  const { channelId, expiredAt, price } = event.args;
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `Expected StateChannel (${channelId.toHexString()}) to exist`);
   sc.expiredAt = new Date(expiredAt.toNumber() * 1000);
+  sc.price = price.toBigInt();
+  sc.lastEvent = `handleChannelExtend:${event.blockNumber}`;
   await sc.save();
 }
 
@@ -183,4 +190,28 @@ export async function handleChannelFinalize(
     project.totalReward += diff;
     await project.save();
   }
+}
+
+// channelLabor deprecated, only 2.
+export async function handlerChannelLabor2(
+  event: EthereumLog<ChannelLabor2Event['args']>
+): Promise<void> {
+  logger.info('handleRewardsPoolCollect');
+  assert(event.args, 'No event args');
+  const currentEra = await getCurrentEra();
+  const { deploymentId, indexer: runner, amount } = event.args;
+  await addOrUpdateEraDeploymentRewards(
+    bytesToIpfsCid(deploymentId),
+    currentEra,
+    amount.toBigInt(),
+    BigNumber.from(0).toBigInt()
+  );
+
+  await addOrUpdateIndexerEraDeploymentRewards(
+    runner,
+    bytesToIpfsCid(deploymentId),
+    currentEra,
+    amount.toBigInt(),
+    BigNumber.from(0).toBigInt()
+  );
 }

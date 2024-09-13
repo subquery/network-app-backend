@@ -366,7 +366,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ChannelExtend(uint256 channelId, uint256 expiredAt)
+              - ChannelExtend(uint256 channelId, uint256 expiredAt, uint256 price)
         - handler: handleChannelFund
           kind: ethereum/LogHandler
           filter:
@@ -392,6 +392,11 @@ dataSources:
           filter:
             topics:
               - Parameter(string name, bytes value)
+        - handler: handlerChannelLabor2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ChannelLabor2(uint256 indexed channelId, bytes32 deploymentId, address indexer, uint256 amount)
   - <<: *ethereum
     options:
       abi: disputeManager
@@ -588,15 +593,3 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
-  - <<: *ethereum
-    options:
-      abi: rewardsPool
-      address: '0x15b64D7036667695Ee68D6619CEb162aEaFAdbA6'
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleRewardsPoolCollect
-          kind: ethereum/LogHandler
-          filter:
-            topics:
-              - Collect(bytes32 deploymentId, address runner, uint256 era, uint256 amount)
