@@ -20,6 +20,9 @@ export async function addOrUpdateEraDeploymentRewards(
   if (existingEraDeploymentRewards) {
     existingEraDeploymentRewards.totalRewards += totalRewards;
     existingEraDeploymentRewards.allocationRewards += allocationRewards;
+    existingEraDeploymentRewards.queryRewards =
+      existingEraDeploymentRewards.totalRewards -
+      existingEraDeploymentRewards.allocationRewards;
     await existingEraDeploymentRewards.save();
     return;
   }
@@ -30,6 +33,7 @@ export async function addOrUpdateEraDeploymentRewards(
     eraIdx,
     totalRewards,
     allocationRewards,
+    queryRewards: totalRewards - allocationRewards,
   });
   await eraDeploymentRewards.save();
 }
@@ -71,6 +75,7 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   await eraDeploymentRewards.save();
 }
 
+// this function have deprecated, keep it to collect historical data.
 export async function handleRewardsPoolCollect(
   event: EthereumLog<CollectEvent['args']>
 ): Promise<void> {

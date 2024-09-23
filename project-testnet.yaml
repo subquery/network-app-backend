@@ -318,6 +318,11 @@ dataSources:
           filter:
             topics:
               - RunnerWeightApplied(address indexed runner, uint256 weight)
+        - handler: handleSettledEraUpdated
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - SettledEraUpdated(address indexed runner, uint256 era)
   - <<: *ethereum
     options:
       abi: purchaseOfferMarket
@@ -361,7 +366,7 @@ dataSources:
           kind: ethereum/LogHandler
           filter:
             topics:
-              - ChannelExtend(uint256 channelId, uint256 expiredAt)
+              - ChannelExtend(uint256 channelId, uint256 expiredAt, uint256 price)
         - handler: handleChannelFund
           kind: ethereum/LogHandler
           filter:
@@ -387,6 +392,11 @@ dataSources:
           filter:
             topics:
               - Parameter(string name, bytes value)
+        - handler: handlerChannelLabor2
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - ChannelLabor2(uint256 indexed channelId, bytes32 deploymentId, address indexer, uint256 amount)
   - <<: *ethereum
     options:
       abi: disputeManager
@@ -583,6 +593,8 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
+  # this have been deprecated. the new contract will not use it.
+  # keep it to collect historical data.
   - <<: *ethereum
     options:
       abi: rewardsPool
