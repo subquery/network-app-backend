@@ -1,4 +1,4 @@
-import { Cache } from '../../types';
+import { Cache, ProjectType } from '../../types';
 import { BigNumber } from '@ethersproject/bignumber';
 
 export enum CacheKey {
@@ -63,27 +63,38 @@ export const CacheKeyToParamType = {
   [CacheKey.BoosterQueryRewardRate]: 'uint256',
 };
 
-export async function cacheSet(key: CacheKey, value: string) {
+export const BoosterQueryRewardRateKeys = {
+  [ProjectType.SUBQUERY]:
+    CacheKey.BoosterQueryRewardRate + ProjectType.SUBQUERY,
+  [ProjectType.RPC]: CacheKey.BoosterQueryRewardRate + ProjectType.RPC,
+  [ProjectType.SQ_DICT]: CacheKey.BoosterQueryRewardRate + ProjectType.SQ_DICT,
+  [ProjectType.SUBGRAPH]:
+    CacheKey.BoosterQueryRewardRate + ProjectType.SUBGRAPH,
+};
+
+export async function cacheSet(key: string, value: string) {
   await Cache.create({
     id: key.toString(),
     value: value,
   }).save();
 }
 
-export async function cacheGet(key: CacheKey): Promise<string | undefined> {
+export async function cacheGet(key: string): Promise<string | undefined> {
   return (await Cache.get(key.toString()))?.value;
 }
 
-export async function cacheGetNumber(
-  key: CacheKey
-): Promise<number | undefined> {
+export async function cacheGetNumber(key: string): Promise<number | undefined> {
   const cached = await Cache.get(key.toString());
   return cached ? Number(cached.value) : undefined;
 }
 
 export async function cacheGetBigNumber(
-  key: CacheKey
+  key: string
 ): Promise<BigNumber | undefined> {
   const cached = await Cache.get(key.toString());
   return cached ? BigNumber.from(cached.value) : undefined;
+}
+
+export async function cacheRemove(key: string) {
+  await Cache.remove(key.toString());
 }
