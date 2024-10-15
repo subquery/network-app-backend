@@ -2,14 +2,12 @@ import { ParameterEvent } from '@subql/contract-sdk/typechain/contracts/Airdropp
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import {
-  BoosterQueryRewardRateKeys,
   CacheKey,
   CacheKeyToParamType,
   cacheRemove,
   cacheSet,
 } from './utils/cache';
 import { defaultAbiCoder } from '@ethersproject/abi';
-import { ProjectType } from '../types';
 
 export async function handleParameterEvent(
   event: EthereumLog<ParameterEvent['args']>
@@ -25,55 +23,47 @@ export async function handleParameterEvent(
       break;
     }
     default: {
-      await defaultHandler(name, value);
+      await defaultHandler(name as CacheKey, value);
       break;
     }
   }
 }
 
 async function boostQueryRewardRateHandler(value: string) {
-  if (value.startsWith('0x')) {
-    value = value.slice(2);
-  }
-  if (value.length <= 64) {
+  if (value.length <= 66) {
     return await cacheSet(CacheKey.BoosterQueryRewardRate, value);
   }
   await cacheRemove(CacheKey.BoosterQueryRewardRate);
-  const [enumValue, uint256Value] = splitEnumAndUint256(value);
-  let cacheKey = '';
-  switch (enumValue) {
+  const [enumValue, uint256Value] = defaultAbiCoder.decode(
+    ['uinit8', 'uint256'],
+    value
+  );
+  let cacheKey: CacheKey;
+  switch (enumValue.toNumber()) {
     case 0:
-      cacheKey = BoosterQueryRewardRateKeys[ProjectType.SUBQUERY];
+      cacheKey = CacheKey.BoosterQueryRewardRateSubquery;
       break;
     case 1:
-      cacheKey = BoosterQueryRewardRateKeys[ProjectType.RPC];
+      cacheKey = CacheKey.BoosterQueryRewardRateRpc;
       break;
     case 2:
-      cacheKey = BoosterQueryRewardRateKeys[ProjectType.SQ_DICT];
+      cacheKey = CacheKey.BoosterQueryRewardRateSqDict;
       break;
     case 3:
-      cacheKey = BoosterQueryRewardRateKeys[ProjectType.SUBGRAPH];
+      cacheKey = CacheKey.BoosterQueryRewardRateSubgraph;
+      break;
+    case 4:
+      cacheKey = CacheKey.BoosterQueryRewardRateLlm;
       break;
     default:
+      logger.warn(`Unknown boostQueryRewardRate project type: ${enumValue}`);
       return;
   }
-  await cacheSet(cacheKey, uint256Value);
+  await cacheSet(cacheKey, uint256Value.toString());
 }
 
-function splitEnumAndUint256(value: string): [number, string] {
-  if (value.startsWith('0x')) {
-    value = value.slice(2);
-  }
-  const enumValue = parseInt(value.slice(0, 2), 16);
-  const uint256Value = value.slice(2);
-  return [
-    enumValue,
-    defaultAbiCoder.decode(['uint256'], `0x${uint256Value}`).toString(),
-  ];
-}
-
-async function defaultHandler(name: string, value: string) {
-  const paramType = CacheKeyToParamType[name as CacheKey] || 'string';
-  const cacheValue = defaultAbiCoder.decode([paramType], value);
+async function defaultHandler(name: CacheKey, value: string) {
+  const paramType = CacheKeyToParamType[name] || 'string';
+  const cacheValue = defaultAbiCoder.decode([paramType], value)[0];
   await cacheSet(name, cacheValue.toString());
 }
