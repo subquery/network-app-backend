@@ -8,6 +8,7 @@ import {
   cacheSet,
 } from './utils/cache';
 import { defaultAbiCoder } from '@ethersproject/abi';
+import { hexZeroPad } from 'ethers/lib/utils';
 
 export async function handleParameterEvent(
   event: EthereumLog<ParameterEvent['args']>
@@ -30,16 +31,17 @@ export async function handleParameterEvent(
 }
 
 async function boostQueryRewardRateHandler(value: string) {
+  logger.info(`boostQueryRewardRateHandler: ${value}`);
   if (value.length <= 66) {
     return await cacheSet(CacheKey.BoosterQueryRewardRate, value);
   }
   await cacheRemove(CacheKey.BoosterQueryRewardRate);
   const [enumValue, uint256Value] = defaultAbiCoder.decode(
-    ['uinit8', 'uint256'],
-    value
+    ['uint8', 'uint256'],
+    hexZeroPad(value, 64)
   );
   let cacheKey: CacheKey;
-  switch (enumValue.toNumber()) {
+  switch (+enumValue.toString()) {
     case 0:
       cacheKey = CacheKey.BoosterQueryRewardRateSubquery;
       break;
