@@ -1,4 +1,4 @@
-import { Cache } from '../../types';
+import { Cache, ProjectType } from '../../types';
 import { BigNumber } from '@ethersproject/bignumber';
 
 export enum CacheKey {
@@ -29,6 +29,7 @@ export enum CacheKey {
   TerminateExpiration = 'terminateExpiration',
   EraPeriod = 'eraPeriod',
   Maintenance = 'maintenance',
+  // BoosterQueryRewardRate for each ProjectType
   BoosterQueryRewardRate = 'boosterQueryRewardRate',
   BoosterQueryRewardRateSubquery = 'boosterQueryRewardRateSubquery',
   BoosterQueryRewardRateRpc = 'boosterQueryRewardRateRpc',
