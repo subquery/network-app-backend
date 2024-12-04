@@ -336,14 +336,33 @@ async function upsertEraIndexerApy(eraReward: EraReward) {
   eraIndexerApy.updateAt = eraReward.createdTimestamp;
   await eraIndexerApy.save();
 
+  const past3EraRecords = await EraIndexerApy.getByFields(
+    [['indexerId', '=', eraReward.indexerId]],
+    { orderBy: 'eraIdx', limit: 3, offset: 0 }
+  );
+
+  const past3EraIndexerApy = past3EraRecords
+    .reduce(
+      (add, cur) => BignumberJs(cur.indexerApy.toString()).plus(add),
+      BignumberJs(0)
+    )
+    .div(3);
+
+  const past3EraDelegatorApy = past3EraRecords
+    .reduce(
+      (add, cur) => BignumberJs(cur.delegatorApy.toString()).plus(add),
+      BignumberJs(0)
+    )
+    .div(3);
+
   await IndexerApySummary.create({
     id: `${eraReward.indexerId}`,
     indexerId: eraIndexerApy.indexerId,
     eraIdx: eraIndexerApy.eraIdx,
     indexerReward: eraIndexerApy.indexerReward,
-    indexerApy: eraIndexerApy.indexerApy,
+    indexerApy: BigInt(past3EraIndexerApy.toFixed(0)),
     delegatorReward: eraIndexerApy.delegatorReward,
-    delegatorApy: eraIndexerApy.delegatorApy,
+    delegatorApy: BigInt(past3EraDelegatorApy.toFixed(0)),
     createAt: eraIndexerApy.createAt,
     updateAt: eraIndexerApy.updateAt,
   }).save();
