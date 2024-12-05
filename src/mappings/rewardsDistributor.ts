@@ -338,22 +338,23 @@ async function upsertEraIndexerApy(eraReward: EraReward) {
 
   const past3EraRecords = await EraIndexerApy.getByFields(
     [['indexerId', '=', eraReward.indexerId]],
-    { orderBy: 'eraIdx', limit: 3, offset: 0 }
+    { orderBy: 'eraIdx', limit: 3, offset: 0, orderDirection: 'DESC' }
   );
-
+  logger.info('past3EraRecords', past3EraRecords);
+  const countOfPast3EraRecords = past3EraRecords.length;
   const past3EraIndexerApy = past3EraRecords
     .reduce(
       (add, cur) => BignumberJs(cur.indexerApy.toString()).plus(add),
       BignumberJs(0)
     )
-    .div(3);
+    .div(countOfPast3EraRecords || 1);
 
   const past3EraDelegatorApy = past3EraRecords
     .reduce(
       (add, cur) => BignumberJs(cur.delegatorApy.toString()).plus(add),
       BignumberJs(0)
     )
-    .div(3);
+    .div(countOfPast3EraRecords || 1);
 
   await IndexerApySummary.create({
     id: `${eraReward.indexerId}`,
