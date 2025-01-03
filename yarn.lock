@@ -2589,10 +2589,10 @@
     semver "^7.6.3"
     update-notifier "^5.1.0"
 
-"@subql/contract-sdk@^1.4.1-0":
-  version "1.4.1-0"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.4.1-0.tgz#8728a9a4000f6dd051c2a94c00bdcc3b886ab44d"
-  integrity sha512-0FR7GuyL8t/wx7WUayqUkIByidMmbNLXR4ZBQ0Z7Fu5HOwqdKm/4akItsuafmH5dzcM+trRG96jUYWYhHIddgA==
+"@subql/contract-sdk@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-1.5.0.tgz#bca32ab92b32cef8a0c37bf0c5b550661542c614"
+  integrity sha512-x4bVew9GNJpmmOf2hYirgivanDPscSnRRvBMZ2v09kk9oixLzYRM5vn/Bg64u6PIu9/QEVS659GT136IKMXRDA==
 
 "@subql/types-algorand@3.3.0":
   version "3.3.0"
