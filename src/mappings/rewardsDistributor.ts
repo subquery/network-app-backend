@@ -668,7 +668,7 @@ export async function handleAgreementRewards(
     // otherwise can use same process as the agreement has more than 1 era
   }
 
-  await saveDatas();
+  await saveDatas(agreementFirstEraAmount);
   // minus first rate and then less than 1 indicates this agreement only have two era
   if (agreementLastEraNumbers.minus(agreementFirstEraRate).lte(1)) {
     const eraId = BigNumber.from(currentEra + 1);
