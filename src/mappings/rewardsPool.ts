@@ -9,7 +9,9 @@ export async function addOrUpdateEraDeploymentRewards(
   deploymentId: string,
   eraIdx: number,
   totalRewards: bigint,
-  allocationRewards: bigint
+  allocationRewards: bigint,
+  eventLog: string = '',
+  overrideTotalRewards?: boolean // it's for rewardsPool collect query rewards, if set be true, totalRewards will be override to totalRewards, not
 ): Promise<void> {
   logger.info('addOrUpdateEraDeploymentRewards');
   assert(deploymentId, 'No deploymentId');
@@ -18,11 +20,16 @@ export async function addOrUpdateEraDeploymentRewards(
   const id = `${deploymentId}:${eraIdx}`;
   const existingEraDeploymentRewards = await EraDeploymentRewards.get(id);
   if (existingEraDeploymentRewards) {
-    existingEraDeploymentRewards.totalRewards += totalRewards;
+    if (overrideTotalRewards) {
+      existingEraDeploymentRewards.totalRewards = totalRewards;
+    } else {
+      existingEraDeploymentRewards.totalRewards += totalRewards;
+    }
     existingEraDeploymentRewards.allocationRewards += allocationRewards;
     existingEraDeploymentRewards.queryRewards =
       existingEraDeploymentRewards.totalRewards -
       existingEraDeploymentRewards.allocationRewards;
+    existingEraDeploymentRewards.changesHeight = `${existingEraDeploymentRewards.changesHeight},${eventLog}`;
     await existingEraDeploymentRewards.save();
     return;
   }
@@ -34,6 +41,7 @@ export async function addOrUpdateEraDeploymentRewards(
     totalRewards,
     allocationRewards,
     queryRewards: totalRewards - allocationRewards,
+    changesHeight: eventLog,
   });
   await eraDeploymentRewards.save();
 }
@@ -43,7 +51,10 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   deploymentId: string,
   eraIdx: number,
   totalRewards: bigint,
-  allocationRewards: bigint
+  allocationRewards: bigint,
+  eventLog: string = '',
+
+  overrideTotalRewards?: boolean // it's for rewardsPool collect query rewards, if set be true, totalRewards will be override to totalRewards, not
 ) {
   logger.info('addOrUpdateIndexerEraDeploymentRewards');
   assert(deploymentId, 'No deploymentId');
@@ -54,11 +65,16 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   const existingIndexerEraDeploymentRewards =
     await IndexerEraDeploymentRewards.get(id);
   if (existingIndexerEraDeploymentRewards) {
-    existingIndexerEraDeploymentRewards.totalRewards += totalRewards;
+    if (overrideTotalRewards) {
+      existingIndexerEraDeploymentRewards.totalRewards = totalRewards;
+    } else {
+      existingIndexerEraDeploymentRewards.totalRewards += totalRewards;
+    }
     existingIndexerEraDeploymentRewards.allocationRewards += allocationRewards;
     existingIndexerEraDeploymentRewards.queryRewards =
       existingIndexerEraDeploymentRewards.totalRewards -
       existingIndexerEraDeploymentRewards.allocationRewards;
+    existingIndexerEraDeploymentRewards.changesHeight = `${existingIndexerEraDeploymentRewards.changesHeight},${eventLog}`;
     await existingIndexerEraDeploymentRewards.save();
     return;
   }
@@ -71,11 +87,12 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
     totalRewards,
     allocationRewards,
     queryRewards: totalRewards - allocationRewards,
+    changesHeight: eventLog,
   });
   await eraDeploymentRewards.save();
 }
 
-// this function have deprecated, keep it to collect historical data.
+// reward pool collect literally only trigger once per era
 export async function handleRewardsPoolCollect(
   event: EthereumLog<CollectEvent['args']>
 ): Promise<void> {
@@ -87,7 +104,9 @@ export async function handleRewardsPoolCollect(
     bytesToIpfsCid(deploymentId),
     era.toNumber(),
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    `rewardsPoolCollect:${event.blockNumber}`,
+    true
   );
 
   await addOrUpdateIndexerEraDeploymentRewards(
@@ -95,6 +114,8 @@ export async function handleRewardsPoolCollect(
     bytesToIpfsCid(deploymentId),
     era.toNumber(),
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    `rewardsPoolCollect:${event.blockNumber}`,
+    true
   );
 }

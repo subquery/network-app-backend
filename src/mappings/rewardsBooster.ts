@@ -217,7 +217,8 @@ export async function handleAllocationRewardsGiven(
     deploymentId,
     eraIdx,
     reward.toBigInt(),
-    reward.toBigInt()
+    reward.toBigInt(),
+    `allocationRewardsGiven:${event.blockNumber}`
   );
 
   await addOrUpdateIndexerEraDeploymentRewards(
@@ -225,7 +226,8 @@ export async function handleAllocationRewardsGiven(
     deploymentId,
     eraIdx,
     reward.toBigInt(),
-    reward.toBigInt()
+    reward.toBigInt(),
+    `allocationRewardsGiven:${event.blockNumber}`
   );
 
   allocationReward = IndexerAllocationReward.create({

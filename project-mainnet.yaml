@@ -389,11 +389,20 @@ dataSources:
           filter:
             topics:
               - Parameter(string name, bytes value)
+
+  - <<: *ethereum
+    options:
+      abi: stateChannel
+      address: '0x6797Df373589dF2AA37FA353c4254FD7834B751A'
+    mapping:
+      file: ./dist/index.js
+      handlers:
         - handler: handlerChannelLabor2
           kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelLabor2(uint256 indexed channelId, bytes32 deploymentId, address indexer, uint256 amount)
+
   - <<: *ethereum
     options:
       abi: disputeManager

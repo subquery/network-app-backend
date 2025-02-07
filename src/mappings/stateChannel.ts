@@ -13,7 +13,13 @@ import {
 import { EthereumLog } from '@subql/types-ethereum';
 import assert from 'assert';
 import { BigNumber, logger, utils } from 'ethers';
-import { ChannelStatus, Deployment, Project, StateChannel } from '../types';
+import {
+  ChannelStatus,
+  Deployment,
+  IndexerLaborHistory,
+  Project,
+  StateChannel,
+} from '../types';
 import { biToDate, bytesToIpfsCid } from './utils';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
@@ -192,7 +198,6 @@ export async function handleChannelFinalize(
   }
 }
 
-// channelLabor deprecated, only 2.
 export async function handlerChannelLabor2(
   event: EthereumLog<ChannelLabor2Event['args']>
 ): Promise<void> {
@@ -214,4 +219,26 @@ export async function handlerChannelLabor2(
     amount.toBigInt(),
     BigNumber.from(0).toBigInt()
   );
+
+  // labor
+  const id = `${runner}:${deploymentId}:${currentEra}`;
+
+  const exist = await IndexerLaborHistory.get(id);
+
+  if (exist) {
+    exist.amount += amount.toBigInt();
+    await exist.save();
+    return;
+  }
+
+  const labor = IndexerLaborHistory.create({
+    id,
+    indexerId: runner,
+    deploymentId: bytesToIpfsCid(deploymentId),
+    amount: amount.toBigInt(),
+    createAt: biToDate(event.block.timestamp),
+    eraIdx: currentEra,
+  });
+
+  await labor.save();
 }
