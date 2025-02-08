@@ -216,8 +216,9 @@ export async function handleAllocationRewardsGiven(
   await addOrUpdateEraDeploymentRewards(
     deploymentId,
     eraIdx,
+    BigNumber.from(0).toBigInt(),
     reward.toBigInt(),
-    reward.toBigInt(),
+    BigNumber.from(0).toBigInt(),
     `allocationRewardsGiven:${event.blockNumber}`
   );
 
@@ -225,8 +226,9 @@ export async function handleAllocationRewardsGiven(
     indexerId,
     deploymentId,
     eraIdx,
+    BigNumber.from(0).toBigInt(),
     reward.toBigInt(),
-    reward.toBigInt(),
+    BigNumber.from(0).toBigInt(),
     `allocationRewardsGiven:${event.blockNumber}`
   );
 
