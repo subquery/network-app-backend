@@ -751,7 +751,8 @@ type EraDeploymentRewards @entity {
   totalRewards: BigInt!
   allocationRewards: BigInt!
   queryRewards: BigInt!
-
+  agreementRewards: BigInt!
+  stateChannelRewards: BigInt!
   # this record may override by multiple data source, so save the changes height to debug.
   changesHeight: String # xxx:event,xxx:event,xxx
 }
@@ -764,7 +765,8 @@ type IndexerEraDeploymentRewards @entity {
   totalRewards: BigInt!
   allocationRewards: BigInt!
   queryRewards: BigInt!
-
+  agreementRewards: BigInt!
+  stateChannelRewards: BigInt!
   # this record may override by multiple data source, so save the changes height to debug.
   changesHeight: String # xxx:event,xxx:event,xxx
 }

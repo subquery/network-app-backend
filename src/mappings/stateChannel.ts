@@ -209,7 +209,9 @@ export async function handlerChannelLabor2(
     bytesToIpfsCid(deploymentId),
     currentEra,
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    BigNumber.from(0).toBigInt(),
+    `handleChannelLabor2:${event.blockNumber}`
   );
 
   await addOrUpdateIndexerEraDeploymentRewards(
@@ -217,7 +219,9 @@ export async function handlerChannelLabor2(
     bytesToIpfsCid(deploymentId),
     currentEra,
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    BigNumber.from(0).toBigInt(),
+    `handleChannelLabor2:${event.blockNumber}`
   );
 
   // labor
