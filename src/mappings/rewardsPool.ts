@@ -8,8 +8,11 @@ import { bytesToIpfsCid } from './utils';
 export async function addOrUpdateEraDeploymentRewards(
   deploymentId: string,
   eraIdx: number,
-  totalRewards: bigint,
-  allocationRewards: bigint
+  stateChannelRewards: bigint,
+  allocationRewards: bigint,
+  agreementRewards: bigint,
+  eventLog: string = '',
+  overrideStateChannelRewards?: boolean // it's for rewardsPool collect query rewards, if set be true, totalRewards will be override to totalRewards, not
 ): Promise<void> {
   logger.info('addOrUpdateEraDeploymentRewards');
   assert(deploymentId, 'No deploymentId');
@@ -18,14 +21,27 @@ export async function addOrUpdateEraDeploymentRewards(
   const id = `${deploymentId}:${eraIdx}`;
   const existingEraDeploymentRewards = await EraDeploymentRewards.get(id);
   if (existingEraDeploymentRewards) {
-    existingEraDeploymentRewards.totalRewards += totalRewards;
+    if (overrideStateChannelRewards) {
+      existingEraDeploymentRewards.stateChannelRewards = stateChannelRewards;
+    } else {
+      existingEraDeploymentRewards.stateChannelRewards += stateChannelRewards;
+    }
+    existingEraDeploymentRewards.agreementRewards += agreementRewards;
     existingEraDeploymentRewards.allocationRewards += allocationRewards;
+    existingEraDeploymentRewards.totalRewards =
+      existingEraDeploymentRewards.stateChannelRewards +
+      existingEraDeploymentRewards.agreementRewards +
+      existingEraDeploymentRewards.allocationRewards;
     existingEraDeploymentRewards.queryRewards =
       existingEraDeploymentRewards.totalRewards -
       existingEraDeploymentRewards.allocationRewards;
+    existingEraDeploymentRewards.changesHeight = `${existingEraDeploymentRewards.changesHeight},${eventLog}`;
     await existingEraDeploymentRewards.save();
     return;
   }
+
+  const totalRewards =
+    stateChannelRewards + allocationRewards + agreementRewards;
 
   const eraDeploymentRewards = EraDeploymentRewards.create({
     id,
@@ -33,7 +49,10 @@ export async function addOrUpdateEraDeploymentRewards(
     eraIdx,
     totalRewards,
     allocationRewards,
+    stateChannelRewards,
+    agreementRewards,
     queryRewards: totalRewards - allocationRewards,
+    changesHeight: eventLog,
   });
   await eraDeploymentRewards.save();
 }
@@ -42,8 +61,11 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   indexerId: string,
   deploymentId: string,
   eraIdx: number,
-  totalRewards: bigint,
-  allocationRewards: bigint
+  stateChannelRewards: bigint,
+  allocationRewards: bigint,
+  agreementRewards: bigint,
+  eventLog: string = '',
+  overrideStateChannel?: boolean // it's for rewardsPool collect query rewards, if set be true, totalRewards will be override to totalRewards, not
 ) {
   logger.info('addOrUpdateIndexerEraDeploymentRewards');
   assert(deploymentId, 'No deploymentId');
@@ -54,15 +76,29 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   const existingIndexerEraDeploymentRewards =
     await IndexerEraDeploymentRewards.get(id);
   if (existingIndexerEraDeploymentRewards) {
-    existingIndexerEraDeploymentRewards.totalRewards += totalRewards;
+    if (overrideStateChannel) {
+      existingIndexerEraDeploymentRewards.stateChannelRewards =
+        stateChannelRewards;
+    } else {
+      existingIndexerEraDeploymentRewards.stateChannelRewards +=
+        stateChannelRewards;
+    }
+    existingIndexerEraDeploymentRewards.agreementRewards += agreementRewards;
     existingIndexerEraDeploymentRewards.allocationRewards += allocationRewards;
+    existingIndexerEraDeploymentRewards.totalRewards =
+      existingIndexerEraDeploymentRewards.stateChannelRewards +
+      existingIndexerEraDeploymentRewards.agreementRewards +
+      existingIndexerEraDeploymentRewards.allocationRewards;
     existingIndexerEraDeploymentRewards.queryRewards =
       existingIndexerEraDeploymentRewards.totalRewards -
       existingIndexerEraDeploymentRewards.allocationRewards;
+    existingIndexerEraDeploymentRewards.changesHeight = `${existingIndexerEraDeploymentRewards.changesHeight},${eventLog}`;
     await existingIndexerEraDeploymentRewards.save();
     return;
   }
 
+  const totalRewards =
+    stateChannelRewards + allocationRewards + agreementRewards;
   const eraDeploymentRewards = IndexerEraDeploymentRewards.create({
     id,
     indexerId,
@@ -70,12 +106,15 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
     eraIdx,
     totalRewards,
     allocationRewards,
+    stateChannelRewards,
+    agreementRewards,
     queryRewards: totalRewards - allocationRewards,
+    changesHeight: eventLog,
   });
   await eraDeploymentRewards.save();
 }
 
-// this function have deprecated, keep it to collect historical data.
+// reward pool collect literally only trigger once per era
 export async function handleRewardsPoolCollect(
   event: EthereumLog<CollectEvent['args']>
 ): Promise<void> {
@@ -87,7 +126,10 @@ export async function handleRewardsPoolCollect(
     bytesToIpfsCid(deploymentId),
     era.toNumber(),
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    BigNumber.from(0).toBigInt(),
+    `rewardsPoolCollect:${event.blockNumber}`,
+    true
   );
 
   await addOrUpdateIndexerEraDeploymentRewards(
@@ -95,6 +137,9 @@ export async function handleRewardsPoolCollect(
     bytesToIpfsCid(deploymentId),
     era.toNumber(),
     amount.toBigInt(),
-    BigNumber.from(0).toBigInt()
+    BigNumber.from(0).toBigInt(),
+    BigNumber.from(0).toBigInt(),
+    `rewardsPoolCollect:${event.blockNumber}`,
+    true
   );
 }

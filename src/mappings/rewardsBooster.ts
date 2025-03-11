@@ -216,16 +216,20 @@ export async function handleAllocationRewardsGiven(
   await addOrUpdateEraDeploymentRewards(
     deploymentId,
     eraIdx,
+    BigNumber.from(0).toBigInt(),
     reward.toBigInt(),
-    reward.toBigInt()
+    BigNumber.from(0).toBigInt(),
+    `allocationRewardsGiven:${event.blockNumber}`
   );
 
   await addOrUpdateIndexerEraDeploymentRewards(
     indexerId,
     deploymentId,
     eraIdx,
+    BigNumber.from(0).toBigInt(),
     reward.toBigInt(),
-    reward.toBigInt()
+    BigNumber.from(0).toBigInt(),
+    `allocationRewardsGiven:${event.blockNumber}`
   );
 
   allocationReward = IndexerAllocationReward.create({

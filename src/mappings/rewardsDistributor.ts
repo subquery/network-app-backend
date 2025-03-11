@@ -643,15 +643,19 @@ export async function handleAgreementRewards(
     await addOrUpdateEraDeploymentRewards(
       bytesToIpfsCid(deploymentId),
       saveEra,
+      BigNumber.from(0).toBigInt(),
+      BigNumber.from(0).toBigInt(),
       saveAmount.toBigInt(),
-      BigInt(0)
+      `handleServicesAgreementRewards:${event.blockNumber}`
     );
     await addOrUpdateIndexerEraDeploymentRewards(
       runner,
       bytesToIpfsCid(deploymentId),
       saveEra,
+      BigNumber.from(0).toBigInt(),
+      BigNumber.from(0).toBigInt(),
       saveAmount.toBigInt(),
-      BigInt(0)
+      `handleServicesAgreementRewards:${event.blockNumber}`
     );
   }
 

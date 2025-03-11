@@ -392,11 +392,20 @@ dataSources:
           filter:
             topics:
               - Parameter(string name, bytes value)
+
+  - <<: *ethereum
+    options:
+      abi: stateChannel
+      address: '0x8C3d312291CC666757daFbb6eD20874Ae573C895'
+    mapping:
+      file: ./dist/index.js
+      handlers:
         - handler: handlerChannelLabor2
           kind: ethereum/LogHandler
           filter:
             topics:
               - ChannelLabor2(uint256 indexed channelId, bytes32 deploymentId, address indexer, uint256 amount)
+
   - <<: *ethereum
     options:
       abi: disputeManager
@@ -593,8 +602,6 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
-  # this have been deprecated. the new contract will not use it.
-  # keep it to collect historical data.
   - <<: *ethereum
     options:
       abi: rewardsPool
