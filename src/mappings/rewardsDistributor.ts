@@ -597,6 +597,8 @@ export async function handleAgreementRewards(
   const { startDate, period, deploymentId } =
     await serviceAgreementContract.getClosedServiceAgreement(agreementId);
 
+  const cidDeploymentId = bytesToIpfsCid(deploymentId);
+
   const agreementStartDate = bnToDate(startDate);
 
   const agreementFirstEraRate = BignumberJs(1).minus(
@@ -633,7 +635,7 @@ export async function handleAgreementRewards(
     );
     await upsertEraIndexerDeploymentApy(
       runner,
-      deploymentId,
+      cidDeploymentId,
       saveEra,
       RewardType.AGREEMENT,
       saveAmount.toBigInt(),
@@ -641,7 +643,7 @@ export async function handleAgreementRewards(
       biToDate(event.block.timestamp)
     );
     await addOrUpdateEraDeploymentRewards(
-      bytesToIpfsCid(deploymentId),
+      cidDeploymentId,
       saveEra,
       BigNumber.from(0).toBigInt(),
       BigNumber.from(0).toBigInt(),
@@ -650,7 +652,7 @@ export async function handleAgreementRewards(
     );
     await addOrUpdateIndexerEraDeploymentRewards(
       runner,
-      bytesToIpfsCid(deploymentId),
+      cidDeploymentId,
       saveEra,
       BigNumber.from(0).toBigInt(),
       BigNumber.from(0).toBigInt(),
