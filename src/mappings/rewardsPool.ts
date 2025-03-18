@@ -5,58 +5,41 @@ import { EraDeploymentRewards, IndexerEraDeploymentRewards } from '../types';
 import { BigNumber } from 'ethers';
 import { bytesToIpfsCid } from './utils';
 
-export async function addOrUpdateEraDeploymentRewards(
-  deploymentId: string,
-  eraIdx: number,
-  stateChannelRewards: bigint,
-  allocationRewards: bigint,
-  agreementRewards: bigint,
-  eventLog: string = '',
-  overrideStateChannelRewards?: boolean // it's for rewardsPool collect query rewards, if set be true, totalRewards will be override to totalRewards, not
-): Promise<void> {
-  logger.info('addOrUpdateEraDeploymentRewards');
-  assert(deploymentId, 'No deploymentId');
-  assert(eraIdx, 'No eraIdx');
+// export async function addOrUpdateEraDeploymentRewards(
+//   deploymentId: string,
+//   eraIdx: number
+// ): Promise<void> {
+//   logger.info('addOrUpdateEraDeploymentRewards');
+//   assert(deploymentId, 'No deploymentId');
+//   assert(eraIdx, 'No eraIdx');
 
-  const id = `${deploymentId}:${eraIdx}`;
-  const existingEraDeploymentRewards = await EraDeploymentRewards.get(id);
-  if (existingEraDeploymentRewards) {
-    if (overrideStateChannelRewards) {
-      existingEraDeploymentRewards.stateChannelRewards = stateChannelRewards;
-    } else {
-      existingEraDeploymentRewards.stateChannelRewards += stateChannelRewards;
-    }
-    existingEraDeploymentRewards.agreementRewards += agreementRewards;
-    existingEraDeploymentRewards.allocationRewards += allocationRewards;
-    existingEraDeploymentRewards.totalRewards =
-      existingEraDeploymentRewards.stateChannelRewards +
-      existingEraDeploymentRewards.agreementRewards +
-      existingEraDeploymentRewards.allocationRewards;
-    existingEraDeploymentRewards.queryRewards =
-      existingEraDeploymentRewards.totalRewards -
-      existingEraDeploymentRewards.allocationRewards;
-    existingEraDeploymentRewards.changesHeight = `${existingEraDeploymentRewards.changesHeight},${eventLog}`;
-    await existingEraDeploymentRewards.save();
-    return;
-  }
+//   const aggregateResultFromIndexerEraDeploymentRewards =
+//     await IndexerEraDeploymentRewards.getByFields(
+//       [
+//         ['deploymentId', '=', deploymentId],
+//         ['eraIdx', '=', eraIdx],
+//       ],
+//       {}
+//     );
 
-  const totalRewards =
-    stateChannelRewards + allocationRewards + agreementRewards;
+//   const id = `${deploymentId}:${eraIdx}`;
+//   const existingEraDeploymentRewards = await EraDeploymentRewards.get(id);
 
-  const eraDeploymentRewards = EraDeploymentRewards.create({
-    id,
-    deploymentId,
-    eraIdx,
-    totalRewards,
-    allocationRewards,
-    stateChannelRewards,
-    agreementRewards,
-    queryRewards: totalRewards - allocationRewards,
-    changesHeight: eventLog,
-  });
-  await eraDeploymentRewards.save();
-}
+//   const eraDeploymentRewards = EraDeploymentRewards.create({
+//     id,
+//     deploymentId,
+//     eraIdx,
+//     totalRewards,
+//     allocationRewards,
+//     stateChannelRewards,
+//     agreementRewards,
+//     queryRewards: totalRewards - allocationRewards,
+//     changesHeight: eventLog,
+//   });
+//   await eraDeploymentRewards.save();
+// }
 
+// note this function includes update IndexerEraDeployment & EraDeployment
 export async function addOrUpdateIndexerEraDeploymentRewards(
   indexerId: string,
   deploymentId: string,
@@ -72,46 +55,108 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
   assert(eraIdx, 'No eraIdx');
   assert(indexerId, 'No indexerId');
 
-  const id = `${indexerId}:${deploymentId}:${eraIdx}`;
-  const existingIndexerEraDeploymentRewards =
-    await IndexerEraDeploymentRewards.get(id);
-  if (existingIndexerEraDeploymentRewards) {
-    if (overrideStateChannel) {
-      existingIndexerEraDeploymentRewards.stateChannelRewards =
-        stateChannelRewards;
-    } else {
-      existingIndexerEraDeploymentRewards.stateChannelRewards +=
-        stateChannelRewards;
-    }
-    existingIndexerEraDeploymentRewards.agreementRewards += agreementRewards;
-    existingIndexerEraDeploymentRewards.allocationRewards += allocationRewards;
-    existingIndexerEraDeploymentRewards.totalRewards =
-      existingIndexerEraDeploymentRewards.stateChannelRewards +
-      existingIndexerEraDeploymentRewards.agreementRewards +
-      existingIndexerEraDeploymentRewards.allocationRewards;
-    existingIndexerEraDeploymentRewards.queryRewards =
-      existingIndexerEraDeploymentRewards.totalRewards -
-      existingIndexerEraDeploymentRewards.allocationRewards;
-    existingIndexerEraDeploymentRewards.changesHeight = `${existingIndexerEraDeploymentRewards.changesHeight},${eventLog}`;
-    await existingIndexerEraDeploymentRewards.save();
-    return;
-  }
+  const updateEraDeployment = async () => {
+    const existDeploymentId = `${deploymentId}:${eraIdx}`;
+    const existingEraDeploymentRewards = await EraDeploymentRewards.get(
+      existDeploymentId
+    );
 
-  const totalRewards =
-    stateChannelRewards + allocationRewards + agreementRewards;
-  const eraDeploymentRewards = IndexerEraDeploymentRewards.create({
-    id,
-    indexerId,
-    deploymentId,
-    eraIdx,
-    totalRewards,
-    allocationRewards,
-    stateChannelRewards,
-    agreementRewards,
-    queryRewards: totalRewards - allocationRewards,
-    changesHeight: eventLog,
-  });
-  await eraDeploymentRewards.save();
+    const id = `${indexerId}:${deploymentId}:${eraIdx}`;
+    const existingIndexerEraDeploymentRewards =
+      await IndexerEraDeploymentRewards.get(id);
+
+    if (existingEraDeploymentRewards) {
+      if (overrideStateChannel) {
+        assert(
+          existingIndexerEraDeploymentRewards,
+          'No existingIndexerEraDeploymentRewards but overrideStateChannel is true'
+        );
+        const previouseStateChannelRewards =
+          await existingIndexerEraDeploymentRewards.stateChannelRewards;
+        existingEraDeploymentRewards.stateChannelRewards -=
+          previouseStateChannelRewards;
+      }
+      existingEraDeploymentRewards.stateChannelRewards += stateChannelRewards;
+      existingEraDeploymentRewards.agreementRewards += agreementRewards;
+      existingEraDeploymentRewards.allocationRewards += allocationRewards;
+      existingEraDeploymentRewards.totalRewards =
+        existingEraDeploymentRewards.stateChannelRewards +
+        existingEraDeploymentRewards.agreementRewards +
+        existingEraDeploymentRewards.allocationRewards;
+      existingEraDeploymentRewards.queryRewards =
+        existingEraDeploymentRewards.totalRewards -
+        existingEraDeploymentRewards.allocationRewards;
+      existingEraDeploymentRewards.changesHeight = `${existingEraDeploymentRewards.changesHeight},${eventLog}`;
+      await existingEraDeploymentRewards.save();
+      return;
+    }
+
+    const totalRewards =
+      stateChannelRewards + allocationRewards + agreementRewards;
+
+    if (!existingEraDeploymentRewards) {
+      const eraDeploymentRewards = EraDeploymentRewards.create({
+        id: existDeploymentId,
+        deploymentId,
+        eraIdx,
+        totalRewards,
+        allocationRewards,
+        stateChannelRewards,
+        agreementRewards,
+        queryRewards: totalRewards - allocationRewards,
+        changesHeight: eventLog,
+      });
+      await eraDeploymentRewards.save();
+    }
+  };
+
+  const updateIndexerEraDeployment = async () => {
+    const id = `${indexerId}:${deploymentId}:${eraIdx}`;
+    const existingIndexerEraDeploymentRewards =
+      await IndexerEraDeploymentRewards.get(id);
+
+    if (existingIndexerEraDeploymentRewards) {
+      if (overrideStateChannel) {
+        existingIndexerEraDeploymentRewards.stateChannelRewards =
+          stateChannelRewards;
+      } else {
+        existingIndexerEraDeploymentRewards.stateChannelRewards +=
+          stateChannelRewards;
+      }
+      existingIndexerEraDeploymentRewards.agreementRewards += agreementRewards;
+      existingIndexerEraDeploymentRewards.allocationRewards +=
+        allocationRewards;
+      existingIndexerEraDeploymentRewards.totalRewards =
+        existingIndexerEraDeploymentRewards.stateChannelRewards +
+        existingIndexerEraDeploymentRewards.agreementRewards +
+        existingIndexerEraDeploymentRewards.allocationRewards;
+      existingIndexerEraDeploymentRewards.queryRewards =
+        existingIndexerEraDeploymentRewards.totalRewards -
+        existingIndexerEraDeploymentRewards.allocationRewards;
+      existingIndexerEraDeploymentRewards.changesHeight = `${existingIndexerEraDeploymentRewards.changesHeight},${eventLog}`;
+      await existingIndexerEraDeploymentRewards.save();
+      return;
+    }
+
+    const totalRewards =
+      stateChannelRewards + allocationRewards + agreementRewards;
+    const eraDeploymentRewards = IndexerEraDeploymentRewards.create({
+      id,
+      indexerId,
+      deploymentId,
+      eraIdx,
+      totalRewards,
+      allocationRewards,
+      stateChannelRewards,
+      agreementRewards,
+      queryRewards: totalRewards - allocationRewards,
+      changesHeight: eventLog,
+    });
+    await eraDeploymentRewards.save();
+  };
+
+  await updateIndexerEraDeployment();
+  await updateEraDeployment();
 }
 
 // reward pool collect literally only trigger once per era
@@ -122,15 +167,6 @@ export async function handleRewardsPoolCollect(
   assert(event.args, 'No event args');
 
   const { deploymentId, era, amount, runner } = event.args;
-  await addOrUpdateEraDeploymentRewards(
-    bytesToIpfsCid(deploymentId),
-    era.toNumber(),
-    amount.toBigInt(),
-    BigNumber.from(0).toBigInt(),
-    BigNumber.from(0).toBigInt(),
-    `rewardsPoolCollect:${event.blockNumber}`,
-    true
-  );
 
   await addOrUpdateIndexerEraDeploymentRewards(
     runner,
