@@ -72,7 +72,7 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
           'No existingIndexerEraDeploymentRewards but overrideStateChannel is true'
         );
         const previouseStateChannelRewards =
-          await existingIndexerEraDeploymentRewards.stateChannelRewards;
+          existingIndexerEraDeploymentRewards.stateChannelRewards;
         existingEraDeploymentRewards.stateChannelRewards -=
           previouseStateChannelRewards;
       }
@@ -155,8 +155,8 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
     await eraDeploymentRewards.save();
   };
 
-  await updateIndexerEraDeployment();
   await updateEraDeployment();
+  await updateIndexerEraDeployment();
 }
 
 // reward pool collect literally only trigger once per era
