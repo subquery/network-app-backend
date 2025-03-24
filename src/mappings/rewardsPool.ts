@@ -67,12 +67,8 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
 
     if (existingEraDeploymentRewards) {
       if (overrideStateChannel) {
-        assert(
-          existingIndexerEraDeploymentRewards,
-          'No existingIndexerEraDeploymentRewards but overrideStateChannel is true'
-        );
         const previouseStateChannelRewards =
-          existingIndexerEraDeploymentRewards.stateChannelRewards;
+          existingIndexerEraDeploymentRewards?.stateChannelRewards || BigInt(0);
         existingEraDeploymentRewards.stateChannelRewards -=
           previouseStateChannelRewards;
       }
