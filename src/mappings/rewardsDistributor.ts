@@ -50,10 +50,7 @@ import {
 } from '../types/contracts/RewardsDistributor';
 import { RewardType } from './utils/enums';
 import { PER_MILL } from './utils/constants';
-import {
-  addOrUpdateEraDeploymentRewards,
-  addOrUpdateIndexerEraDeploymentRewards,
-} from './rewardsPool';
+import { addOrUpdateIndexerEraDeploymentRewards } from './rewardsPool';
 import pino from 'pino';
 
 function buildRewardId(indexer: string, delegator: string): string {
@@ -641,14 +638,6 @@ export async function handleAgreementRewards(
       saveAmount.toBigInt(),
       BigInt(0),
       biToDate(event.block.timestamp)
-    );
-    await addOrUpdateEraDeploymentRewards(
-      cidDeploymentId,
-      saveEra,
-      BigNumber.from(0).toBigInt(),
-      BigNumber.from(0).toBigInt(),
-      saveAmount.toBigInt(),
-      `handleServicesAgreementRewards:${event.blockNumber}`
     );
     await addOrUpdateIndexerEraDeploymentRewards(
       runner,

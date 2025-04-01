@@ -24,10 +24,7 @@ import { biToDate, bytesToIpfsCid } from './utils';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
 import { getCurrentEra } from './eraManager';
-import {
-  addOrUpdateEraDeploymentRewards,
-  addOrUpdateIndexerEraDeploymentRewards,
-} from './rewardsPool';
+import { addOrUpdateIndexerEraDeploymentRewards } from './rewardsPool';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -205,14 +202,6 @@ export async function handlerChannelLabor2(
   assert(event.args, 'No event args');
   const currentEra = await getCurrentEra();
   const { deploymentId, indexer: runner, amount } = event.args;
-  await addOrUpdateEraDeploymentRewards(
-    bytesToIpfsCid(deploymentId),
-    currentEra,
-    amount.toBigInt(),
-    BigNumber.from(0).toBigInt(),
-    BigNumber.from(0).toBigInt(),
-    `handleChannelLabor2:${event.blockNumber}`
-  );
 
   await addOrUpdateIndexerEraDeploymentRewards(
     runner,
