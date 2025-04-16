@@ -60,6 +60,12 @@ export async function handleDeploymentBoosterAdded(
   assert(deployment, `Deployment ${deploymentId} not found`);
 
   let project = await Project.get(deployment.projectId);
+  let saveProject = false;
+  if (project) {
+    saveProject = true;
+    project.totalBoost += amountAdded.toBigInt();
+  }
+
   if (!project && preboostedCids.includes(deploymentId)) {
     project = Project.create({
       id: deployment.projectId,
@@ -71,6 +77,8 @@ export async function handleDeploymentBoosterAdded(
       updatedTimestamp: new Date(),
       createdTimestamp: new Date(),
       totalReward: BigInt(0),
+      totalBoost: BigInt(0),
+      totalAllocation: BigInt(0),
     });
   }
   assert(project, `Project ${deployment.projectId} not found`);
@@ -111,6 +119,8 @@ export async function handleDeploymentBoosterAdded(
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
   }
+
+  if (saveProject) await project.save();
   await summary.save();
 }
 
@@ -163,6 +173,9 @@ export async function handleDeploymentBoosterRemoved(
     summary.totalAmount = summary.totalAdded - summary.totalRemoved;
     summary.updateAt = biToDate(event.block.timestamp);
   }
+
+  project.totalBoost = project.totalBoost - amountRemoved.toBigInt();
+  await project.save();
   await summary.save();
 }
 

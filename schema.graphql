@@ -59,6 +59,8 @@ type Project @entity {
   updatedTimestamp: Date!
   createdTimestamp: Date!
   totalReward: BigInt!
+  totalBoost: BigInt!
+  totalAllocation: BigInt!
 
   deployments: [Deployment] @derivedFrom(field: "project")
 

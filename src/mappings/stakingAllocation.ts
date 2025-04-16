@@ -80,6 +80,9 @@ export async function handleStakeAllocationAdded(
     apy.apyCalcAllocationRecordAt = biToDate(event.block.timestamp);
     await apy.save();
   }
+
+  project.totalAllocation += amountAdded.toBigInt();
+  await project.save();
 }
 
 export async function handleStakeAllocationRemoved(
@@ -146,6 +149,9 @@ export async function handleStakeAllocationRemoved(
     apy.apyCalcAllocationRecordAt = biToDate(event.block.timestamp);
     await apy.save();
   }
+
+  project.totalAllocation -= amountRemoved.toBigInt();
+  await project.save();
 }
 
 export async function handleOverAllocationStarted(

@@ -63,6 +63,8 @@ export async function handleProjectCreated(
     // note that project metadata is pure CID string without prefix
     metadata: projectMetadata,
     totalReward: BigInt(0),
+    totalBoost: BigInt(0),
+    totalAllocation: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
     deploymentMetadata: bytesToIpfsCid(deploymentMetadata),
     updatedTimestamp: biToDate(event.block.timestamp),

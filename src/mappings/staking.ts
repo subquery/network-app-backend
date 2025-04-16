@@ -7,6 +7,7 @@
 import { Staking__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
+  DelegationAdded2Event,
   DelegationRemovedEvent,
   UnbondCancelledEvent,
   UnbondRequestedEvent,
@@ -86,12 +87,18 @@ async function createOrUpdateWithdrawl({
 }
 
 export async function handleAddDelegation(
-  event: EthereumLog<DelegationAddedEvent['args']>
+  event: EthereumLog<
+    DelegationAddedEvent['args'] | DelegationAdded2Event['args']
+  >
 ): Promise<void> {
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
-  const { source, runner, amount } = event.args;
+  // const { source, runner, amount } = event.args;
+  const { source, runner, amount, instant } = parseCompatibleDelegationArgs(
+    event.args
+  );
+
   const id = getDelegationId(source, runner);
 
   const amountBn = amount.toBigInt();
@@ -139,7 +146,7 @@ export async function handleAddDelegation(
   await updateIndexerCapacity(runner, event);
   await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryAdded(event);
-  if (applyInstantly) {
+  if (applyInstantly || instant) {
     await addToEraDelegation(
       delegation.amount.era,
       runner,
@@ -205,6 +212,24 @@ export async function handleRemoveDelegation(
     source,
     amount.toBigInt()
   );
+}
+
+type CompatibleDelegationAddedArgs = {
+  source: string;
+  runner: string;
+  amount: BigNumber;
+  instant: boolean;
+};
+
+function parseCompatibleDelegationArgs(
+  args: DelegationAddedEvent['args'] | DelegationAdded2Event['args']
+): CompatibleDelegationAddedArgs {
+  return {
+    source: args.source,
+    runner: args.runner,
+    amount: args.amount,
+    instant: 'instant' in args ? args.instant : false,
+  };
 }
 
 async function addToEraDelegation(
@@ -493,10 +518,14 @@ export async function handleWithdrawCancelled(
 }
 
 async function updateIndexerStakeSummaryAdded(
-  event: EthereumLog<DelegationAddedEvent['args']>
+  event: EthereumLog<
+    DelegationAddedEvent['args'] | DelegationAdded2Event['args']
+  >
 ): Promise<void> {
   assert(event.args, 'No event args');
-  const { source, runner, amount } = event.args;
+  const { source, runner, amount, instant } = parseCompatibleDelegationArgs(
+    event.args
+  );
   const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();
@@ -522,7 +551,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === runner
+    source === runner,
+    instant
   );
 
   // update IndexerStakeSummary for all indexers
@@ -535,7 +565,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === runner
+    source === runner,
+    instant
   );
 
   // update IndexerStake
@@ -652,8 +683,10 @@ async function updateIndexerStakeSummary(
   currEraIdx: number,
   isFirstStake: boolean,
   amountBn: bigint,
-  isIndexer: boolean
+  isIndexer: boolean,
+  instant: boolean
 ) {
+  // isIndexer: self stake
   const newIndexerStake = isIndexer ? amountBn : BigInt(0);
   const newDelegatorStake = !isIndexer ? amountBn : BigInt(0);
   if (!indexerStakeSummary) {
@@ -672,7 +705,7 @@ async function updateIndexerStakeSummary(
 
   const isCurrentEra = indexerStakeSummary.eraId === currEraId;
 
-  if (isFirstStake) {
+  if (isFirstStake || instant) {
     // for 0x00 indexer, record could be already existing even if it's first stake
     const exTotalStake = isCurrentEra
       ? indexerStakeSummary.totalStake
