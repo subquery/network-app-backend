@@ -98,7 +98,7 @@ export async function handleAddDelegation(
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
   const selfStake = source === runner;
-  const applyInstantly = runner === source && !delegation;
+  const applyInstantly = (runner === source && !delegation) || instant;
   if (!selfStake) {
     await updateDelegatorDelegation(source, amountBn, 'add', applyInstantly);
   }
@@ -140,7 +140,7 @@ export async function handleAddDelegation(
   await updateIndexerCapacity(runner, event);
   await updateMaxUnstakeAmount(runner, event);
   await updateIndexerStakeSummaryAdded(event);
-  if (applyInstantly || instant) {
+  if (applyInstantly) {
     await addToEraDelegation(
       delegation.amount.era,
       runner,
