@@ -92,7 +92,6 @@ export async function handleAddDelegation(
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
-  // const { source, runner, amount } = event.args;
   const { source, runner, amount, instant } = event.args;
   const id = getDelegationId(source, runner);
 
