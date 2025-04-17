@@ -61,6 +61,7 @@ type Project @entity {
   totalReward: BigInt!
   totalBoost: BigInt!
   totalAllocation: BigInt!
+  boostAllocationRatio: BigInt!
 
   deployments: [Deployment] @derivedFrom(field: "project")
 

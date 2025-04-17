@@ -24,7 +24,7 @@ import {
   ServiceAgreement,
   StateChannel,
 } from '../types';
-import { biToDate, bytesToIpfsCid } from './utils';
+import { biToDate, bytesToIpfsCid, handleProjectTotalBoost } from './utils';
 import { getCurrentEra } from './eraManager';
 import { BigNumber } from 'ethers';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
@@ -63,7 +63,7 @@ export async function handleDeploymentBoosterAdded(
   let saveProject = false;
   if (project) {
     saveProject = true;
-    project.totalBoost += amountAdded.toBigInt();
+    handleProjectTotalBoost(project, amountAdded.toBigInt());
   }
 
   if (!project && preboostedCids.includes(deploymentId)) {
@@ -79,6 +79,7 @@ export async function handleDeploymentBoosterAdded(
       totalReward: BigInt(0),
       totalBoost: BigInt(0),
       totalAllocation: BigInt(0),
+      boostAllocationRatio: BigInt(0),
     });
   }
   assert(project, `Project ${deployment.projectId} not found`);
@@ -174,7 +175,8 @@ export async function handleDeploymentBoosterRemoved(
     summary.updateAt = biToDate(event.block.timestamp);
   }
 
-  project.totalBoost = project.totalBoost - amountRemoved.toBigInt();
+  handleProjectTotalBoost(project, -amountRemoved.toBigInt());
+
   await project.save();
   await summary.save();
 }

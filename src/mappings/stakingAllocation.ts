@@ -15,7 +15,11 @@ import {
   IndexerLatestAllocationOverflow,
   Project,
 } from '../types';
-import { biToDate, bytesToIpfsCid } from './utils';
+import {
+  biToDate,
+  bytesToIpfsCid,
+  handleProjectTotalAllocation,
+} from './utils';
 import { getCurrentEra } from './eraManager';
 
 export async function handleStakeAllocationAdded(
@@ -81,7 +85,7 @@ export async function handleStakeAllocationAdded(
     await apy.save();
   }
 
-  project.totalAllocation += amountAdded.toBigInt();
+  handleProjectTotalAllocation(project, amountAdded.toBigInt());
   await project.save();
 }
 
@@ -150,7 +154,7 @@ export async function handleStakeAllocationRemoved(
     await apy.save();
   }
 
-  project.totalAllocation -= amountRemoved.toBigInt();
+  handleProjectTotalAllocation(project, -amountRemoved.toBigInt());
   await project.save();
 }
 

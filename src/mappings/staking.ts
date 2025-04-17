@@ -87,18 +87,13 @@ async function createOrUpdateWithdrawl({
 }
 
 export async function handleAddDelegation(
-  event: EthereumLog<
-    DelegationAddedEvent['args'] | DelegationAdded2Event['args']
-  >
+  event: EthereumLog<DelegationAdded2Event['args']>
 ): Promise<void> {
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
   // const { source, runner, amount } = event.args;
-  const { source, runner, amount, instant } = parseCompatibleDelegationArgs(
-    event.args
-  );
-
+  const { source, runner, amount, instant } = event.args;
   const id = getDelegationId(source, runner);
 
   const amountBn = amount.toBigInt();
@@ -212,24 +207,6 @@ export async function handleRemoveDelegation(
     source,
     amount.toBigInt()
   );
-}
-
-type CompatibleDelegationAddedArgs = {
-  source: string;
-  runner: string;
-  amount: BigNumber;
-  instant: boolean;
-};
-
-function parseCompatibleDelegationArgs(
-  args: DelegationAddedEvent['args'] | DelegationAdded2Event['args']
-): CompatibleDelegationAddedArgs {
-  return {
-    source: args.source,
-    runner: args.runner,
-    amount: args.amount,
-    instant: 'instant' in args ? args.instant : false,
-  };
 }
 
 async function addToEraDelegation(
@@ -518,14 +495,10 @@ export async function handleWithdrawCancelled(
 }
 
 async function updateIndexerStakeSummaryAdded(
-  event: EthereumLog<
-    DelegationAddedEvent['args'] | DelegationAdded2Event['args']
-  >
+  event: EthereumLog<DelegationAdded2Event['args']>
 ): Promise<void> {
   assert(event.args, 'No event args');
-  const { source, runner, amount, instant } = parseCompatibleDelegationArgs(
-    event.args
-  );
+  const { source, runner, amount, instant } = event.args;
   const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();

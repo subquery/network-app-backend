@@ -65,6 +65,7 @@ export async function handleProjectCreated(
     totalReward: BigInt(0),
     totalBoost: BigInt(0),
     totalAllocation: BigInt(0),
+    boostAllocationRatio: BigInt(0),
     deploymentId: bytesToIpfsCid(deploymentId),
     deploymentMetadata: bytesToIpfsCid(deploymentMetadata),
     updatedTimestamp: biToDate(event.block.timestamp),
