@@ -7,6 +7,7 @@
 import { Staking__factory } from '@subql/contract-sdk';
 import {
   DelegationAddedEvent,
+  DelegationAdded2Event,
   DelegationRemovedEvent,
   UnbondCancelledEvent,
   UnbondRequestedEvent,
@@ -86,18 +87,18 @@ async function createOrUpdateWithdrawl({
 }
 
 export async function handleAddDelegation(
-  event: EthereumLog<DelegationAddedEvent['args']>
+  event: EthereumLog<DelegationAdded2Event['args']>
 ): Promise<void> {
   logger.info('handleAddDelegation');
   assert(event.args, 'No event args');
 
-  const { source, runner, amount } = event.args;
+  const { source, runner, amount, instant } = event.args;
   const id = getDelegationId(source, runner);
 
   const amountBn = amount.toBigInt();
   let delegation = await Delegation.get(id);
   const selfStake = source === runner;
-  const applyInstantly = runner === source && !delegation;
+  const applyInstantly = (runner === source && !delegation) || instant;
   if (!selfStake) {
     await updateDelegatorDelegation(source, amountBn, 'add', applyInstantly);
   }
@@ -493,10 +494,10 @@ export async function handleWithdrawCancelled(
 }
 
 async function updateIndexerStakeSummaryAdded(
-  event: EthereumLog<DelegationAddedEvent['args']>
+  event: EthereumLog<DelegationAdded2Event['args']>
 ): Promise<void> {
   assert(event.args, 'No event args');
-  const { source, runner, amount } = event.args;
+  const { source, runner, amount, instant } = event.args;
   const amountBn = amount.toBigInt();
 
   const currEraIdx = await getCurrentEra();
@@ -522,7 +523,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === runner
+    source === runner,
+    instant
   );
 
   // update IndexerStakeSummary for all indexers
@@ -535,7 +537,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     isFirstStake,
     amountBn,
-    source === runner
+    source === runner,
+    instant
   );
 
   // update IndexerStake
@@ -546,7 +549,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     nextEraId,
     nextEraIdx,
-    indexerStakeSummary
+    indexerStakeSummary,
+    instant
   );
 
   // update EraStake
@@ -558,7 +562,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     nextEraId,
     nextEraIdx,
-    amountBn
+    amountBn,
+    instant
   );
 
   // update IndexerStake for all indexers, sum by era
@@ -568,7 +573,8 @@ async function updateIndexerStakeSummaryAdded(
     currEraIdx,
     nextEraId,
     nextEraIdx,
-    allIndexerStakeSummary
+    allIndexerStakeSummary,
+    instant
   );
 }
 
@@ -579,9 +585,10 @@ async function updateIndexerStakeAdded(
   currEraIdx: number,
   nextEraId: string,
   nextEraIdx: number,
-  indexerStakeSummary: IndexerStakeSummary
+  indexerStakeSummary: IndexerStakeSummary,
+  instant: boolean
 ) {
-  if (isFirstStake) {
+  if (isFirstStake || instant) {
     await IndexerStake.create({
       id: `${indexer}:${currEraId}`,
       indexerId: indexer,
@@ -609,9 +616,10 @@ async function updateIndexerStakeAddedSumByEra(
   currEraIdx: number,
   nextEraId: string,
   nextEraIdx: number,
-  allIndexerStakeSummary: IndexerStakeSummary
+  allIndexerStakeSummary: IndexerStakeSummary,
+  instant: boolean
 ) {
-  if (isFirstStake) {
+  if (isFirstStake || instant) {
     await IndexerStake.create({
       id: currEraId,
       indexerId: '0x00',
@@ -652,8 +660,10 @@ async function updateIndexerStakeSummary(
   currEraIdx: number,
   isFirstStake: boolean,
   amountBn: bigint,
-  isIndexer: boolean
+  isIndexer: boolean,
+  instant: boolean
 ) {
+  // isIndexer: self stake
   const newIndexerStake = isIndexer ? amountBn : BigInt(0);
   const newDelegatorStake = !isIndexer ? amountBn : BigInt(0);
   if (!indexerStakeSummary) {
@@ -672,7 +682,7 @@ async function updateIndexerStakeSummary(
 
   const isCurrentEra = indexerStakeSummary.eraId === currEraId;
 
-  if (isFirstStake) {
+  if (isFirstStake || instant) {
     // for 0x00 indexer, record could be already existing even if it's first stake
     const exTotalStake = isCurrentEra
       ? indexerStakeSummary.totalStake
@@ -850,9 +860,10 @@ async function updateEraStakeAdd(
   currEraIdx: number,
   nextEraId: string,
   nextEraIdx: number,
-  amountBn: bigint
+  amountBn: bigint,
+  instant: boolean
 ) {
-  if (isFirstStake) {
+  if (isFirstStake || instant) {
     const currEraStakeId = `${indexer}:${delegator}:${currEraId}`;
     await updateEraStake(
       currEraStakeId,
