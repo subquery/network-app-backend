@@ -133,6 +133,11 @@ dataSources:
           filter:
             topics:
               - DelegationAdded(address indexed source, address indexed runner, uint256 amount)
+        - handler: handleAddDelegation
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - DelegationAdded2(address indexed source, address indexed runner, uint256 amount, bool instant)
         - handler: handleRemoveDelegation
           kind: ethereum/LogHandler
           filter:
