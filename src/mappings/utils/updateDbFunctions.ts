@@ -340,6 +340,8 @@ export async function updateTotalLock(
     ? BigNumber.from(0)
     : BigNumber.from(amount);
 
+  const { instant } = event.args || {};
+
   if (!totalLock) {
     totalLock = TotalLock.create({
       id: totalLockID,
@@ -359,12 +361,14 @@ export async function updateTotalLock(
     totalLock.totalStake = await upsertEraValue(
       totalLock.totalStake,
       updatedStakeAmount.toBigInt(),
-      operation
+      operation,
+      instant
     );
     totalLock.totalDelegation = await upsertEraValue(
       totalLock.totalDelegation,
       updatedDelegateAmount.toBigInt(),
-      operation
+      operation,
+      instant
     );
     totalLock.lastEvent = `updateTotalLock - ${event.transactionHash}`;
   }

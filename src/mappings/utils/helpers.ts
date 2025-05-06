@@ -8,7 +8,7 @@ import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
 
 import assert from 'assert';
-import { AirdropAmount, Exception, JSONBigInt } from '../../types';
+import { AirdropAmount, Exception, JSONBigInt, Project } from '../../types';
 import { BigNumberish } from 'ethers';
 import { PER_QUINTILL } from './constants';
 
@@ -47,7 +47,6 @@ declare global {
     fromJSONType(value: unknown): bigint;
   }
 }
-
 
 BigInt.prototype.toJSONType = function () {
   return {
@@ -197,4 +196,28 @@ export function calcApy(reward: bigint, stake: bigint): bigint {
   }
 
   return (((reward * PER_QUINTILL) / BigInt(7)) * BigInt(365)) / stake;
+}
+
+export function handleProjectTotalBoost(
+  project: Project,
+  totalBoostDelta: bigint
+) {
+  project.totalBoost += totalBoostDelta;
+  if (project.totalAllocation > 0) {
+    const precision = BigNumber.from(10).pow(18).toBigInt();
+    project.boostAllocationRatio =
+      (project.totalBoost * precision) / project.totalAllocation;
+  }
+}
+
+export function handleProjectTotalAllocation(
+  project: Project,
+  totalAllocationDelta: bigint
+) {
+  project.totalAllocation += totalAllocationDelta;
+  if (project.totalAllocation > 0) {
+    const precision = BigNumber.from(10).pow(18).toBigInt();
+    project.boostAllocationRatio =
+      (project.totalBoost * precision) / project.totalAllocation;
+  }
 }
