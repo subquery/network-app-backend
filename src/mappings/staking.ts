@@ -129,7 +129,12 @@ export async function handleAddDelegation(
       createdBlock: event.blockNumber,
     });
   } else {
-    delegation.amount = await upsertEraValue(delegation.amount, amountBn);
+    delegation.amount = await upsertEraValue(
+      delegation.amount,
+      amountBn,
+      'add',
+      applyInstantly
+    );
   }
 
   if (BigInt.fromJSONType(delegation.amount.valueAfter) > BigInt(0)) {
@@ -881,7 +886,8 @@ async function updateEraStakeAdd(
     delegator,
     nextEraId,
     nextEraIdx,
-    amountBn
+    amountBn,
+    instant
   );
 }
 
@@ -909,7 +915,8 @@ async function updateEraStake(
   delegator: string,
   eraId: string,
   eraIdx: number,
-  amountBn: bigint
+  amountBn: bigint,
+  instant?: boolean
 ) {
   let eraStake = await EraStake.get(eraStakeId);
   if (!eraStake) {
@@ -924,7 +931,7 @@ async function updateEraStake(
       delegatorId: delegator,
       eraId,
       eraIdx,
-      stake: lastStakeAmountBn + amountBn,
+      stake: instant ? lastStakeAmountBn : lastStakeAmountBn + amountBn,
     });
   } else {
     eraStake.stake += amountBn;
