@@ -27,7 +27,7 @@
   "author": "SubQuery Pty. Limited",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@subql/cli": "4.15.0",
+    "@subql/cli": "^5.9.1",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/bs58": "^4.0.1",
     "@types/js-yaml": "^4.0.5",
@@ -58,7 +58,6 @@
     "pino": "^7.8.0"
   },
   "resolutions": {
-    "class-transformer": "0.4.0",
     "ipfs-unixfs": "6.0.6",
     "@ethersproject/base64": "5.7.0",
     "@polkadot/util": "12.3.2",
