@@ -782,3 +782,16 @@ type IndexerLaborHistory @entity {
   amount: BigInt!
   createAt: Date!
 }
+
+type ConsumerQuerySpent @entity {
+  id: ID! # consumer:eraIdx:orderType:orderId
+  consumer: String!
+  indexer: Indexer!
+  deploymentId: String!
+  eraIdx: Int!
+  orderType: OrderType!
+  orderId: String!
+  spend: BigInt!
+  createAt: Date!
+  changesHeight: String # xxx:event,xxx:event,xxx
+}

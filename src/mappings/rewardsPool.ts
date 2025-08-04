@@ -1,7 +1,12 @@
 import assert from 'assert';
 import { CollectEvent } from '@subql/contract-sdk/typechain/contracts/RewardsPool';
 import { EthereumLog } from '@subql/types-ethereum';
-import { EraDeploymentRewards, IndexerEraDeploymentRewards } from '../types';
+import {
+  ConsumerQuerySpent,
+  EraDeploymentRewards,
+  IndexerEraDeploymentRewards,
+  OrderType,
+} from '../types';
 import { BigNumber } from 'ethers';
 import { bytesToIpfsCid } from './utils';
 
@@ -153,6 +158,40 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
 
   await updateEraDeployment();
   await updateIndexerEraDeployment();
+}
+
+export async function addOrUpdateConsumerQuerySpent(
+  consumer: string,
+  runner: string,
+  deploymentId: string,
+  eraIdx: number,
+  orderType: OrderType,
+  orderId: string,
+  spend: bigint,
+  createAt: Date,
+  eventLog: string = ''
+) {
+  const id = `${consumer}:${eraIdx}:${orderType}:${orderId}`;
+  const exist = await ConsumerQuerySpent.get(id);
+  if (exist) {
+    exist.spend += spend;
+    await exist.save();
+    return;
+  }
+  const labor = ConsumerQuerySpent.create({
+    id,
+    consumer,
+    indexerId: runner,
+    deploymentId: bytesToIpfsCid(deploymentId),
+    orderType,
+    orderId,
+    spend,
+    eraIdx,
+    createAt,
+    changesHeight: eventLog,
+  });
+
+  await labor.save();
 }
 
 // reward pool collect literally only trigger once per era
