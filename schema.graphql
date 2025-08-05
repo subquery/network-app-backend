@@ -784,14 +784,24 @@ type IndexerLaborHistory @entity {
 }
 
 type ConsumerQuerySpent @entity {
-  id: ID! # consumer:eraIdx:orderType:orderId
+  id: ID! # transaction hash
   consumer: String!
   indexer: Indexer!
   deploymentId: String!
   eraIdx: Int!
-  orderType: OrderType!
-  orderId: String!
-  spend: BigInt!
+  orderType: OrderType! # StateChannel or Agreement
+  orderId: String! # StateChannel ID or Agreement ID
+  spend: BigInt! # Increment spent
+  curAmount: BigInt! # Current accumulated spent
   createAt: Date!
   changesHeight: String # xxx:event,xxx:event,xxx
+}
+
+type OrderSpent @entity {
+  id: ID! # StateChannel ID or Agreement ID
+  amount: BigInt! # latest accumulated spent
+  createAt: Date!
+  updateAt: Date!
+  createdAtEraIdx: Int
+  updateAtEraIdx: Int
 }

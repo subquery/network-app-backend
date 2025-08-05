@@ -214,21 +214,21 @@ export async function handlerChannelLabor2(
     amount.toBigInt(),
     BigNumber.from(0).toBigInt(),
     BigNumber.from(0).toBigInt(),
-    `handleChannelLabor2:${event.blockNumber}`,
-    true
+    `handleChannelLabor2:${event.blockNumber}`
   );
 
   // consumer spent
   const sc = await StateChannel.get(channelId.toHexString());
   assert(sc, `StateChannel not exist ${channelId.toHexString()}`);
   await addOrUpdateConsumerQuerySpent(
+    event.transactionHash,
     sc.consumer,
     runner,
     bytesToIpfsCid(deploymentId),
     currentEra,
     OrderType.STATE_CHANNEL,
     channelId.toHexString(),
-    amount.toBigInt(),
+    amount,
     biToDate(event.block.timestamp),
     `handleChannelLabor2:${event.blockNumber}`
   );
@@ -239,7 +239,7 @@ export async function handlerChannelLabor2(
   const exist = await IndexerLaborHistory.get(id);
 
   if (exist) {
-    exist.amount = amount.toBigInt();
+    exist.amount += amount.toBigInt();
     await exist.save();
     return;
   }

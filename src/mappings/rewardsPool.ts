@@ -8,7 +8,11 @@ import {
   OrderType,
 } from '../types';
 import { BigNumber } from 'ethers';
-import { bytesToIpfsCid } from './utils';
+import {
+  bytesToIpfsCid,
+  getOrderIncrement,
+  updateOrderIncrement,
+} from './utils';
 
 // export async function addOrUpdateEraDeploymentRewards(
 //   deploymentId: string,
@@ -161,37 +165,36 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
 }
 
 export async function addOrUpdateConsumerQuerySpent(
+  transactionHash: string,
   consumer: string,
   runner: string,
   deploymentId: string,
   eraIdx: number,
   orderType: OrderType,
   orderId: string,
-  spend: bigint,
+  curAmount: BigNumber,
   createAt: Date,
   eventLog: string = ''
 ) {
-  const id = `${consumer}:${eraIdx}:${orderType}:${orderId}`;
-  const exist = await ConsumerQuerySpent.get(id);
-  if (exist) {
-    exist.spend = spend;
-    await exist.save();
-    return;
-  }
+  const increment = await getOrderIncrement(orderId, curAmount);
+
   const labor = ConsumerQuerySpent.create({
-    id,
+    id: transactionHash,
     consumer,
     indexerId: runner,
     deploymentId: bytesToIpfsCid(deploymentId),
     orderType,
     orderId,
-    spend,
+    spend: increment,
+    curAmount: curAmount.toBigInt(),
     eraIdx,
     createAt,
     changesHeight: eventLog,
   });
 
   await labor.save();
+
+  await updateOrderIncrement(orderId, curAmount, eraIdx, createAt);
 }
 
 // reward pool collect literally only trigger once per era

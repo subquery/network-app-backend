@@ -623,6 +623,19 @@ export async function handleAgreementRewards(
     agreementFirstEraRate
   );
 
+  await addOrUpdateConsumerQuerySpent(
+    event.transactionHash,
+    consumer,
+    runner,
+    bytesToIpfsCid(deploymentId),
+    currentEra,
+    OrderType.SERVICE_AGREEMENT,
+    agreementId.toHexString(),
+    amount,
+    biToDate(event.block.timestamp),
+    `handleServicesAgreementRewards:${event.blockNumber}`
+  );
+
   async function saveDatas(leftAmount?: BignumberJs, eraId?: BigNumber) {
     const saveAmount = BigNumber.from(leftAmount?.toFixed(0) || amount);
     const saveEra = eraId?.toNumber() || currentEra;
@@ -650,18 +663,6 @@ export async function handleAgreementRewards(
       BigNumber.from(0).toBigInt(),
       BigNumber.from(0).toBigInt(),
       saveAmount.toBigInt(),
-      `handleServicesAgreementRewards:${event.blockNumber}`
-    );
-
-    await addOrUpdateConsumerQuerySpent(
-      consumer,
-      runner,
-      bytesToIpfsCid(deploymentId),
-      saveEra,
-      OrderType.SERVICE_AGREEMENT,
-      agreementId.toHexString(),
-      saveAmount.toBigInt(),
-      biToDate(event.block.timestamp),
       `handleServicesAgreementRewards:${event.blockNumber}`
     );
   }
