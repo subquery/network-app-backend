@@ -214,7 +214,8 @@ export async function handlerChannelLabor2(
     amount.toBigInt(),
     BigNumber.from(0).toBigInt(),
     BigNumber.from(0).toBigInt(),
-    `handleChannelLabor2:${event.blockNumber}`
+    `handleChannelLabor2:${event.blockNumber}`,
+    true
   );
 
   // consumer spent
@@ -238,7 +239,7 @@ export async function handlerChannelLabor2(
   const exist = await IndexerLaborHistory.get(id);
 
   if (exist) {
-    exist.amount += amount.toBigInt();
+    exist.amount = amount.toBigInt();
     await exist.save();
     return;
   }

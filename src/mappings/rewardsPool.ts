@@ -174,7 +174,7 @@ export async function addOrUpdateConsumerQuerySpent(
   const id = `${consumer}:${eraIdx}:${orderType}:${orderId}`;
   const exist = await ConsumerQuerySpent.get(id);
   if (exist) {
-    exist.spend += spend;
+    exist.spend = spend;
     await exist.save();
     return;
   }
