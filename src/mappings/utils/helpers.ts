@@ -233,7 +233,7 @@ export async function getOrderIncrement(
   curAmount: BigNumber
 ): Promise<bigint> {
   const order = await OrderSpent.get(id);
-  if (!order) return BigInt(0);
+  if (!order) return curAmount.toBigInt();
 
   return curAmount.sub(order.amount).toBigInt();
 }
