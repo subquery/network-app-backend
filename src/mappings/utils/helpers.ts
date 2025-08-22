@@ -8,7 +8,13 @@ import { EthereumLog } from '@subql/types-ethereum';
 import bs58 from 'bs58';
 
 import assert from 'assert';
-import { AirdropAmount, Exception, JSONBigInt, Project } from '../../types';
+import {
+  AirdropAmount,
+  Exception,
+  JSONBigInt,
+  OrderSpent,
+  Project,
+} from '../../types';
 import { BigNumberish } from 'ethers';
 import { PER_QUINTILL } from './constants';
 
@@ -220,4 +226,40 @@ export function handleProjectTotalAllocation(
     project.boostAllocationRatio =
       (project.totalBoost * precision) / project.totalAllocation;
   }
+}
+
+export async function getOrderIncrement(
+  id: string,
+  curAmount: BigNumber
+): Promise<bigint> {
+  const order = await OrderSpent.get(id);
+  if (!order) return curAmount.toBigInt();
+
+  return curAmount.sub(order.amount).toBigInt();
+}
+
+export async function updateOrderIncrement(
+  id: string,
+  curAmount: BigNumber,
+  eraIdx: number,
+  createAt: Date
+) {
+  const exist = await OrderSpent.get(id);
+  if (exist) {
+    exist.amount = curAmount.toBigInt();
+    exist.updateAt = createAt;
+    exist.updateAtEraIdx = eraIdx;
+    await exist.save();
+    return;
+  }
+
+  const order = OrderSpent.create({
+    id,
+    amount: curAmount.toBigInt(),
+    createAt: createAt,
+    updateAt: createAt,
+    createdAtEraIdx: eraIdx,
+    updateAtEraIdx: eraIdx,
+  });
+  await order.save();
 }

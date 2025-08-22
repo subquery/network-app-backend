@@ -47,9 +47,9 @@
   },
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
-    "@subql/common-ethereum": "^4.5.3",
+    "@subql/common-ethereum": "^4.9.3",
     "@subql/contract-sdk": "^1.9.0-1",
-    "@subql/types-ethereum": "^3.5.0",
+    "@subql/types-ethereum": "^4.2.2",
     "@types/pino": "^7.0.5",
     "@types/validator": "latest",
     "bignumber.js": "^9.1.2",

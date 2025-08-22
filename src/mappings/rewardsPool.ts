@@ -1,9 +1,18 @@
 import assert from 'assert';
 import { CollectEvent } from '@subql/contract-sdk/typechain/contracts/RewardsPool';
 import { EthereumLog } from '@subql/types-ethereum';
-import { EraDeploymentRewards, IndexerEraDeploymentRewards } from '../types';
+import {
+  ConsumerQuerySpent,
+  EraDeploymentRewards,
+  IndexerEraDeploymentRewards,
+  OrderType,
+} from '../types';
 import { BigNumber } from 'ethers';
-import { bytesToIpfsCid } from './utils';
+import {
+  bytesToIpfsCid,
+  getOrderIncrement,
+  updateOrderIncrement,
+} from './utils';
 
 // export async function addOrUpdateEraDeploymentRewards(
 //   deploymentId: string,
@@ -153,6 +162,39 @@ export async function addOrUpdateIndexerEraDeploymentRewards(
 
   await updateEraDeployment();
   await updateIndexerEraDeployment();
+}
+
+export async function addOrUpdateConsumerQuerySpent(
+  transactionHash: string,
+  consumer: string,
+  runner: string,
+  deploymentId: string,
+  eraIdx: number,
+  orderType: OrderType,
+  orderId: string,
+  curAmount: BigNumber,
+  createAt: Date,
+  eventLog: string = ''
+) {
+  const increment = await getOrderIncrement(orderId, curAmount);
+
+  const labor = ConsumerQuerySpent.create({
+    id: transactionHash,
+    consumer,
+    indexerId: runner,
+    deploymentId: bytesToIpfsCid(deploymentId),
+    orderType,
+    orderId,
+    spend: increment,
+    curAmount: curAmount.toBigInt(),
+    eraIdx,
+    createAt,
+    changesHeight: eventLog,
+  });
+
+  await labor.save();
+
+  await updateOrderIncrement(orderId, curAmount, eraIdx, createAt);
 }
 
 // reward pool collect literally only trigger once per era

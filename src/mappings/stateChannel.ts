@@ -17,6 +17,7 @@ import {
   ChannelStatus,
   Deployment,
   IndexerLaborHistory,
+  OrderType,
   Project,
   StateChannel,
 } from '../types';
@@ -24,7 +25,10 @@ import { biToDate, bytesToIpfsCid } from './utils';
 import { upsertEraIndexerDeploymentApy } from './rewardsDistributor';
 import { RewardType } from './utils/enums';
 import { getCurrentEra } from './eraManager';
-import { addOrUpdateIndexerEraDeploymentRewards } from './rewardsPool';
+import {
+  addOrUpdateConsumerQuerySpent,
+  addOrUpdateIndexerEraDeploymentRewards,
+} from './rewardsPool';
 
 export async function handleChannelOpen(
   event: EthereumLog<ChannelOpenEvent['args']>
@@ -201,7 +205,7 @@ export async function handlerChannelLabor2(
   logger.info('handleRewardsPoolCollect');
   assert(event.args, 'No event args');
   const currentEra = await getCurrentEra();
-  const { deploymentId, indexer: runner, amount } = event.args;
+  const { deploymentId, indexer: runner, amount, channelId } = event.args;
 
   await addOrUpdateIndexerEraDeploymentRewards(
     runner,
@@ -210,6 +214,22 @@ export async function handlerChannelLabor2(
     amount.toBigInt(),
     BigNumber.from(0).toBigInt(),
     BigNumber.from(0).toBigInt(),
+    `handleChannelLabor2:${event.blockNumber}`
+  );
+
+  // consumer spent
+  const sc = await StateChannel.get(channelId.toHexString());
+  assert(sc, `StateChannel not exist ${channelId.toHexString()}`);
+  await addOrUpdateConsumerQuerySpent(
+    event.transactionHash,
+    sc.consumer,
+    runner,
+    bytesToIpfsCid(deploymentId),
+    currentEra,
+    OrderType.STATE_CHANNEL,
+    channelId.toHexString(),
+    amount,
+    biToDate(event.block.timestamp),
     `handleChannelLabor2:${event.blockNumber}`
   );
 

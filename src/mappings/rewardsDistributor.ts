@@ -20,6 +20,7 @@ import {
   IndexerApySummary,
   IndexerStakeWeight,
   Indexer,
+  OrderType,
 } from '../types';
 import {
   EraManager__factory,
@@ -50,7 +51,10 @@ import {
 } from '../types/contracts/RewardsDistributor';
 import { RewardType } from './utils/enums';
 import { PER_MILL } from './utils/constants';
-import { addOrUpdateIndexerEraDeploymentRewards } from './rewardsPool';
+import {
+  addOrUpdateConsumerQuerySpent,
+  addOrUpdateIndexerEraDeploymentRewards,
+} from './rewardsPool';
 import pino from 'pino';
 
 function buildRewardId(indexer: string, delegator: string): string {
@@ -591,7 +595,7 @@ export async function handleAgreementRewards(
   const currentEraStartDate = new Date(currentEraInfo.startTime);
 
   const eraPeriod = await eraManager.eraPeriod();
-  const { startDate, period, deploymentId } =
+  const { startDate, period, deploymentId, consumer } =
     await serviceAgreementContract.getClosedServiceAgreement(agreementId);
 
   const cidDeploymentId = bytesToIpfsCid(deploymentId);
@@ -617,6 +621,19 @@ export async function handleAgreementRewards(
   // first amount should be calculated by the rate of the first era
   const agreementFirstEraAmount = everyEraAmount.multipliedBy(
     agreementFirstEraRate
+  );
+
+  await addOrUpdateConsumerQuerySpent(
+    event.transactionHash,
+    consumer,
+    runner,
+    bytesToIpfsCid(deploymentId),
+    currentEra,
+    OrderType.SERVICE_AGREEMENT,
+    agreementId.toHexString(),
+    amount,
+    biToDate(event.block.timestamp),
+    `handleServicesAgreementRewards:${event.blockNumber}`
   );
 
   async function saveDatas(leftAmount?: BignumberJs, eraId?: BigNumber) {

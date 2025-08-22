@@ -350,6 +350,14 @@ export async function handleQueryRewardsSpent(
 
   const agreement = await ServiceAgreement.get(BigNumber.from(data).toString());
   const channel = await StateChannel.get(BigNumber.from(data).toHexString());
+  /**
+   * There is a issue at testnet:  QueryRewardsSpent happens before ChannelOpen, cause assert error.
+   * Could skip for testnet.
+   * Transaction detail at Block#25063139:
+   * https://sepolia.basescan.org/tx/0xf4f3d749211085151059407decc391f5c2c80eb445c195b991795be765026bde#eventlog
+   *
+   *  logger.warn(`No agreement or channel found`);
+   */
   assert(agreement || channel, 'No agreement or channel found');
 
   let orderType: OrderType = OrderType.UNKNOWN;
