@@ -56,3 +56,6 @@ Thumbs.db
 .eslintcache
 docker-compose-mainnet.yml
 docker-compose-testnet.yml
+
+.yarn
+_tasks

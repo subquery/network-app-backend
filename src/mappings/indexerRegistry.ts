@@ -16,6 +16,7 @@ import {
   createIndexer,
   getContractAddress,
   reportIndexerNonExistException,
+  updateFlattenedEraValue,
   upsertControllerAccount,
   upsertEraValue,
 } from './utils';
@@ -185,6 +186,9 @@ export async function handleSetCommissionRate(
     // Apply instantly when era is -1, this is an indication that indexer has just registered
     indexer.commission.era === -1
   );
+  // Update flattened fields for commission
+  updateFlattenedEraValue(indexer, 'commission', indexer.commission);
+
   indexer.lastEvent = `handleSetCommissionRate:${event.blockNumber}`;
 
   await indexer.save();

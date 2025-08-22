@@ -61,6 +61,8 @@ x-ethereum: &ethereum
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Airdropper.sol/Airdropper.json
     l2SQToken:
       file: ./node_modules/@subql/contract-sdk/artifacts/contracts/l2/L2SQToken.sol/L2SQToken.json
+    subnetProjectVote:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/SubnetProjectVote.sol/SubnetProjectVote.json
 
 dataSources:
   - <<: *ethereum
@@ -582,6 +584,23 @@ dataSources:
           filter:
             topics:
               - Burn(address indexed _account, uint256 _amount)
+  - <<: *ethereum
+    options:
+      abi: subnetProjectVote
+      address: ''
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleVoted
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Voted(address indexed user, bytes32 indexed projectId, uint256 amount)
+        - handler: handleWithdrawn
+          kind: ethereum/LogHandler
+          filter:
+            topics:
+              - Withdrawn(address indexed user, bytes32 indexed projectId, uint256 amount)
   - kind: ethereum/Runtime
     startBlock: 12750283
     endBlock: 12750283

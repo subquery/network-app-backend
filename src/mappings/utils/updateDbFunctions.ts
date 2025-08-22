@@ -47,22 +47,35 @@ export async function createIndexer({
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
+    capacityEra: -1,
+    capacityEraValue: BigInt(0),
+    capacityEraValueAfter: BigInt(0),
     selfStake: {
       era: -1,
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
+    selfStakeEra: -1,
+    selfStakeEraValue: BigInt(0),
+    selfStakeEraValueAfter: BigInt(0),
     totalStake: {
       era: -1,
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
+    totalStakeEra: -1,
+    totalStakeEraValue: BigInt(0),
+    totalStakeEraValueAfter: BigInt(0),
     maxUnstakeAmount: BigInt(0).toJSONType(),
+    maxUnstakeAmountValue: BigInt(0),
     commission: {
       era: -1,
       value: BigInt(0).toJSONType(),
       valueAfter: BigInt(0).toJSONType(),
     },
+    commissionEra: -1,
+    commissionEraValue: BigInt(0),
+    commissionEraValueAfter: BigInt(0),
     active,
     controller,
     createdBlock,
@@ -154,6 +167,46 @@ export async function upsertEraValue(
   };
 }
 
+// Helper function to update flattened EraValue fields
+export function updateFlattenedEraValue(
+  entity: any,
+  fieldPrefix: string,
+  eraValue: EraValue
+): void {
+  entity[`${fieldPrefix}Era`] = eraValue.era;
+  entity[`${fieldPrefix}EraValue`] = BigInt.fromJSONType(eraValue.value);
+  entity[`${fieldPrefix}EraValueAfter`] = BigInt.fromJSONType(
+    eraValue.valueAfter
+  );
+}
+
+// Helper function to update flattened JSONBigInt fields
+export function updateFlattenedJSONBigInt(
+  entity: any,
+  fieldPrefix: string,
+  jsonBigInt: JSONBigInt
+): void {
+  entity[`${fieldPrefix}Value`] = BigInt.fromJSONType(jsonBigInt);
+}
+
+// Helper function to update flattened array fields for DelegationFrom
+export function updateFlattenedDelegationFrom(
+  entity: any,
+  delegations: any[]
+): void {
+  entity.delegatorAddresses = delegations.map((d) => d.delegator);
+  entity.delegatorAmounts = delegations.map((d) => d.amount);
+}
+
+// Helper function to update flattened array fields for DelegationTo
+export function updateFlattenedDelegationTo(
+  entity: any,
+  delegations: any[]
+): void {
+  entity.indexerAddresses = delegations.map((d) => d.indexer);
+  entity.indexerAmounts = delegations.map((d) => d.amount);
+}
+
 export async function updateMaxUnstakeAmount(
   indexerAddress: string,
   event: EthereumLog
@@ -176,6 +229,12 @@ export async function updateMaxUnstakeAmount(
       indexer.maxUnstakeAmount = bigNumbertoJSONType(
         ownStakeAfter.sub(minStakingAmount)
       );
+      // Update flattened field
+      updateFlattenedJSONBigInt(
+        indexer,
+        'maxUnstakeAmount',
+        indexer.maxUnstakeAmount
+      );
     } else {
       const maxUnstakeAmount = min(
         ownStakeAfter.sub(minStakingAmount),
@@ -187,6 +246,12 @@ export async function updateMaxUnstakeAmount(
 
       indexer.maxUnstakeAmount = bigNumbertoJSONType(
         maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount
+      );
+      // Update flattened field
+      updateFlattenedJSONBigInt(
+        indexer,
+        'maxUnstakeAmount',
+        indexer.maxUnstakeAmount
       );
     }
 
@@ -217,6 +282,9 @@ export async function updateTotalStake(
       operation,
       applyInstantly
     );
+    // Update flattened fields for totalStake
+    updateFlattenedEraValue(indexer, 'totalStake', indexer.totalStake);
+
     if (selfStake) {
       indexer.selfStake = await upsertEraValue(
         indexer.selfStake,
@@ -224,6 +292,8 @@ export async function updateTotalStake(
         operation,
         applyInstantly
       );
+      // Update flattened fields for selfStake
+      updateFlattenedEraValue(indexer, 'selfStake', indexer.selfStake);
     }
 
     await indexer.save();
@@ -247,13 +317,19 @@ export async function updateDelegatorDelegation(
   let delegator = await Delegator.get(delegatorAddress);
 
   if (!delegator) {
+    const totalDelegations = await upsertEraValue(
+      undefined,
+      amount,
+      operation,
+      applyInstantly
+    );
     delegator = Delegator.create({
       id: delegatorAddress,
-      totalDelegations: await upsertEraValue(
-        undefined,
-        amount,
-        operation,
-        applyInstantly
+      totalDelegations,
+      totalDelegationsEra: totalDelegations.era,
+      totalDelegationsEraValue: BigInt.fromJSONType(totalDelegations.value),
+      totalDelegationsEraValueAfter: BigInt.fromJSONType(
+        totalDelegations.valueAfter
       ),
       startEra: applyInstantly ? currentEra : currentEra + 1,
       exitEra: -1,
@@ -264,6 +340,12 @@ export async function updateDelegatorDelegation(
       amount,
       operation,
       applyInstantly
+    );
+    // Update flattened fields for existing delegator
+    updateFlattenedEraValue(
+      delegator,
+      'totalDelegations',
+      delegator.totalDelegations
     );
     if (BigNumber.from(delegator.totalDelegations.valueAfter.value).lte(0)) {
       delegator.exitEra = currentEra + 1;
@@ -314,6 +396,8 @@ export async function updateIndexerCapacity(
       value: current.toBigInt().toJSONType(),
       valueAfter: after.toBigInt().toJSONType(),
     };
+    // Update flattened fields for capacity
+    updateFlattenedEraValue(indexer, 'capacity', indexer.capacity);
 
     await indexer.save();
   } else {
@@ -343,17 +427,27 @@ export async function updateTotalLock(
   const { instant } = event.args || {};
 
   if (!totalLock) {
+    const totalStake = await upsertEraValue(
+      undefined,
+      updatedStakeAmount.toBigInt(),
+      operation
+    );
+    const totalDelegation = await upsertEraValue(
+      undefined,
+      updatedDelegateAmount.toBigInt(),
+      operation
+    );
     totalLock = TotalLock.create({
       id: totalLockID,
-      totalStake: await upsertEraValue(
-        undefined,
-        updatedStakeAmount.toBigInt(),
-        operation
-      ),
-      totalDelegation: await upsertEraValue(
-        undefined,
-        updatedDelegateAmount.toBigInt(),
-        operation
+      totalStake,
+      totalStakeEra: totalStake.era,
+      totalStakeEraValue: BigInt.fromJSONType(totalStake.value),
+      totalStakeEraValueAfter: BigInt.fromJSONType(totalStake.valueAfter),
+      totalDelegation,
+      totalDelegationEra: totalDelegation.era,
+      totalDelegationEraValue: BigInt.fromJSONType(totalDelegation.value),
+      totalDelegationEraValueAfter: BigInt.fromJSONType(
+        totalDelegation.valueAfter
       ),
       createdBlock: event.blockNumber,
     });
@@ -364,12 +458,22 @@ export async function updateTotalLock(
       operation,
       instant
     );
+    // Update flattened fields for totalStake
+    updateFlattenedEraValue(totalLock, 'totalStake', totalLock.totalStake);
+
     totalLock.totalDelegation = await upsertEraValue(
       totalLock.totalDelegation,
       updatedDelegateAmount.toBigInt(),
       operation,
       instant
     );
+    // Update flattened fields for totalDelegation
+    updateFlattenedEraValue(
+      totalLock,
+      'totalDelegation',
+      totalLock.totalDelegation
+    );
+
     totalLock.lastEvent = `updateTotalLock - ${event.transactionHash}`;
   }
 

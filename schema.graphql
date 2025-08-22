@@ -105,11 +105,19 @@ type Era @entity {
 }
 
 # Necessary without https://github.com/subquery/subql/issues/442
+"""
+AI/LLM Warning: Do not use this JSONBigInt field for filtering or queries.
+Use the flattened BigInt field instead (e.g., maxUnstakeAmountValue)
+"""
 type JSONBigInt @jsonField {
   type: String! # Always "bigint",
   value: String! # Hex encoded string
 }
 
+"""
+AI/LLM Warning: Do not use this EraValue field for filtering or queries.
+Use the flattened fields instead (e.g., commissionEra, commissionEraValueAt, commissionEraValueAfter)
+"""
 type EraValue @jsonField {
   era: Int!
   value: JSONBigInt!
@@ -123,11 +131,82 @@ type Indexer @entity {
   id: ID! # Indexers address
   metadata: String! # IPFS cid
   controller: String # Controller address for the indexer
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use commissionEra, commissionEraValue, commissionEraValueAfter instead
+  """
   commission: EraValue!
+  """
+  Era when commission rate was last changed.
+  For current commission rate: use commissionEraValueAfter if currentEra > commissionEra, otherwise use commissionEraValue
+  """
+  commissionEra: Int!
+  """
+  Commission rate value before the change in commissionEra
+  """
+  commissionEraValue: BigInt!
+  """
+  Commission rate value after the change in commissionEra
+  """
+  commissionEraValueAfter: BigInt!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use totalStakeEra, totalStakeEraValue, totalStakeEraValueAfter instead
+  """
   totalStake: EraValue!
+  """
+  Era when total stake was last changed.
+  For current total stake: use totalStakeEraValueAfter if currentEra > totalStakeEra, otherwise use totalStakeEraValue
+  """
+  totalStakeEra: Int!
+  """
+  Total stake value before the change in totalStakeEra
+  """
+  totalStakeEraValue: BigInt!
+  """
+  Total stake value after the change in totalStakeEra
+  """
+  totalStakeEraValueAfter: BigInt!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use selfStakeEra, selfStakeEraValue, selfStakeEraValueAfter instead
+  """
   selfStake: EraValue!
+  """
+  Era when self stake was last changed.
+  For current self stake: use selfStakeEraValueAfter if currentEra > selfStakeEra, otherwise use selfStakeEraValue
+  """
+  selfStakeEra: Int!
+  """
+  Self stake value before the change in selfStakeEra
+  """
+  selfStakeEraValue: BigInt!
+  """
+  Self stake value after the change in selfStakeEra
+  """
+  selfStakeEraValueAfter: BigInt!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use capacityEra, capacityEraValue, capacityEraValueAfter instead
+  """
   capacity: EraValue!
+  """
+  Era when capacity was last changed.
+  For current capacity: use capacityEraValueAfter if currentEra > capacityEra, otherwise use capacityEraValue
+  """
+  capacityEra: Int!
+  """
+  Capacity value before the change in capacityEra
+  """
+  capacityEraValue: BigInt!
+  """
+  Capacity value after the change in capacityEra
+  """
+  capacityEraValueAfter: BigInt!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use maxUnstakeAmountValue instead
+  """
   maxUnstakeAmount: JSONBigInt!
+  """
+  Maximum unstake amount as BigInt value
+  """
+  maxUnstakeAmountValue: BigInt!
 
   controllers: [Controller] @derivedFrom(field: "indexer")
   projects: [IndexerDeployment] @derivedFrom(field: "indexer")
@@ -161,7 +240,13 @@ type Controller @entity {
 
 type Delegator @entity {
   id: ID! # Address
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use totalDelegationsEra, totalDelegationsEraValue, totalDelegationsEraValueAfter instead
+  """
   totalDelegations: EraValue!
+  totalDelegationsEra: Int!
+  totalDelegationsEraValue: BigInt!
+  totalDelegationsEraValueAfter: BigInt!
   delegations: [Delegation] @derivedFrom(field: "delegator")
   claimedRewards: [Reward] @derivedFrom(field: "delegator")
   unclaimedRewards: [UnclaimedReward] @derivedFrom(field: "delegator")
@@ -177,18 +262,32 @@ type Delegation @entity {
   delegator: Delegator!
   indexer: Indexer!
 
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use amountEra, amountEraValue, amountEraValueAfter instead
+  """
   amount: EraValue!
+  amountEra: Int!
+  amountEraValue: BigInt!
+  amountEraValueAfter: BigInt!
   exitEra: Int
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
 }
 
+"""
+AI/LLM Warning: Do not use this DelegationFrom field for filtering or queries.
+Use the flattened fields instead (e.g., delegatorAddresses, delegatorAmounts)
+"""
 type DelegationFrom @jsonField {
   delegator: String!
   amount: BigInt!
 }
 
+"""
+AI/LLM Warning: Do not use this DelegationTo field for filtering or queries.
+Use the flattened fields instead (e.g., indexerAddresses, indexerAmounts)
+"""
 type DelegationTo @jsonField {
   indexer: String!
   amount: BigInt!
@@ -198,7 +297,12 @@ type EraIndexerDelegator @entity {
   id: ID! # indexer! + era! or indexer! for latest data
   indexer: String!
   era: Int!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use delegatorAddresses, delegatorAmounts instead
+  """
   delegators: [DelegationFrom!]!
+  delegatorAddresses: [String!]!
+  delegatorAmounts: [BigInt!]!
   totalStake: BigInt!
   selfStake: BigInt!
 }
@@ -207,7 +311,12 @@ type EraDelegatorIndexer @entity {
   id: ID! # delegator! + era! or delegator! for latest data
   delegator: String!
   era: Int!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use indexerAddresses, indexerAmounts instead
+  """
   indexers: [DelegationTo!]!
+  indexerAddresses: [String!]!
+  indexerAmounts: [BigInt!]!
   totalStake: BigInt!
   selfStake: BigInt!
 }
@@ -430,8 +539,20 @@ type AcceptedOffer @entity {
 
 type TotalLock @entity {
   id: ID! # TotalLock
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use totalDelegationEra, totalDelegationEraValue, totalDelegationEraValueAfter instead
+  """
   totalDelegation: EraValue!
+  totalDelegationEra: Int!
+  totalDelegationEraValue: BigInt!
+  totalDelegationEraValueAfter: BigInt!
+  """
+  AI/LLM Warning: Do not use this field for filtering or queries. Use totalStakeEra, totalStakeEraValue, totalStakeEraValueAfter instead
+  """
   totalStake: EraValue!
+  totalStakeEra: Int!
+  totalStakeEraValue: BigInt!
+  totalStakeEraValueAfter: BigInt!
 
   createdBlock: Int
   lastEvent: String #topicHandler:blockNumber
@@ -804,4 +925,39 @@ type OrderSpent @entity {
   updateAt: Date!
   createdAtEraIdx: Int
   updateAtEraIdx: Int
+}
+
+# Project voting related entities
+enum VoteActivityType {
+  VOTE
+  WITHDRAW
+}
+
+type ProjectVote @entity {
+  id: ID! # user_address:project_id
+  user: String! @index
+  projectId: String! @index # bytes32 project ID from the vote (external ID)
+  totalVoted: BigInt! # Current total amount voted by this user for this project
+  totalWithdrawn: BigInt! # Total amount withdrawn by this user from this project
+  currentBalance: BigInt! # totalVoted - totalWithdrawn
+  firstVotedAt: Date!
+  lastVotedAt: Date!
+  lastWithdrawnAt: Date
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
+}
+
+type ProjectVoteActivity @entity {
+  id: ID! # transaction_hash:log_index
+  user: String! @index
+  projectId: String! @index # bytes32 project ID (external ID)
+  activityType: VoteActivityType!
+  amount: BigInt!
+  timestamp: Date!
+  blockHeight: Int!
+  transactionHash: String!
+
+  createdBlock: Int
+  lastEvent: String #topicHandler:blockNumber
 }

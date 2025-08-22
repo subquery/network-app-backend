@@ -20,4 +20,5 @@ export * from './tokenExchange';
 export * from './transfer';
 export * from './airdropper';
 export * from './l2SQToken';
+export * from './subnetProjectVote';
 export * from './globalParameterEvent';

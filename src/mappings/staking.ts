@@ -35,6 +35,9 @@ import {
   getWithdrawlId,
   reportException,
   toBigInt,
+  updateFlattenedDelegationFrom,
+  updateFlattenedDelegationTo,
+  updateFlattenedEraValue,
   updateIndexerCapacity,
   updateMaxUnstakeAmount,
   updateDelegatorDelegation,
@@ -126,6 +129,9 @@ export async function handleAddDelegation(
       delegatorId: source,
       indexerId: runner,
       amount: eraAmount,
+      amountEra: eraAmount.era,
+      amountEraValue: BigInt.fromJSONType(eraAmount.value),
+      amountEraValueAfter: BigInt.fromJSONType(eraAmount.valueAfter),
       createdBlock: event.blockNumber,
     });
   } else {
@@ -135,6 +141,8 @@ export async function handleAddDelegation(
       'add',
       applyInstantly
     );
+    // Update flattened fields for delegation amount
+    updateFlattenedEraValue(delegation, 'amount', delegation.amount);
   }
 
   if (BigInt.fromJSONType(delegation.amount.valueAfter) > BigInt(0)) {
@@ -180,6 +188,8 @@ export async function handleRemoveDelegation(
     amount.toBigInt(),
     'sub'
   );
+  // Update flattened fields for delegation amount
+  updateFlattenedEraValue(delegation, 'amount', delegation.amount);
 
   if (BigInt.fromJSONType(delegation.amount.valueAfter) === BigInt(0)) {
     delegation.exitEra = delegation.amount.era + 1;
@@ -226,6 +236,8 @@ async function addToEraDelegation(
       indexer,
       era,
       delegators: [],
+      delegatorAddresses: [],
+      delegatorAmounts: [],
       totalStake: BigInt(0),
       selfStake: BigInt(0),
     });
@@ -241,6 +253,9 @@ async function addToEraDelegation(
   } else {
     indexerD.delegators.push({ delegator, amount });
   }
+  // Update flattened fields for delegators
+  updateFlattenedDelegationFrom(indexerD, indexerD.delegators);
+
   indexerD.totalStake += amount;
   if (indexer === delegator) {
     indexerD.selfStake += amount;
@@ -256,6 +271,8 @@ async function addToEraDelegation(
       delegator,
       era,
       indexers: [],
+      indexerAddresses: [],
+      indexerAmounts: [],
       totalStake: BigInt(0),
       selfStake: BigInt(0),
     });
@@ -269,6 +286,9 @@ async function addToEraDelegation(
   } else {
     delegatorD.indexers.push({ indexer, amount });
   }
+  // Update flattened fields for indexers
+  updateFlattenedDelegationTo(delegatorD, delegatorD.indexers);
+
   delegatorD.totalStake += amount;
   if (indexer === delegator) {
     delegatorD.selfStake += amount;
@@ -298,6 +318,9 @@ async function removeFromEraDelegation(
   indexerD.delegators = indexerD.delegators.filter(
     (d) => !(d.delegator === delegator && d.amount <= BigInt(0))
   );
+  // Update flattened fields for delegators
+  updateFlattenedDelegationFrom(indexerD, indexerD.delegators);
+
   indexerD.totalStake -= amount;
   if (indexer === delegator) {
     indexerD.selfStake -= amount;
@@ -320,6 +343,9 @@ async function removeFromEraDelegation(
   delegatorD.indexers = delegatorD.indexers.filter(
     (i) => !(i.indexer === indexer && i.amount <= BigInt(0))
   );
+  // Update flattened fields for indexers
+  updateFlattenedDelegationTo(delegatorD, delegatorD.indexers);
+
   delegatorD.totalStake -= amount;
   if (indexer === delegator) {
     delegatorD.selfStake -= amount;
@@ -342,6 +368,8 @@ async function fillUpEraIndexerDelegator(
         ...indexerD,
         id: `${indexerD.indexer}:${BigNumber.from(latestEra).toHexString()}`,
         delegators: indexerD.delegators,
+        delegatorAddresses: indexerD.delegatorAddresses,
+        delegatorAmounts: indexerD.delegatorAmounts,
       });
       await latestEraIndexerD.save();
     } else {
@@ -384,6 +412,8 @@ async function fillUpEraDelegatorIndexer(
           latestEra
         ).toHexString()}`,
         indexers: delegatorD.indexers,
+        indexerAddresses: delegatorD.indexerAddresses,
+        indexerAmounts: delegatorD.indexerAmounts,
       });
       await latestEraDelegatorD.save();
     } else {
